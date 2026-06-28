@@ -1,0 +1,185 @@
+.panel {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-white);
+  border-right: 1px solid var(--color-slate-200);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-slate-200);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.titleRow h2 {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--color-slate-700);
+  cursor: pointer;
+}
+
+.backBtn:hover {
+  background: var(--color-slate-50);
+}
+
+.selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.selRow {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-slate-700);
+}
+
+.tagLeft,
+.tagRight {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.25rem;
+}
+
+.tagLeft {
+  background: var(--color-red-100);
+}
+
+.tagRight {
+  background: var(--color-green-100);
+}
+
+.selValue {
+  font-family: ui-monospace, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  flex: 1;
+  overflow: auto;
+  padding: 0.5rem 0;
+}
+
+.empty {
+  margin: 0;
+  padding: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-slate-500);
+}
+
+.branch {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 0.5rem;
+}
+
+.row:hover {
+  background: var(--color-slate-50);
+}
+
+.expand {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.25rem 0.25rem 0.25rem 0;
+}
+
+.caret {
+  width: 0.75rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-slate-400);
+}
+
+.folderIcon {
+  flex-shrink: 0;
+  color: var(--color-amber-500);
+}
+
+.label {
+  margin-left: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+
+.assign {
+  display: inline-flex;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+.side {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  border-radius: 0.25rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.side:hover {
+  background: var(--color-slate-100);
+}
+
+.sideLeftActive {
+  background: var(--color-red-100);
+  border-color: var(--color-red-300);
+}
+
+.sideRightActive {
+  background: var(--color-green-100);
+  border-color: var(--color-green-300);
+}

@@ -1,0 +1,12 @@
+.mark {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.left {
+  color: var(--color-red-600);
+}
+
+.right {
+  color: var(--color-green-600);
+}

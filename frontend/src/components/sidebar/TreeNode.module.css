@@ -1,0 +1,54 @@
+.branch {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-right: 0.5rem;
+}
+
+.item:hover {
+  background: var(--color-slate-50);
+}
+
+.selected {
+  background: var(--color-blue-100);
+}
+
+.caret {
+  width: 0.75rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-slate-400);
+}
+
+.folderIcon {
+  flex-shrink: 0;
+  color: var(--color-amber-500);
+}
+
+.fileIcon {
+  flex-shrink: 0;
+  color: var(--color-slate-500);
+}
+
+.label {
+  margin-left: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
