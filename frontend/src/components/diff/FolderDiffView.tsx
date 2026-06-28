@@ -5,6 +5,8 @@ import {
   type FileDiffEntry,
   countEntries,
 } from '../../hooks/useFolderDiff'
+import { cx } from '../../utils/cx'
+import { Button } from '../ui/Button'
 
 import { DiffSideMark } from './DiffSideMark'
 import styles from './FolderDiffView.module.css'
@@ -114,9 +116,9 @@ export function FolderDiffView({
             const clickable = entry.status !== 'error'
             return (
               <li key={entry.relPath}>
-                <button
-                  type="button"
-                  className={`${styles.row} ${rowClass(entry.status) ?? ''}`}
+                <Button
+                  variant="plain"
+                  className={cx(styles.row, rowClass(entry.status))}
                   onClick={clickable ? () => onOpenFile(entry) : undefined}
                   disabled={!clickable}
                   title={entry.error ?? entry.relPath}
@@ -145,7 +147,7 @@ export function FolderDiffView({
                       <span className={styles.placeholder}>—</span>
                     )}
                   </span>
-                </button>
+                </Button>
                 {entry.error && (
                   <p className={styles.rowError}>{entry.error}</p>
                 )}

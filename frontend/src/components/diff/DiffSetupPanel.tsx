@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { ArrowLeft, ChevronDown, ChevronRight, Folder } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 import type { TreeNode } from '../../types'
+import { cx } from '../../utils/cx'
 import { truncateMiddle } from '../../utils/truncateMiddle'
+import { Button, IconButton } from '../ui/Button'
 
+import { DirectoryTreeBranch } from '../tree/DirectoryTreeBranch'
 import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
 import styles from './DiffSetupPanel.module.css'
 
@@ -17,7 +19,19 @@ interface DiffSetupPanelProps {
   onExitDiff: () => void
 }
 
-function FolderRow({
+const branchStyles = {
+  branch: styles.branch,
+  caret: styles.caret,
+  folderIcon: styles.folderIcon,
+  label: styles.label,
+  row: styles.row,
+}
+
+function diffPadding(depth: number) {
+  return depth * 14 + 8
+}
+
+function DiffFolderRow({
   node,
   depth,
   leftPath,
@@ -32,66 +46,55 @@ function FolderRow({
   onSelectLeft: (node: TreeNode) => void
   onSelectRight: (node: TreeNode) => void
 }) {
-  const [expanded, setExpanded] = useState(depth < 2)
-  const childDirs = node.children.filter((child) => child.isDir)
-  const hasChildDirs = childDirs.length > 0
   const isLeft = node.path === leftPath
   const isRight = node.path === rightPath
 
+  function renderChild(child: TreeNode, childDepth: number) {
+    return (
+      <DiffFolderRow
+        key={child.path || child.name}
+        node={child}
+        depth={childDepth}
+        leftPath={leftPath}
+        rightPath={rightPath}
+        onSelectLeft={onSelectLeft}
+        onSelectRight={onSelectRight}
+      />
+    )
+  }
+
   return (
-    <div className={styles.branch}>
-      <div className={styles.row}>
-        <button
-          type="button"
-          className={styles.expand}
-          style={{ paddingLeft: `${depth * 14 + 8}px` }}
-          onClick={() => hasChildDirs && setExpanded((v) => !v)}
-          title={node.path}
-        >
-          <span className={styles.caret}>
-            {hasChildDirs ? (
-              expanded ? (
-                <ChevronDown size={12} aria-hidden="true" />
-              ) : (
-                <ChevronRight size={12} aria-hidden="true" />
-              )
-            ) : null}
-          </span>
-          <Folder size={14} aria-hidden="true" className={styles.folderIcon} />
-          <span className={styles.label}>{node.name}</span>
-        </button>
+    <DirectoryTreeBranch
+      node={node}
+      depth={depth}
+      paddingLeft={diffPadding(depth)}
+      styles={branchStyles}
+      buttonClassName={styles.expand}
+      childFilter={(child) => child.isDir}
+      renderTrailing={() => (
         <span className={styles.assign}>
-          <button
-            type="button"
-            className={`${styles.side}${isLeft ? ` ${styles.sideLeftActive}` : ''}`}
+          <IconButton
+            variant="plain"
+            size="sm"
+            className={cx(styles.side, isLeft && styles.sideLeftActive)}
             onClick={() => onSelectLeft(node)}
             aria-label={`${diffSideAriaLabel('left')}に指定`}
           >
             <DiffSideMark side="left" size="sm" />
-          </button>
-          <button
-            type="button"
-            className={`${styles.side}${isRight ? ` ${styles.sideRightActive}` : ''}`}
+          </IconButton>
+          <IconButton
+            variant="plain"
+            size="sm"
+            className={cx(styles.side, isRight && styles.sideRightActive)}
             onClick={() => onSelectRight(node)}
             aria-label={`${diffSideAriaLabel('right')}に指定`}
           >
             <DiffSideMark side="right" size="sm" />
-          </button>
+          </IconButton>
         </span>
-      </div>
-      {expanded &&
-        childDirs.map((child) => (
-          <FolderRow
-            key={child.path || child.name}
-            node={child}
-            depth={depth + 1}
-            leftPath={leftPath}
-            rightPath={rightPath}
-            onSelectLeft={onSelectLeft}
-            onSelectRight={onSelectRight}
-          />
-        ))}
-    </div>
+      )}
+      renderChild={renderChild}
+    />
   )
 }
 
@@ -109,14 +112,10 @@ export function DiffSetupPanel({
       <div className={styles.header}>
         <div className={styles.titleRow}>
           <h2>フォルダ比較</h2>
-          <button
-            type="button"
-            className={styles.backBtn}
-            onClick={onExitDiff}
-          >
+          <Button variant="plain" className={styles.backBtn} onClick={onExitDiff}>
             <ArrowLeft size={14} aria-hidden="true" />
             編集に戻る
-          </button>
+          </Button>
         </div>
         <div className={styles.selection}>
           <p className={styles.selRow}>
@@ -145,7 +144,7 @@ export function DiffSetupPanel({
           </p>
         )}
         {activeDirectory && tree && (
-          <FolderRow
+          <DiffFolderRow
             node={tree}
             depth={0}
             leftPath={leftPath}

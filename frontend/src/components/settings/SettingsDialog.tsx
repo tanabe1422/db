@@ -1,6 +1,6 @@
 import { FolderPlus, Trash2, X } from 'lucide-react'
 import type { Settings } from '../../types'
-import { IconButton } from '../ui/Button'
+import { Button, IconButton } from '../ui/Button'
 import styles from './SettingsDialog.module.css'
 
 interface SettingsDialogProps {
@@ -65,8 +65,8 @@ export function SettingsDialog({
                     key={path}
                     className={`${styles.item}${isActive ? ` ${styles.active}` : ''}`}
                   >
-                    <button
-                      type="button"
+                    <Button
+                      variant="plain"
                       className={styles.select}
                       onClick={() => onSetActive(path)}
                       title={path}
@@ -75,7 +75,7 @@ export function SettingsDialog({
                         {isActive ? '使用中' : '切替'}
                       </span>
                       <span className={styles.path}>{path}</span>
-                    </button>
+                    </Button>
                     <IconButton
                       variant="danger"
                       className={styles.itemDanger}

@@ -38,6 +38,22 @@
   background: var(--color-red-200);
 }
 
+/* コンテキスト固有の見た目は className で上書きするベース */
+.plain {
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 0;
+}
+
+.plain:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .icon {
   composes: button;
   display: inline-flex;
@@ -87,4 +103,12 @@
 
 .dangerIcon {
   composes: danger icon;
+}
+
+.plainIcon {
+  composes: iconButton;
+}
+
+.plainIconSm {
+  composes: iconButton;
 }

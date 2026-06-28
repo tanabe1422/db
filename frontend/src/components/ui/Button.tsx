@@ -3,12 +3,13 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cx } from '../../utils/cx'
 import styles from './Button.module.css'
 
-type ButtonVariant = 'primary' | 'ghost' | 'danger'
+type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'plain'
 
 const BUTTON_CLASS: Record<ButtonVariant, string> = {
   primary: styles.button,
   ghost: styles.ghost,
   danger: styles.danger,
+  plain: styles.plain,
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -26,7 +27,7 @@ export function Button({
   )
 }
 
-type IconButtonVariant = 'primary' | 'ghost' | 'danger'
+type IconButtonVariant = 'primary' | 'ghost' | 'danger' | 'plain'
 type IconButtonSize = 'md' | 'sm'
 
 const ICON_BUTTON_CLASS: Record<
@@ -36,6 +37,7 @@ const ICON_BUTTON_CLASS: Record<
   primary: { md: styles.icon, sm: styles.icon },
   ghost: { md: styles.ghostIcon, sm: styles.ghostIconSm },
   danger: { md: styles.dangerIcon, sm: styles.dangerIcon },
+  plain: { md: styles.plainIcon, sm: styles.plainIconSm },
 }
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

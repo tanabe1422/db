@@ -4,6 +4,7 @@ import type { TableDefinition, TreeNode } from '../types'
 import { readTableFile } from '../lib/wails'
 import { type TableDiff, diffTable } from '../lib/diffTable'
 import { compareRelPaths } from '../lib/relPathSort'
+import { collectFiles } from '../utils/treeFiles'
 
 export type FileDiffStatus = 'changed' | 'same' | 'added' | 'removed' | 'error'
 
@@ -24,23 +25,6 @@ export interface FolderDiffCounts {
   removed: number
   same: number
   error: number
-}
-
-interface LeafFile {
-  relPath: string
-  fullPath: string
-}
-
-function collectFiles(node: TreeNode, prefix = ''): LeafFile[] {
-  const files: LeafFile[] = []
-  for (const child of node.children) {
-    if (child.isDir) {
-      files.push(...collectFiles(child, `${prefix}${child.name}/`))
-    } else {
-      files.push({ relPath: `${prefix}${child.name}`, fullPath: child.path })
-    }
-  }
-  return files
 }
 
 interface ParsedFile {

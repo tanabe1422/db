@@ -1,4 +1,7 @@
 import { X } from 'lucide-react'
+
+import { cx } from '../../utils/cx'
+import { IconButton } from '../ui/Button'
 import styles from './TabBar.module.css'
 
 interface TabBarProps {
@@ -42,9 +45,10 @@ export function TabBar({
             }}
           >
             <span className={styles.label}>{baseName(path)}</span>
-            <button
-              type="button"
-              className={`${styles.close}${isDirty ? ` ${styles.dirty}` : ''}`}
+            <IconButton
+              variant="plain"
+              size="sm"
+              className={cx(styles.close, isDirty && styles.dirty)}
               aria-label="閉じる"
               onClick={(event) => {
                 event.stopPropagation()
@@ -53,7 +57,7 @@ export function TabBar({
             >
               <span className={styles.dot} aria-hidden="true" />
               <X size={14} aria-hidden="true" className={styles.closeIcon} />
-            </button>
+            </IconButton>
           </div>
         )
       })}
