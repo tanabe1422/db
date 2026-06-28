@@ -1,0 +1,58 @@
+{
+  "$schema": "../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "products",
+  "nameJa": "商品",
+  "description": "商品マスタ（テスト用サンプル）",
+  "primaryKey": ["id"],
+  "columns": [
+    {
+      "name": "id",
+      "nameJa": "ID",
+      "dataType": "int",
+      "notNull": true
+    },
+    {
+      "name": "code",
+      "nameJa": "商品コード",
+      "dataType": "varchar",
+      "length": 20,
+      "notNull": true,
+      "unique": true
+    },
+    {
+      "name": "name",
+      "nameJa": "商品名",
+      "dataType": "nvarchar",
+      "length": 100,
+      "notNull": true
+    },
+    {
+      "name": "price",
+      "nameJa": "単価",
+      "dataType": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "notNull": true,
+      "defaultValue": 0
+    },
+    {
+      "name": "isActive",
+      "nameJa": "有効フラグ",
+      "dataType": "bit",
+      "notNull": true,
+      "defaultValue": true
+    },
+    {
+      "name": "updatedAt",
+      "nameJa": "更新日時",
+      "dataType": "datetime2",
+      "notNull": true
+    }
+  ],
+  "indexes": [
+    {
+      "keys": [{ "column": "name", "order": "asc" }]
+    }
+  ]
+}

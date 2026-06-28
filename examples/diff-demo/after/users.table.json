@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "users",
+  "nameJa": "ユーザー",
+  "description": "アプリの利用者マスタ（改訂）",
+  "primaryKey": [
+    "id"
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "dataType": "bigint",
+      "nameJa": "ID",
+      "notNull": true,
+      "remarks": "備考２行にしたい"
+    },
+    {
+      "name": "email",
+      "dataType": "nvarchar",
+      "nameJa": "メールアドレス",
+      "notNull": true,
+      "unique": true,
+      "length": 320
+    },
+    {
+      "name": "createdAt",
+      "dataType": "datetime2",
+      "nameJa": "作成日時",
+      "notNull": true
+    }
+  ]
+}

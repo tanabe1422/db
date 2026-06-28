@@ -1,0 +1,34 @@
+package main
+
+import (
+	"embed"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+
+	"db-gui/internal/app"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+	application := app.New()
+
+	err := wails.Run(&options.App{
+		Title:  "db-gui",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		OnStartup: application.Startup,
+		Bind: []interface{}{
+			application,
+		},
+	})
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}

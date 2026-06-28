@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "orders",
+  "nameJa": "注文",
+  "description": "旧バージョンにのみ存在するテーブル",
+  "primaryKey": [
+    "id"
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "dataType": "bigint",
+      "nameJa": "ID",
+      "notNull": true
+    },
+    {
+      "name": "amount",
+      "dataType": "decimal",
+      "nameJa": "金額",
+      "notNull": true,
+      "precision": 18,
+      "scale": 2
+    }
+  ]
+}

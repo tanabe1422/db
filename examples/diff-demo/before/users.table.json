@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "users",
+  "nameJa": "ユーザー",
+  "description": "アプリ利用者マスタ",
+  "primaryKey": [
+    "id"
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "dataType": "int",
+      "nameJa": "ID",
+      "notNull": true
+    },
+    {
+      "name": "email",
+      "dataType": "nvarchar",
+      "nameJa": "メールアドレス",
+      "notNull": true,
+      "unique": true,
+      "length": 255
+    },
+    {
+      "name": "deletedAt",
+      "dataType": "datetime2",
+      "nameJa": "削除日時"
+    },
+    {
+      "name": "email2",
+      "dataType": "nvarchar",
+      "nameJa": "メールアドレス",
+      "notNull": true,
+      "unique": true,
+      "length": 255
+    },
+    {
+      "name": "deletedAt2",
+      "dataType": "datetime2",
+      "nameJa": "削除日時"
+    }
+  ]
+}

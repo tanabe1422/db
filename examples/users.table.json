@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "users",
+  "nameJa": "ユーザー",
+  "description": "アプリ利用者マスタ",
+  "primaryKey": [
+    "id"
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "dataType": "bigint",
+      "nameJa": "ID",
+      "notNull": true
+    },
+    {
+      "name": "email",
+      "dataType": "nvarchar",
+      "nameJa": "メールアドレス",
+      "notNull": true,
+      "unique": true,
+      "length": 255
+    },
+    {
+      "name": "balance",
+      "dataType": "decimal",
+      "nameJa": "残高",
+      "notNull": true,
+      "precision": 18,
+      "scale": 2,
+      "defaultValue": 0
+    },
+    {
+      "name": "createdAt",
+      "dataType": "datetime2",
+      "nameJa": "作成日時",
+      "notNull": true
+    }
+  ],
+  "indexes": [
+    {
+      "keys": [
+        {
+          "column": "createdAt",
+          "order": "desc"
+        }
+      ],
+      "include": [
+        "email"
+      ]
+    },
+    {
+      "keys": [
+        {
+          "column": "id"
+        },
+        {
+          "column": "email",
+          "order": "desc"
+        }
+      ]
+    },
+    {
+      "keys": [
+        {
+          "column": "balance"
+        }
+      ],
+      "include": [
+        "id",
+        "createdAt"
+      ]
+    }
+  ]
+}

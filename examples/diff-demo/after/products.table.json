@@ -1,0 +1,25 @@
+{
+  "$schema": "../../../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "products",
+  "nameJa": "商品",
+  "description": "新バージョンで追加されたテーブル",
+  "primaryKey": [
+    "id"
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "dataType": "bigint",
+      "nameJa": "ID",
+      "notNull": true
+    },
+    {
+      "name": "name",
+      "dataType": "nvarchar",
+      "nameJa": "商品名",
+      "notNull": true,
+      "length": 200
+    }
+  ]
+}
