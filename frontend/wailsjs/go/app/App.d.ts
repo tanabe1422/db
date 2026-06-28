@@ -5,9 +5,13 @@ import {scanner} from '../models';
 
 export function AddDirectory(arg1:string):Promise<config.Settings>;
 
+export function EnsureExportRelDir(arg1:string,arg2:string):Promise<void>;
+
 export function GetSettings():Promise<config.Settings>;
 
 export function PickDirectory():Promise<string>;
+
+export function PrepareExportDirectory(arg1:string):Promise<string>;
 
 export function ReadTableFile(arg1:string):Promise<string>;
 
@@ -16,5 +20,7 @@ export function RemoveDirectory(arg1:string):Promise<config.Settings>;
 export function ScanActiveDirectory():Promise<scanner.TreeNode>;
 
 export function SetActiveDirectory(arg1:string):Promise<config.Settings>;
+
+export function ShowInExplorer(arg1:string):Promise<void>;
 
 export function WriteTableFile(arg1:string,arg2:string):Promise<void>;

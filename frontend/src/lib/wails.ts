@@ -10,6 +10,9 @@ export interface WailsApp {
   ScanActiveDirectory(): Promise<TreeNode>
   ReadTableFile(path: string): Promise<string>
   WriteTableFile(path: string, content: string): Promise<void>
+  ShowInExplorer(path: string): Promise<void>
+  PrepareExportDirectory(activeDirectory: string): Promise<string>
+  EnsureExportRelDir(exportRoot: string, relativePath: string): Promise<void>
 }
 
 declare global {
@@ -155,4 +158,46 @@ export async function writeTableFile(
     return
   }
   console.info('[mock] writeTableFile', path, content)
+}
+
+export async function showInExplorer(path: string): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.ShowInExplorer(path)
+    return
+  }
+  console.info('[mock] showInExplorer', path)
+}
+
+export async function prepareExportDirectory(
+  activeDirectory: string,
+): Promise<string> {
+  const app = getApp()
+  if (app) {
+    return app.PrepareExportDirectory(activeDirectory)
+  }
+  const stamp = formatExportTimestamp(new Date())
+  const exportRoot = `${activeDirectory}/export/${stamp}`
+  console.info('[mock] prepareExportDirectory', exportRoot)
+  return exportRoot
+}
+
+export async function ensureExportRelDir(
+  exportRoot: string,
+  relativePath: string,
+): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.EnsureExportRelDir(exportRoot, relativePath)
+    return
+  }
+  console.info('[mock] ensureExportRelDir', exportRoot, relativePath)
+}
+
+function formatExportTimestamp(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return (
+    `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}` +
+    `${pad(date.getHours())}${pad(date.getMinutes())}`
+  )
 }

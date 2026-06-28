@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { File } from 'lucide-react'
 
 import type { TreeNode as TreeNodeType } from '../../types'
@@ -12,6 +13,7 @@ interface TreeNodeProps {
   depth?: number
   selectedPath?: string
   onSelect?: (path: string) => void
+  onNodeContextMenu?: (node: TreeNodeType, event: MouseEvent) => void
 }
 
 const branchStyles = {
@@ -30,6 +32,7 @@ export function TreeNode({
   depth = 0,
   selectedPath,
   onSelect,
+  onNodeContextMenu,
 }: TreeNodeProps) {
   function renderChild(child: TreeNodeType, childDepth: number) {
     return (
@@ -39,6 +42,7 @@ export function TreeNode({
         depth={childDepth}
         selectedPath={selectedPath}
         onSelect={onSelect}
+        onNodeContextMenu={onNodeContextMenu}
       />
     )
   }
@@ -51,6 +55,11 @@ export function TreeNode({
         className={cx(styles.item, isSelected && styles.selected)}
         style={{ paddingLeft: `${sidebarPadding(depth)}px` }}
         onClick={() => onSelect?.(node.path)}
+        onContextMenu={
+          onNodeContextMenu
+            ? (event) => onNodeContextMenu(node, event)
+            : undefined
+        }
         title={node.path}
       >
         <span className={styles.caret} />
@@ -68,6 +77,7 @@ export function TreeNode({
       styles={branchStyles}
       buttonClassName={styles.item}
       renderChild={renderChild}
+      onNodeContextMenu={onNodeContextMenu}
     />
   )
 }

@@ -1,9 +1,12 @@
 import { ArrowLeft } from 'lucide-react'
+import type { MouseEvent } from 'react'
 
 import type { TreeNode } from '../../types'
+import { useTreeContextMenu } from '../../hooks/useTreeContextMenu'
 import { cx } from '../../utils/cx'
 import { truncateMiddle } from '../../utils/truncateMiddle'
 import { Button, IconButton } from '../ui/Button'
+import { ContextMenu } from '../ui/ContextMenu'
 
 import { DirectoryTreeBranch } from '../tree/DirectoryTreeBranch'
 import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
@@ -17,6 +20,7 @@ interface DiffSetupPanelProps {
   onSelectLeft: (node: TreeNode) => void
   onSelectRight: (node: TreeNode) => void
   onExitDiff: () => void
+  onExportDiff?: () => void
 }
 
 const branchStyles = {
@@ -38,6 +42,7 @@ function DiffFolderRow({
   rightPath,
   onSelectLeft,
   onSelectRight,
+  onNodeContextMenu,
 }: {
   node: TreeNode
   depth: number
@@ -45,6 +50,7 @@ function DiffFolderRow({
   rightPath?: string
   onSelectLeft: (node: TreeNode) => void
   onSelectRight: (node: TreeNode) => void
+  onNodeContextMenu?: (node: TreeNode, event: MouseEvent) => void
 }) {
   const isLeft = node.path === leftPath
   const isRight = node.path === rightPath
@@ -59,6 +65,7 @@ function DiffFolderRow({
         rightPath={rightPath}
         onSelectLeft={onSelectLeft}
         onSelectRight={onSelectRight}
+        onNodeContextMenu={onNodeContextMenu}
       />
     )
   }
@@ -94,6 +101,7 @@ function DiffFolderRow({
         </span>
       )}
       renderChild={renderChild}
+      onNodeContextMenu={onNodeContextMenu}
     />
   )
 }
@@ -106,7 +114,13 @@ export function DiffSetupPanel({
   onSelectLeft,
   onSelectRight,
   onExitDiff,
+  onExportDiff,
 }: DiffSetupPanelProps) {
+  const { menu, openNodeMenu, closeMenu } = useTreeContextMenu({
+    activeDirectory,
+    enableExport: false,
+  })
+
   return (
     <aside className={styles.panel}>
       <div className={styles.header}>
@@ -135,6 +149,14 @@ export function DiffSetupPanel({
             </span>
           </p>
         </div>
+        <Button
+          variant="ghost"
+          className={styles.exportBtn}
+          disabled={!leftPath || !rightPath}
+          onClick={onExportDiff}
+        >
+          差分エクスポート
+        </Button>
       </div>
 
       <div className={styles.body}>
@@ -151,9 +173,19 @@ export function DiffSetupPanel({
             rightPath={rightPath}
             onSelectLeft={onSelectLeft}
             onSelectRight={onSelectRight}
+            onNodeContextMenu={openNodeMenu}
           />
         )}
       </div>
+
+      {menu && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          items={menu.items}
+          onClose={closeMenu}
+        />
+      )}
     </aside>
   )
 }

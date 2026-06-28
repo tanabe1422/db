@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { ChevronDown, ChevronRight, Folder } from 'lucide-react'
 
 import type { TreeNode } from '../../types'
@@ -22,6 +22,7 @@ interface DirectoryTreeBranchProps {
   childFilter?: (child: TreeNode) => boolean
   renderTrailing?: (node: TreeNode) => ReactNode
   renderChild: (child: TreeNode, depth: number) => ReactNode
+  onNodeContextMenu?: (node: TreeNode, event: MouseEvent) => void
 }
 
 export function DirectoryTreeBranch({
@@ -33,6 +34,7 @@ export function DirectoryTreeBranch({
   childFilter,
   renderTrailing,
   renderChild,
+  onNodeContextMenu,
 }: DirectoryTreeBranchProps) {
   const [expanded, setExpanded] = useTreeExpansion(depth)
   const children = node.children.filter(childFilter ?? (() => true))
@@ -50,6 +52,11 @@ export function DirectoryTreeBranch({
       className={buttonClassName}
       style={{ paddingLeft }}
       onClick={handleToggle}
+      onContextMenu={
+        onNodeContextMenu
+          ? (event) => onNodeContextMenu(node, event)
+          : undefined
+      }
       title={node.path || node.name}
     >
       <span className={styles.caret}>

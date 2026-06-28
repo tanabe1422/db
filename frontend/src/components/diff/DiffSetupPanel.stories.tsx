@@ -23,6 +23,7 @@ const meta = {
     onSelectLeft: () => undefined,
     onSelectRight: () => undefined,
     onExitDiff: () => undefined,
+    onExportDiff: () => undefined,
   },
 } satisfies Meta<typeof DiffSetupPanel>
 

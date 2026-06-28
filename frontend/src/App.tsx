@@ -10,6 +10,7 @@ import { TableDefinitionPanel } from './components/workspace/TableDefinitionPane
 import { useDirectoryScan } from './hooks/useDirectoryScan'
 import { useSettings } from './hooks/useSettings'
 import { useTabWorkspace } from './hooks/useTabWorkspace'
+import { exportDiff } from './lib/export'
 import type { TreeNode } from './types'
 import styles from './App.module.css'
 
@@ -72,6 +73,13 @@ function App() {
     setRightNode(null)
   }, [])
 
+  const handleExportDiff = useCallback(() => {
+    if (!leftNode || !rightNode || !settings.activeDirectory) {
+      return
+    }
+    void exportDiff(settings.activeDirectory, leftNode, rightNode)
+  }, [leftNode, rightNode, settings.activeDirectory])
+
   return (
     <>
       <MainLayout
@@ -86,6 +94,7 @@ function App() {
               onSelectLeft={setLeftNode}
               onSelectRight={setRightNode}
               onExitDiff={exitDiffMode}
+              onExportDiff={handleExportDiff}
             />
           ) : (
             <DirectoryPanel

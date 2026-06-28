@@ -6,12 +6,20 @@ export function AddDirectory(arg1) {
   return window['go']['app']['App']['AddDirectory'](arg1);
 }
 
+export function EnsureExportRelDir(arg1, arg2) {
+  return window['go']['app']['App']['EnsureExportRelDir'](arg1, arg2);
+}
+
 export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
 }
 
 export function PickDirectory() {
   return window['go']['app']['App']['PickDirectory']();
+}
+
+export function PrepareExportDirectory(arg1) {
+  return window['go']['app']['App']['PrepareExportDirectory'](arg1);
 }
 
 export function ReadTableFile(arg1) {
@@ -28,6 +36,10 @@ export function ScanActiveDirectory() {
 
 export function SetActiveDirectory(arg1) {
   return window['go']['app']['App']['SetActiveDirectory'](arg1);
+}
+
+export function ShowInExplorer(arg1) {
+  return window['go']['app']['App']['ShowInExplorer'](arg1);
 }
 
 export function WriteTableFile(arg1, arg2) {
