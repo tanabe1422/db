@@ -21,6 +21,7 @@ export const Empty: Story = {
     onAdd: () => undefined,
     onRemove: () => undefined,
     onSetActive: () => undefined,
+    onMove: () => undefined,
   },
 }
 
@@ -32,5 +33,6 @@ export const WithDirectories: Story = {
     onAdd: () => undefined,
     onRemove: () => undefined,
     onSetActive: () => undefined,
+    onMove: () => undefined,
   },
 }

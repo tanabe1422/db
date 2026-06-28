@@ -6,19 +6,25 @@ import { ConfirmDialog } from './components/ui/ConfirmDialog'
 import { TabBar } from './components/tabs/TabBar'
 import { DiffSetupPanel } from './components/diff/DiffSetupPanel'
 import { DiffWorkspace } from './components/diff/DiffWorkspace'
+import { GitDiffSetupPanel } from './components/diff/GitDiffSetupPanel'
+import { GitDiffWorkspace } from './components/diff/GitDiffWorkspace'
 import { TableDefinitionPanel } from './components/workspace/TableDefinitionPanel'
 import { useDirectoryScan } from './hooks/useDirectoryScan'
 import { useSettings } from './hooks/useSettings'
 import { useTabWorkspace } from './hooks/useTabWorkspace'
 import { exportDiff } from './lib/export'
-import type { TreeNode } from './types'
+import type { GitCommit, TreeNode } from './types'
 import styles from './App.module.css'
+
+type AppMode = 'edit' | 'diff' | 'git-diff'
 
 function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [mode, setMode] = useState<'edit' | 'diff'>('edit')
+  const [mode, setMode] = useState<AppMode>('edit')
   const [leftNode, setLeftNode] = useState<TreeNode | null>(null)
   const [rightNode, setRightNode] = useState<TreeNode | null>(null)
+  const [leftCommit, setLeftCommit] = useState<GitCommit | null>(null)
+  const [rightCommit, setRightCommit] = useState<GitCommit | null>(null)
 
   const {
     openPaths,
@@ -34,7 +40,7 @@ function App() {
     resetTabs,
   } = useTabWorkspace()
 
-  const { settings, addDirectory, removeDirectory, setActiveDirectory } =
+  const { settings, addDirectory, removeDirectory, setActiveDirectory, moveDirectory } =
     useSettings()
 
   const { tree, loading, error, rescan } = useDirectoryScan(
@@ -67,10 +73,20 @@ function App() {
     setMode('diff')
   }, [])
 
+  const enterGitDiffMode = useCallback(() => {
+    setMode('git-diff')
+  }, [])
+
   const exitDiffMode = useCallback(() => {
     setMode('edit')
     setLeftNode(null)
     setRightNode(null)
+  }, [])
+
+  const exitGitDiffMode = useCallback(() => {
+    setMode('edit')
+    setLeftCommit(null)
+    setRightCommit(null)
   }, [])
 
   const handleExportDiff = useCallback(() => {
@@ -96,6 +112,15 @@ function App() {
               onExitDiff={exitDiffMode}
               onExportDiff={handleExportDiff}
             />
+          ) : mode === 'git-diff' ? (
+            <GitDiffSetupPanel
+              activeDirectory={settings.activeDirectory}
+              leftHash={leftCommit?.hash}
+              rightHash={rightCommit?.hash}
+              onSelectLeft={setLeftCommit}
+              onSelectRight={setRightCommit}
+              onExitGitDiff={exitGitDiffMode}
+            />
           ) : (
             <DirectoryPanel
               activeDirectory={settings.activeDirectory}
@@ -107,6 +132,7 @@ function App() {
               onManageDirectories={() => setSettingsOpen(true)}
               onRescan={() => void rescan()}
               onEnterDiffMode={enterDiffMode}
+              onEnterGitDiffMode={enterGitDiffMode}
             />
           )
         }
@@ -115,6 +141,16 @@ function App() {
           <div className={styles.workspace}>
             <div className={styles.content}>
               <DiffWorkspace leftNode={leftNode} rightNode={rightNode} />
+            </div>
+          </div>
+        ) : mode === 'git-diff' ? (
+          <div className={styles.workspace}>
+            <div className={styles.content}>
+              <GitDiffWorkspace
+                activeDirectory={settings.activeDirectory}
+                leftCommit={leftCommit}
+                rightCommit={rightCommit}
+              />
             </div>
           </div>
         ) : (
@@ -160,6 +196,7 @@ function App() {
         onAdd={() => void handleAdd()}
         onRemove={(path) => void handleRemove(path)}
         onSetActive={(path) => void handleSetActive(path)}
+        onMove={(path, offset) => void moveDirectory(path, offset)}
       />
 
       <ConfirmDialog

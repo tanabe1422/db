@@ -1,0 +1,12 @@
+﻿{
+  "$schema": "../../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "products",
+  "nameJa": "蝠・刀",
+  "primaryKey": ["id"],
+  "columns": [
+    { "name": "id", "dataType": "bigint", "nameJa": "ID", "notNull": true },
+    { "name": "name", "dataType": "nvarchar", "nameJa": "蝠・刀蜷・, "notNull": true, "length": 200 },
+    { "name": "price", "dataType": "decimal", "nameJa": "萓｡譬ｼ", "notNull": true, "precision": 18, "scale": 2 }
+  ]
+}

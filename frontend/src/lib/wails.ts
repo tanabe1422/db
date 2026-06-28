@@ -1,4 +1,4 @@
-import type { Settings, TreeNode } from '../types'
+import type { GitCommit, GitRepoInfo, Settings, TreeNode } from '../types'
 import { mockTableDefinition } from '../mocks/data'
 
 export interface WailsApp {
@@ -6,6 +6,7 @@ export interface WailsApp {
   AddDirectory(path: string): Promise<Settings>
   RemoveDirectory(path: string): Promise<Settings>
   SetActiveDirectory(path: string): Promise<Settings>
+  MoveDirectory(path: string, offset: number): Promise<Settings>
   PickDirectory(): Promise<string>
   ScanActiveDirectory(): Promise<TreeNode>
   ReadTableFile(path: string): Promise<string>
@@ -13,6 +14,14 @@ export interface WailsApp {
   ShowInExplorer(path: string): Promise<void>
   PrepareExportDirectory(activeDirectory: string): Promise<string>
   EnsureExportRelDir(exportRoot: string, relativePath: string): Promise<void>
+  ResolveGitRepo(directory: string): Promise<GitRepoInfo>
+  ListGitCommits(directory: string, limit: number, offset: number): Promise<GitCommit[]>
+  ListGitTableFiles(directory: string, commitHash: string): Promise<string[]>
+  ReadGitTableFile(
+    directory: string,
+    commitHash: string,
+    relPath: string,
+  ): Promise<string>
 }
 
 declare global {
@@ -62,6 +71,22 @@ function getApp(): WailsApp | null {
   return window.go?.app?.App ?? null
 }
 
+function isWailsRuntime(): boolean {
+  return getApp() !== null
+}
+
+function hasGitBindings(): boolean {
+  return typeof getApp()?.ResolveGitRepo === 'function'
+}
+
+function requireGitBindings(): void {
+  if (isWailsRuntime() && !hasGitBindings()) {
+    throw new Error(
+      'Git API がバインドされていません。ターミナルで wails dev を一度終了し、再起動してください。',
+    )
+  }
+}
+
 function normalizeSettings(raw: Settings): Settings {
   return {
     directories: raw.directories ?? [],
@@ -77,8 +102,11 @@ export async function getSettings(): Promise<Settings> {
   return mockSettings
 }
 
-function touchDirectory(directories: string[], path: string): string[] {
-  return [path, ...directories.filter((dir) => dir !== path)]
+function appendDirectory(directories: string[], path: string): string[] {
+  if (directories.includes(path)) {
+    return directories
+  }
+  return [...directories, path]
 }
 
 export async function addDirectory(path: string): Promise<Settings> {
@@ -87,8 +115,11 @@ export async function addDirectory(path: string): Promise<Settings> {
     return normalizeSettings(await app.AddDirectory(path))
   }
   const settings = await getSettings()
+  if (settings.directories.includes(path)) {
+    return { ...settings, activeDirectory: path }
+  }
   return {
-    directories: touchDirectory(settings.directories, path),
+    directories: appendDirectory(settings.directories, path),
     activeDirectory: path,
   }
 }
@@ -119,9 +150,34 @@ export async function setActiveDirectory(path: string): Promise<Settings> {
     return settings
   }
   return {
-    directories: touchDirectory(settings.directories, path),
+    ...settings,
     activeDirectory: path,
   }
+}
+
+export async function moveDirectory(
+  path: string,
+  offset: -1 | 1,
+): Promise<Settings> {
+  const app = getApp()
+  if (app) {
+    return normalizeSettings(await app.MoveDirectory(path, offset))
+  }
+  const settings = await getSettings()
+  const index = settings.directories.indexOf(path)
+  if (index < 0) {
+    return settings
+  }
+  const target = index + offset
+  if (target < 0 || target >= settings.directories.length) {
+    return settings
+  }
+  const directories = [...settings.directories]
+  ;[directories[index], directories[target]] = [
+    directories[target],
+    directories[index],
+  ]
+  return { ...settings, directories }
 }
 
 export async function pickDirectory(): Promise<string> {
@@ -192,6 +248,79 @@ export async function ensureExportRelDir(
     return
   }
   console.info('[mock] ensureExportRelDir', exportRoot, relativePath)
+}
+
+const mockCommits: GitCommit[] = [
+  {
+    hash: 'cccccccccccccccccccccccccccccccccccccccc',
+    shortHash: 'ccc3333',
+    subject: 'products テーブルを追加',
+    date: '2026-01-15 10:00:00 +0900',
+  },
+  {
+    hash: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    shortHash: 'bbb2222',
+    subject: 'orders を追加し users を更新',
+    date: '2026-01-10 10:00:00 +0900',
+  },
+  {
+    hash: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    shortHash: 'aaa1111',
+    subject: 'users テーブルを追加',
+    date: '2026-01-05 10:00:00 +0900',
+  },
+]
+
+export async function resolveGitRepo(directory: string): Promise<GitRepoInfo> {
+  if (hasGitBindings()) {
+    return getApp()!.ResolveGitRepo(directory)
+  }
+  requireGitBindings()
+  return {
+    isRepo: directory.includes('git-diff-demo'),
+    repoRoot: directory || '',
+  }
+}
+
+export async function listGitCommits(
+  directory: string,
+  limit: number,
+  offset: number,
+): Promise<GitCommit[]> {
+  if (hasGitBindings()) {
+    return getApp()!.ListGitCommits(directory, limit, offset)
+  }
+  requireGitBindings()
+  return mockCommits.slice(offset, offset + limit)
+}
+
+export async function listGitTableFiles(
+  directory: string,
+  commitHash: string,
+): Promise<string[]> {
+  if (hasGitBindings()) {
+    return getApp()!.ListGitTableFiles(directory, commitHash)
+  }
+  requireGitBindings()
+  if (commitHash.startsWith('aaa')) {
+    return ['users.table.json']
+  }
+  if (commitHash.startsWith('bbb')) {
+    return ['users.table.json', 'orders.table.json']
+  }
+  return ['users.table.json', 'orders.table.json', 'products.table.json']
+}
+
+export async function readGitTableFile(
+  directory: string,
+  commitHash: string,
+  relPath: string,
+): Promise<string> {
+  if (hasGitBindings()) {
+    return getApp()!.ReadGitTableFile(directory, commitHash, relPath)
+  }
+  requireGitBindings()
+  return JSON.stringify(mockTableDefinition)
 }
 
 function formatExportTimestamp(date: Date): string {

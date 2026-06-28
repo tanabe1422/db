@@ -14,6 +14,18 @@ export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
 }
 
+export function ListGitCommits(arg1, arg2, arg3) {
+  return window['go']['app']['App']['ListGitCommits'](arg1, arg2, arg3);
+}
+
+export function ListGitTableFiles(arg1, arg2) {
+  return window['go']['app']['App']['ListGitTableFiles'](arg1, arg2);
+}
+
+export function MoveDirectory(arg1, arg2) {
+  return window['go']['app']['App']['MoveDirectory'](arg1, arg2);
+}
+
 export function PickDirectory() {
   return window['go']['app']['App']['PickDirectory']();
 }
@@ -22,12 +34,20 @@ export function PrepareExportDirectory(arg1) {
   return window['go']['app']['App']['PrepareExportDirectory'](arg1);
 }
 
+export function ReadGitTableFile(arg1, arg2, arg3) {
+  return window['go']['app']['App']['ReadGitTableFile'](arg1, arg2, arg3);
+}
+
 export function ReadTableFile(arg1) {
   return window['go']['app']['App']['ReadTableFile'](arg1);
 }
 
 export function RemoveDirectory(arg1) {
   return window['go']['app']['App']['RemoveDirectory'](arg1);
+}
+
+export function ResolveGitRepo(arg1) {
+  return window['go']['app']['App']['ResolveGitRepo'](arg1);
 }
 
 export function ScanActiveDirectory() {

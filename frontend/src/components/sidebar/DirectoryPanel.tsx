@@ -1,4 +1,4 @@
-import { FolderCog, GitCompare, RefreshCw } from 'lucide-react'
+import { FolderCog, GitBranch, GitCompare, RefreshCw } from 'lucide-react'
 
 import type { TreeNode as TreeNodeType } from '../../types'
 import { useTreeContextMenu } from '../../hooks/useTreeContextMenu'
@@ -19,6 +19,7 @@ interface DirectoryPanelProps {
   onManageDirectories?: () => void
   onRescan?: () => void
   onEnterDiffMode?: () => void
+  onEnterGitDiffMode?: () => void
 }
 
 export function DirectoryPanel({
@@ -31,6 +32,7 @@ export function DirectoryPanel({
   onManageDirectories,
   onRescan,
   onEnterDiffMode,
+  onEnterGitDiffMode,
 }: DirectoryPanelProps) {
   const { menu, openNodeMenu, closeMenu } = useTreeContextMenu({
     activeDirectory,
@@ -61,6 +63,14 @@ export function DirectoryPanel({
             title="フォルダ比較"
           >
             <GitCompare size={16} aria-hidden="true" />
+          </IconButton>
+          <IconButton
+            onClick={onEnterGitDiffMode}
+            disabled={!activeDirectory}
+            aria-label="Git 履歴比較"
+            title="Git 履歴比較"
+          >
+            <GitBranch size={16} aria-hidden="true" />
           </IconButton>
         </div>
         {activeDirectory && (

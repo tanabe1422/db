@@ -17,6 +17,43 @@ export namespace config {
 
 }
 
+export namespace git {
+	
+	export class Commit {
+	    hash: string;
+	    shortHash: string;
+	    subject: string;
+	    date: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Commit(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.hash = source["hash"];
+	        this.shortHash = source["shortHash"];
+	        this.subject = source["subject"];
+	        this.date = source["date"];
+	    }
+	}
+	export class RepoInfo {
+	    isRepo: boolean;
+	    repoRoot: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RepoInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.isRepo = source["isRepo"];
+	        this.repoRoot = source["repoRoot"];
+	    }
+	}
+
+}
+
 export namespace scanner {
 	
 	export class TreeNode {

@@ -1,50 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import type { TableDefinition, TreeNode } from '../types'
+import type { TreeNode } from '../types'
 import { readTableFile } from '../lib/wails'
-import { type TableDiff, diffTable } from '../lib/diffTable'
 import { compareRelPaths } from '../lib/relPathSort'
 import { collectFiles } from '../utils/treeFiles'
+import {
+  type FileDiffEntry,
+  buildFileDiffEntry,
+} from '../lib/fileDiffEntry'
 
-export type FileDiffStatus = 'changed' | 'same' | 'added' | 'removed' | 'error'
+export type { FileDiffEntry, FileDiffStatus, FolderDiffCounts } from '../lib/fileDiffEntry'
+export { countEntries } from '../lib/fileDiffEntry'
 
-export interface FileDiffEntry {
-  relPath: string
-  status: FileDiffStatus
-  leftPath?: string
-  rightPath?: string
-  left: TableDefinition | null
-  right: TableDefinition | null
-  diff: TableDiff | null
-  error?: string
-}
-
-export interface FolderDiffCounts {
-  changed: number
-  added: number
-  removed: number
-  same: number
-  error: number
-}
-
-interface ParsedFile {
-  def: TableDefinition | null
-  error?: string
-}
-
-async function loadDefinition(path: string): Promise<ParsedFile> {
+async function loadDefinition(path: string): Promise<string | null> {
   try {
-    const raw = await readTableFile(path)
-    try {
-      return { def: JSON.parse(raw) as TableDefinition }
-    } catch {
-      return { def: null, error: 'JSON の解析に失敗しました' }
-    }
-  } catch (err) {
-    return {
-      def: null,
-      error: err instanceof Error ? err.message : 'ファイルの読込に失敗しました',
-    }
+    return await readTableFile(path)
+  } catch {
+    return null
   }
 }
 
@@ -54,71 +26,66 @@ async function buildEntry(
   rightPath: string | undefined,
 ): Promise<FileDiffEntry> {
   if (leftPath && rightPath) {
-    const [left, right] = await Promise.all([
+    const [leftRaw, rightRaw] = await Promise.all([
       loadDefinition(leftPath),
       loadDefinition(rightPath),
     ])
-    if (left.error || right.error) {
+    if (leftRaw === null) {
       return {
         relPath,
         status: 'error',
         leftPath,
         rightPath,
-        left: left.def,
-        right: right.def,
+        left: null,
+        right: null,
         diff: null,
-        error: left.error ?? right.error,
+        error: '左側のファイル読込に失敗しました',
       }
     }
-    const diff = diffTable(left.def, right.def)
-    return {
-      relPath,
-      status: diff.hasChanges ? 'changed' : 'same',
-      leftPath,
-      rightPath,
-      left: left.def,
-      right: right.def,
-      diff,
+    if (rightRaw === null) {
+      return {
+        relPath,
+        status: 'error',
+        leftPath,
+        rightPath,
+        left: null,
+        right: null,
+        diff: null,
+        error: '右側のファイル読込に失敗しました',
+      }
     }
+    return buildFileDiffEntry(relPath, leftRaw, rightRaw, leftPath, rightPath)
   }
 
   if (leftPath) {
-    const left = await loadDefinition(leftPath)
+    const leftRaw = await loadDefinition(leftPath)
+    if (leftRaw === null) {
+      return {
+        relPath,
+        status: 'error',
+        leftPath,
+        left: null,
+        right: null,
+        diff: null,
+        error: 'ファイルの読込に失敗しました',
+      }
+    }
+    return buildFileDiffEntry(relPath, leftRaw, null, leftPath, undefined)
+  }
+
+  const rightRaw = await loadDefinition(rightPath as string)
+  if (rightRaw === null) {
     return {
       relPath,
-      status: left.error ? 'error' : 'removed',
-      leftPath,
-      left: left.def,
+      status: 'error',
+      rightPath,
+      left: null,
       right: null,
-      diff: left.error ? null : diffTable(left.def, null),
-      error: left.error,
+      diff: null,
+      error: 'ファイルの読込に失敗しました',
     }
   }
-
-  const right = await loadDefinition(rightPath as string)
-  return {
-    relPath,
-    status: right.error ? 'error' : 'added',
-    rightPath,
-    left: null,
-    right: right.def,
-    diff: right.error ? null : diffTable(null, right.def),
-    error: right.error,
-  }
-}
-
-export function countEntries(entries: FileDiffEntry[]): FolderDiffCounts {
-  const counts: FolderDiffCounts = {
-    changed: 0,
-    added: 0,
-    removed: 0,
-    same: 0,
-    error: 0,
-  }
-  for (const entry of entries) {
-    counts[entry.status] += 1
-  }
-  return counts
+  return buildFileDiffEntry(relPath, null, rightRaw, undefined, rightPath)
 }
 
 export function useFolderDiff(left: TreeNode | null, right: TreeNode | null) {
@@ -126,7 +93,6 @@ export function useFolderDiff(left: TreeNode | null, right: TreeNode | null) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // 最新の実行だけを反映するためのトークン（フォルダ高速切替時の競合防止）。
   const runTokenRef = useRef(0)
 
   const leftKey = left?.path ?? ''

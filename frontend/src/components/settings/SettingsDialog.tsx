@@ -1,4 +1,4 @@
-import { FolderPlus, Trash2, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, FolderPlus, Trash2, X } from 'lucide-react'
 import type { Settings } from '../../types'
 import { Button, IconButton } from '../ui/Button'
 import styles from './SettingsDialog.module.css'
@@ -10,6 +10,7 @@ interface SettingsDialogProps {
   onAdd: () => void
   onRemove: (path: string) => void
   onSetActive: (path: string) => void
+  onMove: (path: string, offset: -1 | 1) => void
 }
 
 export function SettingsDialog({
@@ -19,10 +20,13 @@ export function SettingsDialog({
   onAdd,
   onRemove,
   onSetActive,
+  onMove,
 }: SettingsDialogProps) {
   if (!open) {
     return null
   }
+
+  const directories = settings.directories ?? []
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
@@ -42,7 +46,7 @@ export function SettingsDialog({
 
         <div className={styles.body}>
           <p className={styles.description}>
-            参照ディレクトリの履歴を管理します。リストは最近使った順に表示されます。
+            参照ディレクトリの履歴を管理します。
           </p>
           <div className={styles.actions}>
             <IconButton
@@ -54,36 +58,55 @@ export function SettingsDialog({
             </IconButton>
           </div>
 
-          {(settings.directories ?? []).length === 0 ? (
+          {directories.length === 0 ? (
             <p className={styles.empty}>登録されたディレクトリはありません。</p>
           ) : (
             <ul className={styles.list}>
-              {(settings.directories ?? []).map((path) => {
+              {directories.map((path, index) => {
                 const isActive = path === settings.activeDirectory
                 return (
                   <li
                     key={path}
                     className={`${styles.item}${isActive ? ` ${styles.active}` : ''}`}
                   >
+                    <span className={styles.check} aria-hidden="true">
+                      {isActive ? <Check size={14} /> : null}
+                    </span>
                     <Button
                       variant="plain"
                       className={styles.select}
                       onClick={() => onSetActive(path)}
                       title={path}
+                      aria-current={isActive ? 'true' : undefined}
                     >
-                      <span className={styles.badge}>
-                        {isActive ? '使用中' : '切替'}
-                      </span>
                       <span className={styles.path}>{path}</span>
                     </Button>
-                    <IconButton
-                      variant="danger"
-                      className={styles.itemDanger}
-                      onClick={() => onRemove(path)}
-                      aria-label="削除"
-                    >
-                      <Trash2 size={16} aria-hidden="true" />
-                    </IconButton>
+                    <div className={styles.itemActions}>
+                      <IconButton
+                        size="sm"
+                        onClick={() => onMove(path, -1)}
+                        disabled={index === 0}
+                        aria-label="上へ移動"
+                      >
+                        <ChevronUp size={14} aria-hidden="true" />
+                      </IconButton>
+                      <IconButton
+                        size="sm"
+                        onClick={() => onMove(path, 1)}
+                        disabled={index === directories.length - 1}
+                        aria-label="下へ移動"
+                      >
+                        <ChevronDown size={14} aria-hidden="true" />
+                      </IconButton>
+                      <IconButton
+                        className={styles.delete}
+                        size="sm"
+                        onClick={() => onRemove(path)}
+                        aria-label="削除"
+                      >
+                        <Trash2 size={14} aria-hidden="true" />
+                      </IconButton>
+                    </div>
                   </li>
                 )
               })}

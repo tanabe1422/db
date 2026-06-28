@@ -122,16 +122,6 @@ func normalizeSettings(settings Settings) (Settings, error) {
 	}, nil
 }
 
-func touchDirectory(directories []string, path string) []string {
-	filtered := make([]string, 0, len(directories))
-	for _, dir := range directories {
-		if dir != path {
-			filtered = append(filtered, dir)
-		}
-	}
-	return append([]string{path}, filtered...)
-}
-
 func AddDirectory(settings Settings, path string) (Settings, error) {
 	normalized, err := normalizePath(path)
 	if err != nil {
@@ -141,7 +131,14 @@ func AddDirectory(settings Settings, path string) (Settings, error) {
 		return settings, nil
 	}
 
-	settings.Directories = touchDirectory(settings.Directories, normalized)
+	for _, dir := range settings.Directories {
+		if dir == normalized {
+			settings.ActiveDirectory = normalized
+			return normalizeSettings(settings)
+		}
+	}
+
+	settings.Directories = append(settings.Directories, normalized)
 	settings.ActiveDirectory = normalized
 
 	return normalizeSettings(settings)
@@ -177,10 +174,42 @@ func SetActiveDirectory(settings Settings, path string) (Settings, error) {
 	for _, dir := range settings.Directories {
 		if dir == normalized {
 			settings.ActiveDirectory = normalized
-			settings.Directories = touchDirectory(settings.Directories, normalized)
 			return normalizeSettings(settings)
 		}
 	}
+
+	return normalizeSettings(settings)
+}
+
+func MoveDirectory(settings Settings, path string, offset int) (Settings, error) {
+	if offset != -1 && offset != 1 {
+		return settings, nil
+	}
+
+	normalized, err := normalizePath(path)
+	if err != nil {
+		return Settings{}, err
+	}
+
+	index := -1
+	for i, dir := range settings.Directories {
+		if dir == normalized {
+			index = i
+			break
+		}
+	}
+	if index < 0 {
+		return settings, nil
+	}
+
+	target := index + offset
+	if target < 0 || target >= len(settings.Directories) {
+		return settings, nil
+	}
+
+	directories := append([]string(nil), settings.Directories...)
+	directories[index], directories[target] = directories[target], directories[index]
+	settings.Directories = directories
 
 	return normalizeSettings(settings)
 }

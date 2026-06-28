@@ -32,3 +32,6 @@ Thumbs.db
 # Env
 .env
 .env.*
+
+# Nested demo git repositories (run examples/scripts/init-git-diff-demo.ps1 locally)
+examples/git-diff-demo/.git/

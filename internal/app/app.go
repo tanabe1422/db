@@ -86,6 +86,24 @@ func (a *App) SetActiveDirectory(path string) (config.Settings, error) {
 	return settings, nil
 }
 
+func (a *App) MoveDirectory(path string, offset int) (config.Settings, error) {
+	settings, err := config.Load()
+	if err != nil {
+		return config.Settings{}, err
+	}
+
+	settings, err = config.MoveDirectory(settings, path, offset)
+	if err != nil {
+		return config.Settings{}, err
+	}
+
+	if err := config.Save(settings); err != nil {
+		return config.Settings{}, err
+	}
+
+	return settings, nil
+}
+
 func (a *App) PickDirectory() (string, error) {
 	if a.ctx == nil {
 		return "", errors.New("application context is not ready")

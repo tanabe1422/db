@@ -6,6 +6,7 @@ import {
   pickDirectory,
   removeDirectory,
   setActiveDirectory,
+  moveDirectory,
 } from '../lib/wails'
 
 export function useSettings(onSettingsChange?: (settings: Settings) => void) {
@@ -65,6 +66,16 @@ export function useSettings(onSettingsChange?: (settings: Settings) => void) {
     [onSettingsChange],
   )
 
+  const handleMove = useCallback(
+    async (path: string, offset: -1 | 1) => {
+      const next = await moveDirectory(path, offset)
+      setSettings(next)
+      onSettingsChange?.(next)
+      return next
+    },
+    [onSettingsChange],
+  )
+
   return {
     settings,
     loading,
@@ -73,5 +84,6 @@ export function useSettings(onSettingsChange?: (settings: Settings) => void) {
     addDirectory: handleAdd,
     removeDirectory: handleRemove,
     setActiveDirectory: handleSetActive,
+    moveDirectory: handleMove,
   }
 }

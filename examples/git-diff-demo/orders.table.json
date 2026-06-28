@@ -1,0 +1,13 @@
+﻿{
+  "$schema": "../../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "orders",
+  "nameJa": "豕ｨ譁・,
+  "primaryKey": ["id"],
+  "columns": [
+    { "name": "id", "dataType": "bigint", "nameJa": "ID", "notNull": true },
+    { "name": "userId", "dataType": "bigint", "nameJa": "繝ｦ繝ｼ繧ｶ繝ｼID", "notNull": true },
+    { "name": "total", "dataType": "decimal", "nameJa": "蜷郁ｨ・, "notNull": true, "precision": 18, "scale": 2 },
+    { "name": "note", "dataType": "nvarchar", "nameJa": "蛯呵・, "length": 500 }
+  ]
+}
