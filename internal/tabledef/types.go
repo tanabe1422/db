@@ -8,6 +8,7 @@ type TableDefinition struct {
 	PrimaryKey        []string           `json:"primaryKey,omitempty"`
 	Columns           []Column           `json:"columns"`
 	Indexes           []Index            `json:"indexes,omitempty"`
+	UniqueIndexes     []Index            `json:"uniqueIndexes,omitempty"`
 	UniqueConstraints []UniqueConstraint `json:"uniqueConstraints,omitempty"`
 }
 

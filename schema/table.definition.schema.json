@@ -54,13 +54,21 @@
       },
       "description": "インデックス（最大 9 件）"
     },
+    "uniqueIndexes": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/index"
+      },
+      "description": "ユニークインデックス（最大 3 件。編集グリッドの Unique Index 列に対応）"
+    },
     "uniqueConstraints": {
       "type": "array",
       "maxItems": 3,
       "items": {
         "$ref": "#/$defs/uniqueConstraint"
       },
-      "description": "複合 UNIQUE 制約（最大 3 件）"
+      "description": "複合 UNIQUE 制約（2 列以上、最大 3 件。編集グリッドの Unique 列に対応。単一カラム UNIQUE は columns[].unique）"
     }
   },
   "$defs": {

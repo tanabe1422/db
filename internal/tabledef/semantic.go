@@ -112,6 +112,25 @@ func validateSemantic(def *TableDefinition) ValidationErrors {
 		}
 	}
 
+	for i, idx := range def.UniqueIndexes {
+		for j, key := range idx.Keys {
+			if _, ok := columnNames[key.Column]; !ok {
+				errors = append(errors, ValidationError{
+					Path:    fmt.Sprintf("/uniqueIndexes/%d/keys/%d/column", i, j),
+					Message: fmt.Sprintf("unknown column %q", key.Column),
+				})
+			}
+		}
+		for j, col := range idx.Include {
+			if _, ok := columnNames[col]; !ok {
+				errors = append(errors, ValidationError{
+					Path:    fmt.Sprintf("/uniqueIndexes/%d/include/%d", i, j),
+					Message: fmt.Sprintf("unknown column %q", col),
+				})
+			}
+		}
+	}
+
 	for i, constraint := range def.UniqueConstraints {
 		for j, col := range constraint.Columns {
 			if _, ok := columnNames[col]; !ok {

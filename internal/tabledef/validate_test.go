@@ -204,6 +204,25 @@ func TestValidateJSONComputedColumn(t *testing.T) {
 	assertNoErrors(t, errors, err)
 }
 
+func TestValidateJSONUniqueIndexes(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"customerId","dataType":"int","notNull":true},{"name":"orderNo","dataType":"nvarchar","length":50,"notNull":true}],"uniqueIndexes":[{"keys":[{"column":"customerId","order":"asc"},{"column":"orderNo"}]}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertNoErrors(t, errors, err)
+}
+
+func TestValidateJSONTooManyUniqueIndexes(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"a","dataType":"int"},{"name":"b","dataType":"int"},{"name":"c","dataType":"int"},{"name":"d","dataType":"int"}],"uniqueIndexes":[{"keys":[{"column":"a"}]},{"keys":[{"column":"b"}]},{"keys":[{"column":"c"}]},{"keys":[{"column":"d"}]}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertHasErrors(t, errors, err)
+}
+
+func TestValidateUniqueIndexUnknownColumn(t *testing.T) {
+	def := validDefinition()
+	def.UniqueIndexes = []Index{{Keys: []IndexKey{{Column: "missing"}}}}
+	errors, err := Validate(def)
+	assertHasErrors(t, errors, err)
+}
+
 func TestValidateJSONUniqueConstraints(t *testing.T) {
 	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"customerId","dataType":"int","notNull":true},{"name":"orderNo","dataType":"nvarchar","length":50,"notNull":true}],"uniqueConstraints":[{"columns":["customerId","orderNo"]}]}`
 	errors, err := ValidateJSON([]byte(payload))

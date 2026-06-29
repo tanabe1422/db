@@ -33,5 +33,12 @@ Thumbs.db
 .env
 .env.*
 
+# Custom SQL / xlsx generators (see private/INSTRUCTIONS.md)
+/private/sqlgenimpl/create_script.go
+/private/sqlgenimpl/migrate_script.go
+/private/sqlgenimpl/xlsx_import.go
+/private/sqlgenimpl/xlsx_export.go
+/private/sqlgenimpl/templates/
+
 # Nested demo git repositories (run examples/scripts/init-git-diff-demo.ps1 locally)
 examples/git-diff-demo/.git/
