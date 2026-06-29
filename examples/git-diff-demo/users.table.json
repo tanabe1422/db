@@ -1,14 +1,41 @@
-﻿{
+{
   "$schema": "../../schema/table.definition.schema.json",
   "schemaVersion": 1,
   "name": "users",
-  "nameJa": "繝ｦ繝ｼ繧ｶ繝ｼ",
-  "description": "繧｢繝励Μ蛻ｩ逕ｨ閠・・繧ｹ繧ｿ",
-  "primaryKey": ["id"],
+  "nameJa": "ユーザー",
+  "description": "アプリ利用者マスタ",
+  "primaryKey": [
+    "id"
+  ],
   "columns": [
-    { "name": "id", "dataType": "bigint", "nameJa": "ID", "notNull": true },
-    { "name": "email", "dataType": "nvarchar", "nameJa": "繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ", "notNull": true, "unique": true, "length": 255 },
-    { "name": "balance", "dataType": "decimal", "nameJa": "谿矩ｫ・, "notNull": true, "precision": 18, "scale": 2, "defaultValue": 0 },
-    { "name": "createdAt", "dataType": "datetime2", "nameJa": "菴懈・譌･譎・, "notNull": true }
+    {
+      "name": "id",
+      "dataType": "bigint",
+      "nameJa": "ID",
+      "notNull": true
+    },
+    {
+      "name": "email",
+      "dataType": "nvarchar",
+      "nameJa": "メールアドレス",
+      "notNull": true,
+      "unique": true,
+      "length": 255
+    },
+    {
+      "name": "balance",
+      "dataType": "decimal",
+      "nameJa": "残高",
+      "notNull": true,
+      "precision": 18,
+      "scale": 2,
+      "defaultValue": 0
+    },
+    {
+      "name": "createdAt",
+      "dataType": "datetime2",
+      "nameJa": "作成日時",
+      "notNull": true
+    }
   ]
 }

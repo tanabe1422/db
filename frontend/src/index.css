@@ -48,8 +48,14 @@
   --color-indigo-50: #eef2ff;
   --color-indigo-800: #3730a3;
 
-  /* 16px root 換算で 10px */
-  --font-size-compact: 0.625rem;
+  /* 16px root 換算で 14px */
+  --font-size-compact: 0.875rem;
+  /* グリッドの略称ラベル・マーカー列（16px root 換算で 13px） */
+  --font-size-marker: 0.8125rem;
+  /* テーブルヘッダー（16px root 換算で 12px） */
+  --font-size-grid-header: 0.75rem;
+
+  --font-family: system-ui, sans-serif;
 }
 
 *,
@@ -68,7 +74,7 @@ body,
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-family);
   background: var(--color-slate-100);
   color: var(--color-slate-900);
 }

@@ -41,6 +41,7 @@ function App() {
     handleConfirmClose,
     handleCancelClose,
     resetTabs,
+    closeAllSavedTabs,
   } = useTabWorkspace()
 
   const { settings, addDirectory, removeDirectory, setActiveDirectory, moveDirectory } =
@@ -170,8 +171,10 @@ function App() {
                   paths={openPaths}
                   activePath={activePath}
                   dirtyPaths={dirtyPaths}
+                  activeDirectory={settings.activeDirectory}
                   onActivate={setActivePath}
                   onClose={handleRequestClose}
+                  onCloseAllSaved={closeAllSavedTabs}
                 />
               )}
               <div className={styles.content}>

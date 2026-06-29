@@ -13,6 +13,15 @@ export const IDENTITY_COLUMN_LABEL = 'ID'
 export const IDENTITY_COLUMN_TITLE =
   'SQL Server では IDENTITY と呼ばれる自動採番です'
 
+export const UNIQUE_INDEX_GROUP_LABEL = 'UIDX'
+export const UNIQUE_INDEX_GROUP_TITLE = 'Unique Index'
+
+export const UNIQUE_CONSTRAINT_LABEL = 'UQ'
+export const UNIQUE_CONSTRAINT_TITLE = 'UNIQUE constraint'
+
+export const NOT_NULL_LABEL = 'NN'
+export const NOT_NULL_TITLE = 'NOT NULL'
+
 // グリッド列の意味的な役割。描画上の見た目（select/num など）は各 View が role から導出する。
 export type ColumnRole = 'check' | 'marker' | 'text' | 'key'
 
@@ -47,7 +56,7 @@ export const GRID_COLUMNS: GridColumn[] = [
   ...markerColumns('idx', MAX_INDEXES, 'markers'),
   { id: 'identity', label: IDENTITY_COLUMN_LABEL, role: 'check', flag: 'identity' },
   ...markerColumns('uq', MAX_UNIQUE_CONSTRAINTS, 'uniqueMarkers'),
-  { id: 'nn', label: 'NN', role: 'check', flag: 'notNull' },
+  { id: 'nn', label: NOT_NULL_LABEL, role: 'check', flag: 'notNull' },
   { id: 'name', label: 'カラム名（英）', role: 'key' },
   { id: 'nameJa', label: 'カラム名（日）', role: 'text' },
   { id: 'dataType', label: '型', role: 'text' },

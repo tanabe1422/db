@@ -4,8 +4,14 @@
   flex-wrap: nowrap;
   overflow-x: auto;
   overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   background: var(--color-slate-200);
   flex-shrink: 0;
+}
+
+.bar::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {

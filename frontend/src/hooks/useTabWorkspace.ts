@@ -77,6 +77,14 @@ export function useTabWorkspace() {
     setClosingPath(null)
   }, [])
 
+  const closeAllSavedTabs = useCallback(() => {
+    setOpenPaths((prev) => {
+      const next = prev.filter((p) => dirtyPaths.has(p))
+      setActivePath((current) => (next.includes(current) ? current : next.at(-1) ?? ''))
+      return next
+    })
+  }, [dirtyPaths])
+
   return {
     openPaths,
     activePath,
@@ -89,5 +97,6 @@ export function useTabWorkspace() {
     handleConfirmClose,
     handleCancelClose,
     resetTabs,
+    closeAllSavedTabs,
   }
 }

@@ -1,11 +1,14 @@
 import type { DisplayCol } from '../../lib/diffDisplayColumns'
+import grid from '../table/ColumnGridTable.module.css'
 
 import styles from './FileDiffView.module.css'
 
 export function displayColClass(col: DisplayCol): string | undefined {
-  if (col.kind === 'check') return styles.center
-  if (col.kind === 'marker') return styles.markerCol
-  if (col.id === 'name' || col.id === 'dataType') return styles.mono
+  if (col.kind === 'check') return grid.center
+  if (col.kind === 'marker') return grid.markerCol
+  if (col.id === 'dataType') return grid.typeCell
+  if (col.id === 'len' || col.id === 'scale') return grid.numCell
+  if (col.id === 'remarks') return grid.remarks
   return undefined
 }
 

@@ -1,6 +1,7 @@
 import { cx } from '../../utils/cx'
 import { flagFor, IDENTITY_COLUMN_TITLE } from '../../lib/gridColumns'
 import type { DraftColumn } from '../../utils/serializeTable'
+import grid from './ColumnGridTable.module.css'
 import type { GridNavigation } from './useGridNavigation'
 import styles from './TableDefinitionView.module.css'
 
@@ -17,8 +18,8 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
   return (
     <td
       className={cx(
-        styles.center,
-        styles.fixedCol,
+        grid.center,
+        grid.fixedCol,
         styles.checkCell,
         isActive && styles.activeCell,
       )}
@@ -27,7 +28,7 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
     >
       <input
         type="checkbox"
-        className={styles.checkInput}
+        className={grid.checkInput}
         checked={checked}
         readOnly
         tabIndex={-1}

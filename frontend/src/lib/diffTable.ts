@@ -107,22 +107,20 @@ export function diffTable(
     }
   })
 
+  const leftByName = new Map<string, DraftColumn>()
+  leftCols.forEach((column) => {
+    if (!leftByName.has(column.name)) {
+      leftByName.set(column.name, column)
+    }
+  })
+
   const consumed = new Set<string>()
   const rows: ColumnDiffRow[] = []
 
-  for (const leftCol of leftCols) {
-    const match = rightByName.get(leftCol.name)
-    if (match && !consumed.has(leftCol.name)) {
-      consumed.add(leftCol.name)
-      const changed = diffColumnCells(leftCol, match)
-      rows.push({
-        name: leftCol.name,
-        status: changed.size > 0 ? 'changed' : 'same',
-        left: leftCol,
-        right: match,
-        changed,
-      })
-    } else {
+  // right の並びを基準にマージする。right のみの列はその位置に、left のみの列は
+  // 対応する right 行の直前（または末尾）に出す。
+  if (rightCols.length === 0) {
+    for (const leftCol of leftCols) {
       rows.push({
         name: leftCol.name,
         status: 'removed',
@@ -130,18 +128,60 @@ export function diffTable(
         changed: new Set(),
       })
     }
-  }
+  } else {
+    let leftIndex = 0
 
-  for (const rightCol of rightCols) {
-    if (consumed.has(rightCol.name)) {
-      continue
+    for (const rightCol of rightCols) {
+      const leftMatch = leftByName.get(rightCol.name)
+
+      if (leftMatch && !consumed.has(rightCol.name)) {
+        while (leftIndex < leftCols.length) {
+          const leftCol = leftCols[leftIndex]
+          if (leftCol.name === rightCol.name) {
+            consumed.add(leftCol.name)
+            leftIndex += 1
+            const changed = diffColumnCells(leftCol, rightCol)
+            rows.push({
+              name: leftCol.name,
+              status: changed.size > 0 ? 'changed' : 'same',
+              left: leftCol,
+              right: rightCol,
+              changed,
+            })
+            break
+          }
+          if (!rightByName.has(leftCol.name)) {
+            rows.push({
+              name: leftCol.name,
+              status: 'removed',
+              left: leftCol,
+              changed: new Set(),
+            })
+          }
+          leftIndex += 1
+        }
+      } else if (!leftMatch) {
+        rows.push({
+          name: rightCol.name,
+          status: 'added',
+          right: rightCol,
+          changed: new Set(),
+        })
+      }
     }
-    rows.push({
-      name: rightCol.name,
-      status: 'added',
-      right: rightCol,
-      changed: new Set(),
-    })
+
+    while (leftIndex < leftCols.length) {
+      const leftCol = leftCols[leftIndex]
+      if (!consumed.has(leftCol.name)) {
+        rows.push({
+          name: leftCol.name,
+          status: 'removed',
+          left: leftCol,
+          changed: new Set(),
+        })
+      }
+      leftIndex += 1
+    }
   }
 
   const meta = buildMeta(left, right)

@@ -8,8 +8,10 @@ const meta = {
     layout: 'fullscreen',
   },
   args: {
+    activeDirectory: 'C:\\project',
     onActivate: () => undefined,
     onClose: () => undefined,
+    onCloseAllSaved: () => undefined,
   },
 } satisfies Meta<typeof TabBar>
 

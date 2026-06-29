@@ -1,4 +1,3 @@
-import { cx } from '../../utils/cx'
 import type { MetaField } from '../../hooks/useTableEditor'
 import styles from './TableDefinitionView.module.css'
 
@@ -23,7 +22,7 @@ export function TableMetaForm({
           <dd>
             <input
               data-meta="1"
-              className={cx(styles.metaInput, styles.mono)}
+              className={styles.metaInput}
               value={name}
               onChange={(e) => onChange('name', e.target.value)}
             />

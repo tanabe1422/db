@@ -32,87 +32,48 @@ func Scan(root string) (TreeNode, error) {
 		return TreeNode{}, fs.ErrInvalid
 	}
 
-	matches := make([]string, 0)
-	err = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
-		if walkErr != nil {
-			log.Printf("scanner: skip %s: %v", path, walkErr)
-			return nil
-		}
-		if entry.IsDir() {
-			return nil
-		}
-		if strings.HasSuffix(entry.Name(), tableJSONSuffix) {
-			matches = append(matches, path)
-		}
-		return nil
-	})
-	if err != nil {
-		return TreeNode{}, err
-	}
-
-	return buildTree(root, matches), nil
+	return scanDir(root)
 }
 
-func buildTree(root string, matches []string) TreeNode {
-	rootNode := TreeNode{
-		Name:     filepath.Base(root),
-		Path:     root,
+func scanDir(dir string) (TreeNode, error) {
+	node := TreeNode{
+		Name:     filepath.Base(dir),
+		Path:     dir,
 		IsDir:    true,
 		Children: []TreeNode{},
 	}
 
-	if len(matches) == 0 {
-		return rootNode
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return TreeNode{}, err
 	}
 
-	type treeBuilder struct {
-		node *TreeNode
-	}
+	for _, entry := range entries {
+		name := entry.Name()
+		path := filepath.Join(dir, name)
 
-	nodes := map[string]*treeBuilder{
-		root: {node: &rootNode},
-	}
-
-	for _, match := range matches {
-		rel, err := filepath.Rel(root, match)
-		if err != nil {
+		if entry.IsDir() {
+			child, err := scanDir(path)
+			if err != nil {
+				log.Printf("scanner: skip %s: %v", path, err)
+				continue
+			}
+			node.Children = append(node.Children, child)
 			continue
 		}
 
-		parts := strings.Split(filepath.ToSlash(rel), "/")
-		currentPath := root
-
-		for i, part := range parts {
-			currentPath = filepath.Join(currentPath, part)
-			if _, exists := nodes[currentPath]; exists {
-				continue
-			}
-
-			isDir := i < len(parts)-1
-			child := TreeNode{
-				Name:     part,
-				Path:     currentPath,
-				IsDir:    isDir,
+		if strings.HasSuffix(name, tableJSONSuffix) {
+			node.Children = append(node.Children, TreeNode{
+				Name:     name,
+				Path:     path,
+				IsDir:    false,
 				Children: []TreeNode{},
-			}
-			if !isDir {
-				child.Path = match
-			}
-
-			parentPath := filepath.Dir(currentPath)
-			parent, ok := nodes[parentPath]
-			if !ok {
-				continue
-			}
-
-			parent.node.Children = append(parent.node.Children, child)
-			lastIndex := len(parent.node.Children) - 1
-			nodes[currentPath] = &treeBuilder{node: &parent.node.Children[lastIndex]}
+			})
 		}
 	}
 
-	sortTree(&rootNode)
-	return rootNode
+	sortTree(&node)
+	return node, nil
 }
 
 func sortTree(node *TreeNode) {

@@ -153,10 +153,6 @@
   border-color: var(--color-blue-600);
 }
 
-.mono {
-  font-family: ui-monospace, monospace;
-}
-
 .errors {
   padding: 0.75rem 1rem;
   background: var(--color-red-50);
@@ -179,98 +175,17 @@
 }
 
 .errors code {
-  font-family: ui-monospace, monospace;
   background: rgba(153, 27, 27, 0.08);
   padding: 0 0.25rem;
   border-radius: 0.25rem;
 }
 
-.tableWrapper {
-  overflow-x: auto;
-  border: 1px solid var(--color-slate-200);
-  border-radius: 0.375rem;
-  background: var(--color-white);
-  font-size: var(--font-size-compact);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-compact);
-  white-space: nowrap;
-}
-
-.table th,
-.table td {
-  padding: 0.125rem 0.25rem;
-  text-align: left;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--color-slate-300);
-  border-right: 1px solid var(--color-slate-300);
-  font-size: inherit;
-}
-
-.table th.lastCol,
-.table td.lastCol {
-  border-right: none;
-}
-
-.table thead th {
-  background: var(--color-slate-50);
-  color: var(--color-slate-600);
-  font-weight: 600;
-  text-align: center;
-  user-select: none;
-}
-
-.groupHeader {
-  white-space: normal;
-}
-
-.headerStack {
-  display: inline-block;
-  line-height: 1.1;
-}
-
-.table tbody tr:hover {
-  background: var(--color-slate-50);
-}
-
-.table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.table th.numCell {
-  text-align: center;
-}
-
-.table td.numCell {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.table th.center,
-.table td.center {
-  text-align: center;
-}
-
-.table th.fixedCol,
-.table td.fixedCol {
-  width: 1%;
-  white-space: nowrap;
-  padding-left: 0.125rem;
-  padding-right: 0.125rem;
-}
-
-.table th.remarks,
-.table td.remarks {
-  white-space: normal;
-  min-width: 6em;
-}
-
-.table th.actionsCol,
-.table td.actionsCol {
+.actionsCol {
   padding: 0.125rem 0.125rem;
+}
+
+.editorTable tbody tr:hover {
+  background: var(--color-slate-50);
 }
 
 .rowActions {
@@ -293,32 +208,23 @@
   user-select: none;
 }
 
-.table tbody tr.selectedRow {
+.selectedRow {
   background: var(--color-blue-100);
 }
 
-.table tbody tr.selectedRow:hover {
+.selectedRow:hover {
   background: var(--color-blue-200);
 }
 
-.table td.activeCell {
+.activeCell {
   outline: 2px solid var(--color-blue-600);
   outline-offset: -2px;
   background: var(--color-blue-50);
 }
 
-.table td.checkCell {
+.checkCell {
   cursor: pointer;
   padding: 0.125rem 0.25rem;
-}
-
-.checkInput {
-  pointer-events: none;
-  cursor: pointer;
-  margin: 0;
-  vertical-align: middle;
-  width: 0.75rem;
-  height: 0.75rem;
 }
 
 .cellText {
@@ -382,17 +288,9 @@
   display: inline-block;
 }
 
-.typeCell {
-  width: 15em;
-  min-width: 15em;
-  max-width: 15em;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.typeCell .cellText,
-.typeCell .cellSelect,
-.typeCell .cellCombobox {
+.typeCellEditor .cellText,
+.typeCellEditor .cellSelect,
+.typeCellEditor .cellCombobox {
   display: flex;
   align-items: center;
   width: 100%;
@@ -405,7 +303,7 @@
   gap: 0.125rem;
 }
 
-.typeCell .cellComboboxDisplay {
+.typeCellEditor .cellComboboxDisplay {
   display: flex;
   align-items: center;
   gap: 0.125rem;
@@ -419,7 +317,7 @@
   cursor: text;
 }
 
-.typeCell .cellComboboxDisplay .cellText {
+.typeCellEditor .cellComboboxDisplay .cellText {
   flex: 1;
   min-width: 0;
 }
@@ -503,7 +401,6 @@
   background: transparent;
   font: inherit;
   font-size: inherit;
-  font-family: ui-monospace, monospace;
   text-align: left;
   color: var(--color-slate-900);
   cursor: pointer;
@@ -546,25 +443,10 @@
   cursor: pointer;
 }
 
-.typeCell .cellSelect {
+.typeCellEditor .cellSelect {
   background-color: transparent;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0 center;
   background-size: 0.625em;
-}
-
-.table th.markerCol,
-.table td.markerCol {
-  width: 1%;
-  white-space: nowrap;
-  padding-left: 0.125rem;
-  padding-right: 0.125rem;
-  text-align: center;
-}
-
-.markerCol .cellText,
-.markerCol .cellInput {
-  min-width: 0;
-  text-align: center;
 }

@@ -1,6 +1,14 @@
 # Initializes examples/git-diff-demo with three commits for Git diff testing.
 $ErrorActionPreference = 'Stop'
 
+function Write-Utf8NoBomFile {
+    param([Parameter(Mandatory)][string]$Path)
+    process {
+        $fullPath = Join-Path (Get-Location) $Path
+        [System.IO.File]::WriteAllText($fullPath, $_, [System.Text.UTF8Encoding]::new($false))
+    }
+}
+
 $demoDir = Join-Path (Join-Path $PSScriptRoot '..') 'git-diff-demo'
 Set-Location $demoDir
 
@@ -23,7 +31,7 @@ if (Test-Path '.git') {
     { "name": "createdAt", "dataType": "datetime2", "nameJa": "作成日時", "notNull": true }
   ]
 }
-'@ | Set-Content -Encoding UTF8 'users.table.json'
+'@ | Write-Utf8NoBomFile 'users.table.json'
 Remove-Item -ErrorAction SilentlyContinue 'orders.table.json', 'products.table.json'
 
 git init -b main
@@ -46,7 +54,7 @@ git -c user.email='demo@db-gui.local' -c user.name='db-gui demo' commit -m 'add 
     { "name": "createdAt", "dataType": "datetime2", "nameJa": "作成日時", "notNull": true }
   ]
 }
-'@ | Set-Content -Encoding UTF8 'users.table.json'
+'@ | Write-Utf8NoBomFile 'users.table.json'
 @'
 {
   "$schema": "../../schema/table.definition.schema.json",
@@ -60,7 +68,7 @@ git -c user.email='demo@db-gui.local' -c user.name='db-gui demo' commit -m 'add 
     { "name": "total", "dataType": "decimal", "nameJa": "合計", "notNull": true, "precision": 18, "scale": 2 }
   ]
 }
-'@ | Set-Content -Encoding UTF8 'orders.table.json'
+'@ | Write-Utf8NoBomFile 'orders.table.json'
 git add users.table.json orders.table.json
 git -c user.email='demo@db-gui.local' -c user.name='db-gui demo' commit -m 'add orders and update users'
 
@@ -79,7 +87,7 @@ git -c user.email='demo@db-gui.local' -c user.name='db-gui demo' commit -m 'add 
     { "name": "note", "dataType": "nvarchar", "nameJa": "備考", "length": 500 }
   ]
 }
-'@ | Set-Content -Encoding UTF8 'orders.table.json'
+'@ | Write-Utf8NoBomFile 'orders.table.json'
 @'
 {
   "$schema": "../../schema/table.definition.schema.json",
@@ -93,7 +101,7 @@ git -c user.email='demo@db-gui.local' -c user.name='db-gui demo' commit -m 'add 
     { "name": "price", "dataType": "decimal", "nameJa": "価格", "notNull": true, "precision": 18, "scale": 2 }
   ]
 }
-'@ | Set-Content -Encoding UTF8 'products.table.json'
+'@ | Write-Utf8NoBomFile 'products.table.json'
 git add orders.table.json products.table.json
 git -c user.email='demo@db-gui.local' -c user.name='db-gui demo' commit -m 'add products table'
 

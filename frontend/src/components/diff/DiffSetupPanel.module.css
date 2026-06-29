@@ -55,7 +55,6 @@
 }
 
 .selValue {
-  font-family: ui-monospace, monospace;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

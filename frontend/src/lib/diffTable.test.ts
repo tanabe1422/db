@@ -44,6 +44,22 @@ describe('diffTable', () => {
     expect(added?.right).toBeDefined()
   })
 
+  it('keeps added columns at their right-side position', () => {
+    const right = base()
+    right.columns.splice(1, 0, { name: 'createdAt', dataType: 'datetime2', notNull: true })
+    const diff = diffTable(base(), right)
+    expect(diff.rows.map((row) => row.name)).toEqual(['id', 'createdAt', 'email'])
+    expect(diff.rows[1]?.status).toBe('added')
+  })
+
+  it('keeps removed columns at their left-side position', () => {
+    const left = base()
+    left.columns.splice(1, 0, { name: 'deletedAt', dataType: 'datetime2' })
+    const diff = diffTable(left, base())
+    expect(diff.rows.map((row) => row.name)).toEqual(['id', 'deletedAt', 'email'])
+    expect(diff.rows[1]?.status).toBe('removed')
+  })
+
   it('detects a removed column (left only)', () => {
     const left = base()
     left.columns.push({ name: 'deletedAt', dataType: 'datetime2' })

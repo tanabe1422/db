@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
+import { toContextMenuPosition } from '../../lib/appZoom'
 import styles from './ContextMenu.module.css'
 
 export interface ContextMenuItem {
@@ -18,6 +19,7 @@ interface ContextMenuProps {
 
 export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
+  const { x: left, y: top } = toContextMenuPosition(x, y)
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -45,7 +47,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
     <div
       ref={menuRef}
       className={styles.menu}
-      style={{ left: x, top: y }}
+      style={{ left, top }}
       role="menu"
     >
       {items.map((item) => (

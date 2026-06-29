@@ -1,12 +1,9 @@
 import { useEffect } from 'react'
 
+import { cx } from '../../utils/cx'
 import type { TableDefinition } from '../../types'
-import { IDENTITY_COLUMN_TITLE } from '../../lib/gridColumns'
-import {
-  MAX_INDEXES,
-  MAX_UNIQUE_CONSTRAINTS,
-  MAX_UNIQUE_INDEXES,
-} from '../../utils/columnMeta'
+import { ColumnGridHeader } from './ColumnGridHeader'
+import grid from './ColumnGridTable.module.css'
 import { type TableEditor, useTableEditor } from '../../hooks/useTableEditor'
 import { CheckCell } from './CheckCell'
 import { EditableCell } from './EditableCell'
@@ -79,85 +76,15 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
         </div>
       )}
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
+      <div className={grid.tableWrapper}>
+        <table className={cx(grid.table, styles.editorTable)}>
           <thead>
-            <tr>
-              <th
-                className={`${styles.center} ${styles.fixedCol} ${styles.actionsCol}`}
-                rowSpan={2}
-              >
-                操作
-              </th>
-              <th className={`${styles.center} ${styles.fixedCol}`} rowSpan={2}>
-                番号
-              </th>
-              <th className={`${styles.center} ${styles.fixedCol}`} rowSpan={2}>
-                PK
-              </th>
-              <th
-                className={`${styles.center} ${styles.groupHeader}`}
-                colSpan={MAX_UNIQUE_INDEXES}
-              >
-                <span className={styles.headerStack}>
-                  Unique
-                  <br />
-                  Index
-                </span>
-              </th>
-              <th className={styles.center} colSpan={MAX_INDEXES}>
-                Index
-              </th>
-              <th
-                className={`${styles.center} ${styles.fixedCol}`}
-                rowSpan={2}
-                title={IDENTITY_COLUMN_TITLE}
-              >
-                ID
-              </th>
-              <th className={styles.center} colSpan={MAX_UNIQUE_CONSTRAINTS}>
-                Unique
-              </th>
-              <th
-                className={`${styles.center} ${styles.fixedCol}`}
-                rowSpan={2}
-                title="NOT NULL"
-              >
-                NN
-              </th>
-              <th rowSpan={2}>カラム名（英）</th>
-              <th rowSpan={2}>カラム名（日）</th>
-              <th className={`${styles.mono} ${styles.typeCell}`} rowSpan={2}>
-                型
-              </th>
-              <th className={styles.numCell} rowSpan={2}>
-                桁数
-              </th>
-              <th className={styles.numCell} rowSpan={2}>
-                精度
-              </th>
-              <th rowSpan={2}>既定値</th>
-              <th className={`${styles.remarks} ${styles.lastCol}`} rowSpan={2}>
-                備考
-              </th>
-            </tr>
-            <tr>
-              {uniqueIndexNumbers.map((number) => (
-                <th key={`uidx${number}`} className={styles.markerCol}>
-                  {number}
-                </th>
-              ))}
-              {indexNumbers.map((number) => (
-                <th key={`idx${number}`} className={styles.markerCol}>
-                  {number}
-                </th>
-              ))}
-              {uniqueNumbers.map((number) => (
-                <th key={`uq${number}`} className={styles.markerCol}>
-                  {number}
-                </th>
-              ))}
-            </tr>
+            <ColumnGridHeader
+              showActionsColumn
+              actionsColClass={styles.actionsCol}
+              remarksExtraClass={grid.lastCol}
+              dataTypeColClass={cx(grid.typeCell, grid.typeCellFixed)}
+            />
           </thead>
           <tbody>
             {columns.map((column, index) => {
@@ -168,7 +95,11 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                   className={selected ? styles.selectedRow : undefined}
                 >
                   <td
-                    className={`${styles.center} ${styles.fixedCol} ${styles.actionsCol}`}
+                    className={cx(
+                      grid.center,
+                      grid.fixedCol,
+                      styles.actionsCol,
+                    )}
                   >
                     <RowActions
                       editor={editor}
@@ -178,7 +109,12 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                     />
                   </td>
                   <td
-                    className={`${styles.center} ${styles.fixedCol} ${styles.rowHeader}`}
+                    className={cx(
+                      grid.center,
+                      grid.fixedCol,
+                      grid.gridLabel,
+                      styles.rowHeader,
+                    )}
                     onClick={(e) => nav.handleRowSelect(e, column.rowId)}
                   >
                     {index + 1}
@@ -189,7 +125,7 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                       key={`uidx${number - 1}`}
                       column={column}
                       colId={`uidx${number - 1}`}
-                      tdClass={styles.markerCol}
+                      tdClass={grid.markerCol}
                       nav={nav}
                       editor={editor}
                     />
@@ -199,7 +135,7 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                       key={`idx${number - 1}`}
                       column={column}
                       colId={`idx${number - 1}`}
-                      tdClass={styles.markerCol}
+                      tdClass={grid.markerCol}
                       nav={nav}
                       editor={editor}
                     />
@@ -210,7 +146,7 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                       key={`uq${number - 1}`}
                       column={column}
                       colId={`uq${number - 1}`}
-                      tdClass={styles.markerCol}
+                      tdClass={grid.markerCol}
                       nav={nav}
                       editor={editor}
                     />
@@ -219,7 +155,6 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                   <EditableCell
                     column={column}
                     colId="name"
-                    tdClass={styles.mono}
                     nav={nav}
                     editor={editor}
                   />
@@ -232,21 +167,21 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                   <EditableCell
                     column={column}
                     colId="dataType"
-                    tdClass={`${styles.mono} ${styles.typeCell}`}
+                    tdClass={cx(grid.typeCell, grid.typeCellFixed, styles.typeCellEditor)}
                     nav={nav}
                     editor={editor}
                   />
                   <EditableCell
                     column={column}
                     colId="len"
-                    tdClass={styles.numCell}
+                    tdClass={grid.numCell}
                     nav={nav}
                     editor={editor}
                   />
                   <EditableCell
                     column={column}
                     colId="scale"
-                    tdClass={styles.numCell}
+                    tdClass={grid.numCell}
                     nav={nav}
                     editor={editor}
                   />
@@ -259,7 +194,7 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                   <EditableCell
                     column={column}
                     colId="remarks"
-                    tdClass={`${styles.remarks} ${styles.lastCol}`}
+                    tdClass={cx(grid.remarks, grid.lastCol)}
                     nav={nav}
                     editor={editor}
                   />

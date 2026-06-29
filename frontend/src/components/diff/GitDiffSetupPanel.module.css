@@ -2,7 +2,6 @@
   margin: 0;
   font-size: 0.6875rem;
   color: var(--color-slate-500);
-  font-family: ui-monospace, monospace;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -34,7 +33,6 @@
 }
 
 .hash {
-  font-family: ui-monospace, monospace;
   font-size: 0.75rem;
   color: var(--color-slate-600);
 }

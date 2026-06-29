@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestScanBuildsPrunedTree(t *testing.T) {
+func TestScanIncludesAllDirectories(t *testing.T) {
 	root := t.TempDir()
 	dbDir := filepath.Join(root, "src", "db")
 	otherDir := filepath.Join(root, "src", "other")
@@ -35,12 +35,32 @@ func TestScanBuildsPrunedTree(t *testing.T) {
 		t.Fatalf("unexpected top-level children: %+v", tree.Children)
 	}
 
-	dbNode := tree.Children[0].Children[0]
-	if dbNode.Name != "db" || len(dbNode.Children) != 2 {
-		t.Fatalf("unexpected db node: %+v", dbNode)
+	srcNode := tree.Children[0]
+	if len(srcNode.Children) != 2 {
+		t.Fatalf("expected src to have db and other, got %+v", srcNode.Children)
 	}
 
+	var dbNode, otherNode *TreeNode
+	for i := range srcNode.Children {
+		switch srcNode.Children[i].Name {
+		case "db":
+			dbNode = &srcNode.Children[i]
+		case "other":
+			otherNode = &srcNode.Children[i]
+		}
+	}
+
+	if dbNode == nil || len(dbNode.Children) != 2 {
+		t.Fatalf("unexpected db node: %+v", dbNode)
+	}
 	if dbNode.Children[0].Path == "" || dbNode.Children[1].Path == "" {
 		t.Fatalf("expected file paths on leaves: %+v", dbNode.Children)
+	}
+
+	if otherNode == nil {
+		t.Fatal("expected other directory in tree")
+	}
+	if !otherNode.IsDir || len(otherNode.Children) != 0 {
+		t.Fatalf("other should be an empty directory, got %+v", otherNode)
 	}
 }

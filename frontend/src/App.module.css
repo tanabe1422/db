@@ -27,7 +27,6 @@
 
 .path {
   margin-bottom: 0.75rem !important;
-  font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
   color: var(--color-slate-700) !important;
   word-break: break-all;

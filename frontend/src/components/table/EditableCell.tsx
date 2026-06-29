@@ -8,6 +8,7 @@ import {
   DataTypeComboboxDisplay,
 } from './DataTypeCombobox'
 import type { GridNavigation } from './useGridNavigation'
+import grid from './ColumnGridTable.module.css'
 import styles from './TableDefinitionView.module.css'
 
 interface EditableCellProps {
@@ -28,7 +29,12 @@ export function EditableCell({
     nav.active?.rowId === column.rowId && nav.active?.colId === colId
   const isEditing = isActive && nav.editing
   const kind = colKind(colId)
+  const isMarker = kind === 'marker'
   const value = cellValue(column, colId)
+  const textClass = isMarker ? grid.cellText : styles.cellText
+  const inputClass = isMarker
+    ? cx(grid.cellInput, styles.cellInput)
+    : styles.cellInput
 
   return (
     <td
@@ -81,7 +87,7 @@ export function EditableCell({
           ref={(el) => {
             nav.inputRef.current = el
           }}
-          className={styles.cellInput}
+          className={inputClass}
           value={nav.editValue}
           onChange={(ev) => nav.setEditValue(ev.target.value)}
         />
@@ -97,7 +103,7 @@ export function EditableCell({
           {value}
         </span>
       ) : (
-        <span className={styles.cellText}>{value}</span>
+        <span className={textClass}>{value}</span>
       )}
     </td>
   )
