@@ -29,4 +29,5 @@ export type {
   IndexKey,
   SortOrder,
   TableDefinition,
+  UniqueConstraint,
 } from './table'
