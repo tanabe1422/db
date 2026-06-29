@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"db-gui/internal/config"
-	"db-gui/internal/sqlgen"
+	"db-gui/internal/gencli"
 )
 
 const xlsxSuffix = ".xlsx"
@@ -31,14 +31,9 @@ type XlsxImportResult struct {
 	Failures []XlsxImportFailure `json:"failures"`
 }
 
-// GenerateXlsxExport turns one *.table.json into xlsx bytes via the private implementation.
+// GenerateXlsxExport turns one *.table.json into xlsx bytes via gen.exe.
 func (a *App) GenerateXlsxExport(tableJSON string) (XlsxExportResult, error) {
-	gen, err := sqlgen.NewXlsxExport()
-	if err != nil {
-		return XlsxExportResult{}, err
-	}
-
-	data, relPath, err := gen.Generate([]byte(tableJSON))
+	data, relPath, err := gencli.XlsxExport([]byte(tableJSON))
 	if err != nil {
 		return XlsxExportResult{}, err
 	}
@@ -102,11 +97,6 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 		return XlsxImportResult{}, errors.New("path is outside the configured directories")
 	}
 
-	gen, err := sqlgen.NewXlsxImport()
-	if err != nil {
-		return XlsxImportResult{}, err
-	}
-
 	result := XlsxImportResult{Failures: []XlsxImportFailure{}}
 
 	err = filepath.WalkDir(sourceRoot, func(path string, entry fs.DirEntry, walkErr error) error {
@@ -133,7 +123,7 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 			return nil
 		}
 
-		tableJSON, relPath, err := gen.Generate(xlsxData)
+		tableJSON, relPath, err := gencli.XlsxImport(xlsxData)
 		if err != nil {
 			result.Failures = append(result.Failures, XlsxImportFailure{
 				SourcePath: path,

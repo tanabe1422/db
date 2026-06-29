@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"db-gui/internal/sqlgen"
+	"db-gui/internal/gencli"
 )
 
 // ScriptResult is the output of create/migrate script generation.
@@ -14,14 +14,9 @@ type ScriptResult struct {
 	RelPath string `json:"relPath"`
 }
 
-// GenerateCreateScript turns one *.table.json into DDL SQL via the private implementation.
+// GenerateCreateScript turns one *.table.json into DDL SQL via gen.exe.
 func (a *App) GenerateCreateScript(tableJSON string) (ScriptResult, error) {
-	gen, err := sqlgen.NewCreateScript()
-	if err != nil {
-		return ScriptResult{}, err
-	}
-
-	sql, relPath, err := gen.Generate([]byte(tableJSON))
+	sql, relPath, err := gencli.CreateScript([]byte(tableJSON))
 	if err != nil {
 		return ScriptResult{}, err
 	}
@@ -31,12 +26,7 @@ func (a *App) GenerateCreateScript(tableJSON string) (ScriptResult, error) {
 
 // GenerateMigrateScript compares two *.table.json files and emits migration SQL.
 func (a *App) GenerateMigrateScript(beforeJSON, afterJSON string) (ScriptResult, error) {
-	gen, err := sqlgen.NewMigrateScript()
-	if err != nil {
-		return ScriptResult{}, err
-	}
-
-	sql, relPath, err := gen.Generate([]byte(beforeJSON), []byte(afterJSON))
+	sql, relPath, err := gencli.MigrateScript([]byte(beforeJSON), []byte(afterJSON))
 	if err != nil {
 		return ScriptResult{}, err
 	}

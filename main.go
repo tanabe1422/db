@@ -9,8 +9,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	"db-gui/internal/app"
-
-	_ "db-gui/private/sqlgenimpl"
 )
 
 //go:embed all:frontend/dist
