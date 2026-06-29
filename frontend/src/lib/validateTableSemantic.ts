@@ -1,14 +1,35 @@
 import type { TableDefinition } from '../types/table'
-import { isDecimal } from '../utils/columnMeta'
 
 export interface ValidationError {
   path: string
   message: string
 }
 
+const IDENTITY_TYPES = new Set(['tinyint', 'smallint', 'int', 'bigint'])
+
+export function parseBaseDataType(dataType: string): string {
+  const trimmed = dataType.trim()
+  if (!trimmed) {
+    return ''
+  }
+
+  const token = trimmed.split(/\s+/)[0]
+  const parenIndex = token.indexOf('(')
+  if (parenIndex >= 0) {
+    return token.slice(0, parenIndex).toLowerCase()
+  }
+  return token.toLowerCase()
+}
+
+function isDecimalType(dataType: string): boolean {
+  const base = parseBaseDataType(dataType)
+  return base === 'decimal' || base === 'numeric'
+}
+
 export function validateTableSemantic(def: TableDefinition): ValidationError[] {
   const errors: ValidationError[] = []
   const columnNames = new Map<string, number>()
+  let identityColumnIndex: number | null = null
 
   def.columns.forEach((col, index) => {
     if (columnNames.has(col.name)) {
@@ -19,8 +40,10 @@ export function validateTableSemantic(def: TableDefinition): ValidationError[] {
     }
     columnNames.set(col.name, index)
 
+    const baseType = parseBaseDataType(col.dataType)
+
     if (
-      isDecimal(col.dataType) &&
+      isDecimalType(col.dataType) &&
       col.precision != null &&
       col.scale != null &&
       col.scale > col.precision
@@ -29,6 +52,31 @@ export function validateTableSemantic(def: TableDefinition): ValidationError[] {
         path: `/columns/${index}/scale`,
         message: `scale (${col.scale}) must not exceed precision (${col.precision})`,
       })
+    }
+
+    if (col.identity) {
+      if (identityColumnIndex != null) {
+        errors.push({
+          path: `/columns/${index}/identity`,
+          message: 'only one identity column is allowed per table',
+        })
+      } else {
+        identityColumnIndex = index
+      }
+
+      if (!IDENTITY_TYPES.has(baseType)) {
+        errors.push({
+          path: `/columns/${index}/identity`,
+          message: `identity is only allowed on integer types (tinyint, smallint, int, bigint), got "${col.dataType}"`,
+        })
+      }
+
+      if (baseType === 'rowversion') {
+        errors.push({
+          path: `/columns/${index}/identity`,
+          message: 'identity cannot be used with rowversion',
+        })
+      }
     }
   })
 
@@ -54,6 +102,17 @@ export function validateTableSemantic(def: TableDefinition): ValidationError[] {
       if (!columnNames.has(col)) {
         errors.push({
           path: `/indexes/${index}/include/${includeIndex}`,
+          message: `unknown column "${col}"`,
+        })
+      }
+    })
+  })
+
+  def.uniqueConstraints?.forEach((constraint, index) => {
+    constraint.columns.forEach((col, colIndex) => {
+      if (!columnNames.has(col)) {
+        errors.push({
+          path: `/uniqueConstraints/${index}/columns/${colIndex}`,
           message: `unknown column "${col}"`,
         })
       }

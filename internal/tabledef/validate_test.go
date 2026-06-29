@@ -16,7 +16,7 @@ func validDefinition() *TableDefinition {
 		PrimaryKey:    []string{"id"},
 		Columns: []Column{
 			{Name: "id", DataType: "bigint", NotNull: true},
-			{Name: "email", DataType: "nvarchar", Length: intPtr(255), NotNull: true, Unique: true},
+			{Name: "email", DataType: "nvarchar", Length: intLength(255), NotNull: true, Unique: true},
 			{Name: "createdAt", DataType: "datetime2", NotNull: true},
 		},
 		Indexes: []Index{
@@ -94,10 +94,10 @@ func TestValidateDuplicateColumnName(t *testing.T) {
 	assertHasErrors(t, errors, err)
 }
 
-func TestValidateJSONUnknownDataType(t *testing.T) {
+func TestValidateJSONFreeFormDataType(t *testing.T) {
 	payload := `{"schemaVersion":1,"name":"users","columns":[{"name":"id","dataType":"text"}]}`
 	errors, err := ValidateJSON([]byte(payload))
-	assertHasErrors(t, errors, err)
+	assertNoErrors(t, errors, err)
 }
 
 func TestValidateJSONDecimalMissingPrecision(t *testing.T) {
@@ -177,6 +177,54 @@ func TestValidateScaleExceedsPrecision(t *testing.T) {
 		{Name: "amount", DataType: "decimal", Precision: &precision, Scale: &scale},
 	}
 	errors, err := Validate(def)
+	assertHasErrors(t, errors, err)
+}
+
+func TestValidateJSONRowversionColumn(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"rowVer","dataType":"rowversion","notNull":true}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertNoErrors(t, errors, err)
+}
+
+func TestValidateJSONLengthMax(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"note","dataType":"nvarchar","length":"max"}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertNoErrors(t, errors, err)
+}
+
+func TestValidateJSONIdentityColumn(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"id","dataType":"int","identity":true,"notNull":true}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertNoErrors(t, errors, err)
+}
+
+func TestValidateJSONComputedColumn(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"qty","dataType":"int","notNull":true},{"name":"price","dataType":"decimal","precision":18,"scale":2,"notNull":true},{"name":"total","dataType":"decimal(18,2) AS ([qty]*[price]) PERSISTED"}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertNoErrors(t, errors, err)
+}
+
+func TestValidateJSONUniqueConstraints(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"customerId","dataType":"int","notNull":true},{"name":"orderNo","dataType":"nvarchar","length":50,"notNull":true}],"uniqueConstraints":[{"columns":["customerId","orderNo"]}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertNoErrors(t, errors, err)
+}
+
+func TestValidateMultipleIdentityColumns(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"id","dataType":"int","identity":true},{"name":"seq","dataType":"bigint","identity":true}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertHasErrors(t, errors, err)
+}
+
+func TestValidateUnknownUniqueConstraintColumn(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"id","dataType":"int"}],"uniqueConstraints":[{"columns":["id","missing"]}]}`
+	errors, err := ValidateJSON([]byte(payload))
+	assertHasErrors(t, errors, err)
+}
+
+func TestValidateJSONTooManyUniqueConstraints(t *testing.T) {
+	payload := `{"schemaVersion":1,"name":"orders","columns":[{"name":"a","dataType":"int"},{"name":"b","dataType":"int"},{"name":"c","dataType":"int"},{"name":"d","dataType":"int"},{"name":"e","dataType":"int"}],"uniqueConstraints":[{"columns":["a","b"]},{"columns":["a","c"]},{"columns":["a","d"]},{"columns":["a","e"]}]}`
+	errors, err := ValidateJSON([]byte(payload))
 	assertHasErrors(t, errors, err)
 }
 

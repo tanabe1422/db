@@ -23,6 +23,7 @@ export type DataType =
   | 'uniqueidentifier'
   | 'binary'
   | 'varbinary'
+  | 'rowversion'
 
 export type SortOrder = 'asc' | 'desc'
 
@@ -36,16 +37,21 @@ export interface Index {
   include?: string[]
 }
 
+export interface UniqueConstraint {
+  columns: string[]
+}
+
 export interface Column {
   name: string
   nameJa?: string
-  dataType: DataType
+  dataType: string
   notNull?: boolean
   defaultValue?: string | number | boolean | null
-  length?: number
+  length?: number | 'max'
   precision?: number
   scale?: number
   unique?: boolean
+  identity?: boolean
   remarks?: string
 }
 
@@ -57,4 +63,5 @@ export interface TableDefinition {
   primaryKey?: string[]
   columns: Column[]
   indexes?: Index[]
+  uniqueConstraints?: UniqueConstraint[]
 }

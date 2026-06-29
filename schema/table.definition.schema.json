@@ -53,10 +53,18 @@
         "$ref": "#/$defs/index"
       },
       "description": "インデックス（最大 9 件）"
+    },
+    "uniqueConstraints": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/uniqueConstraint"
+      },
+      "description": "複合 UNIQUE 制約（最大 3 件）"
     }
   },
   "$defs": {
-    "dataType": {
+    "knownDataType": {
       "type": "string",
       "enum": [
         "bit",
@@ -82,9 +90,10 @@
         "datetimeoffset",
         "uniqueidentifier",
         "binary",
-        "varbinary"
+        "varbinary",
+        "rowversion"
       ],
-      "description": "SQL Server データ型（小文字）"
+      "description": "既知の SQL Server データ型（小文字、エディタ補完用）"
     },
     "sortOrder": {
       "type": "string",
@@ -108,7 +117,9 @@
           "description": "カラム名（日本語）"
         },
         "dataType": {
-          "$ref": "#/$defs/dataType"
+          "type": "string",
+          "minLength": 1,
+          "description": "SQL Server データ型（既知型または計算列等の DDL 断片を自由記述）"
         },
         "notNull": {
           "type": "boolean",
@@ -120,9 +131,17 @@
           "type": ["string", "number", "boolean", "null"]
         },
         "length": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "文字列型・バイナリ型の長さ（例: nvarchar(100) → 100）"
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "const": "max"
+            }
+          ],
+          "description": "文字列型・バイナリ型の長さ（例: nvarchar(100) → 100、nvarchar(max) → \"max\"）"
         },
         "precision": {
           "type": "integer",
@@ -138,6 +157,11 @@
           "type": "boolean",
           "default": false,
           "description": "単一カラム UNIQUE 制約"
+        },
+        "identity": {
+          "type": "boolean",
+          "default": false,
+          "description": "IDENTITY(1,1) 列（seed/increment は固定）"
         },
         "remarks": {
           "type": "string",
@@ -179,6 +203,23 @@
           }
         }
       ]
+    },
+    "uniqueConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["columns"],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "複合 UNIQUE のカラム名（2 列以上）"
+        }
+      }
     },
     "indexKey": {
       "type": "object",
