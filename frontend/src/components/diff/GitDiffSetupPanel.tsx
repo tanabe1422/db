@@ -1,11 +1,9 @@
-import { ArrowLeft } from 'lucide-react'
-
 import type { GitCommit } from '../../types'
 import { useGitCommits } from '../../hooks/useGitDiff'
 import { cx } from '../../utils/cx'
 import { truncateMiddle } from '../../utils/truncateMiddle'
-import { SidebarIconBar } from '../layout/SidebarIconBar'
 import { Button, IconButton } from '../ui/Button'
+import { Tooltip } from '../ui/Tooltip'
 
 import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
 import setupStyles from './DiffSetupPanel.module.css'
@@ -17,7 +15,6 @@ interface GitDiffSetupPanelProps {
   rightHash?: string
   onSelectLeft: (commit: GitCommit) => void
   onSelectRight: (commit: GitCommit) => void
-  onExitGitDiff: () => void
 }
 
 function formatCommitDate(date: string): string {
@@ -53,12 +50,12 @@ function CommitRow({
   return (
     <div className={styles.row}>
       <div className={styles.meta}>
-        <span className={styles.hash} title={commit.hash}>
-          {commit.shortHash}
-        </span>
-        <span className={styles.subject} title={commit.subject}>
-          {commit.subject}
-        </span>
+        <Tooltip content={commit.hash} wrap>
+          <span className={styles.hash}>{commit.shortHash}</span>
+        </Tooltip>
+        <Tooltip content={commit.subject} wrap>
+          <span className={styles.subject}>{commit.subject}</span>
+        </Tooltip>
         <span className={styles.date}>{formatCommitDate(commit.date)}</span>
       </div>
       <span className={setupStyles.assign}>
@@ -91,7 +88,6 @@ export function GitDiffSetupPanel({
   rightHash,
   onSelectLeft,
   onSelectRight,
-  onExitGitDiff,
 }: GitDiffSetupPanelProps) {
   const {
     commits,
@@ -107,47 +103,45 @@ export function GitDiffSetupPanel({
   const rightCommit = commits.find((commit) => commit.hash === rightHash)
 
   return (
-    <aside className={setupStyles.panel}>
-      <div className={setupStyles.header}>
-        <SidebarIconBar>
-          <IconButton onClick={onExitGitDiff} aria-label="編集に戻る" title="編集に戻る">
-            <ArrowLeft size={16} aria-hidden="true" />
-          </IconButton>
-        </SidebarIconBar>
-        <h2 className={setupStyles.title}>Git 履歴比較</h2>
+    <div className={setupStyles.root}>
+      <div className={setupStyles.subHeader}>
         <div className={setupStyles.selection}>
           <p className={setupStyles.selRow}>
             <span className={setupStyles.tagLeft} aria-hidden="true">
               <DiffSideMark side="left" />
             </span>
-            <span className={setupStyles.selValue} title={leftCommit?.hash}>
-              {leftCommit
-                ? `${leftCommit.shortHash} ${truncateMiddle(leftCommit.subject, 24)}`
-                : '未選択'}
-            </span>
+            <Tooltip content={leftCommit?.hash ?? ''} wrap>
+              <span className={setupStyles.selValue}>
+                {leftCommit
+                  ? `${leftCommit.shortHash} ${truncateMiddle(leftCommit.subject, 24)}`
+                  : '未選択'}
+              </span>
+            </Tooltip>
           </p>
           <p className={setupStyles.selRow}>
             <span className={setupStyles.tagRight} aria-hidden="true">
               <DiffSideMark side="right" />
             </span>
-            <span className={setupStyles.selValue} title={rightCommit?.hash}>
-              {rightCommit
-                ? `${rightCommit.shortHash} ${truncateMiddle(rightCommit.subject, 24)}`
-                : '未選択'}
-            </span>
+            <Tooltip content={rightCommit?.hash ?? ''} wrap>
+              <span className={setupStyles.selValue}>
+                {rightCommit
+                  ? `${rightCommit.shortHash} ${truncateMiddle(rightCommit.subject, 24)}`
+                  : '未選択'}
+              </span>
+            </Tooltip>
           </p>
         </div>
         {repo.isRepo && repo.repoRoot && (
-          <p className={styles.repoRoot} title={repo.repoRoot}>
-            {truncateMiddle(repo.repoRoot, 42)}
-          </p>
+          <Tooltip content={repo.repoRoot} wrap>
+            <p className={styles.repoRoot}>{truncateMiddle(repo.repoRoot, 42)}</p>
+          </Tooltip>
         )}
       </div>
 
-      <div className={setupStyles.body}>
+      <div className={setupStyles.scroll}>
         {!activeDirectory && (
           <p className={setupStyles.empty}>
-            参照ディレクトリが未設定です。先に「編集に戻る」からディレクトリを追加してください。
+            参照ディレクトリが未設定です。上部のフォルダボタンから追加してください。
           </p>
         )}
         {activeDirectory && loading && (
@@ -160,7 +154,9 @@ export function GitDiffSetupPanel({
         )}
         {error && <p className={styles.error}>{error}</p>}
         {activeDirectory && !loading && repo.isRepo && commits.length === 0 && !error && (
-          <p className={setupStyles.empty}>コミットがありません。</p>
+          <p className={setupStyles.empty}>
+            *.table.json の変更があるコミットがありません。
+          </p>
         )}
         {activeDirectory && !loading && repo.isRepo && commits.length > 0 && (
           <div className={styles.list}>
@@ -189,6 +185,6 @@ export function GitDiffSetupPanel({
           </div>
         )}
       </div>
-    </aside>
+    </div>
   )
 }

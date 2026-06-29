@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { CollapsibleSidebar } from '../layout/CollapsibleSidebar'
+import { CollapsibleSidebar, SidebarProvider } from '../layout/CollapsibleSidebar'
 import { DirectoryPanel } from './DirectoryPanel'
+import { SidebarPanelLayout } from './SidebarPanelLayout'
 import { mockTree } from '../../mocks/data'
 
 const meta = {
@@ -11,15 +12,24 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div style={{ height: '100vh', display: 'flex' }}>
-        <CollapsibleSidebar>
-          <Story />
+      <SidebarProvider>
+        <div style={{ height: '100vh', display: 'flex' }}>
+          <CollapsibleSidebar>
+          <SidebarPanelLayout
+            mode="edit"
+            activeDirectory="C:\\project"
+            onManageDirectories={() => undefined}
+            onRescan={() => undefined}
+            onModeChange={() => undefined}
+          >
+            <Story />
+          </SidebarPanelLayout>
         </CollapsibleSidebar>
-      </div>
+        </div>
+      </SidebarProvider>
     ),
   ],
   args: {
-    onManageDirectories: () => undefined,
     onRescan: () => undefined,
   },
 } satisfies Meta<typeof DirectoryPanel>
@@ -35,6 +45,25 @@ export const Empty: Story = {
     error: null,
     selectedPath: "ああああああああああああああああああああああああああああああああああああああああああああああああああ"
   },
+  decorators: [
+    (Story) => (
+      <SidebarProvider>
+        <div style={{ height: '100vh', display: 'flex' }}>
+          <CollapsibleSidebar>
+          <SidebarPanelLayout
+            mode="edit"
+            activeDirectory=""
+            onManageDirectories={() => undefined}
+            onRescan={() => undefined}
+            onModeChange={() => undefined}
+          >
+            <Story />
+          </SidebarPanelLayout>
+        </CollapsibleSidebar>
+        </div>
+      </SidebarProvider>
+    ),
+  ],
 }
 
 export const Loading: Story = {

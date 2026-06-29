@@ -38,7 +38,8 @@ func main() {
 				LightModeBorderInactive:    windows.RGB(203, 213, 225),
 			},
 		},
-		OnStartup: application.Startup,
+		OnStartup:  application.Startup,
+		OnShutdown: application.Shutdown,
 		Bind: []interface{}{
 			application,
 		},

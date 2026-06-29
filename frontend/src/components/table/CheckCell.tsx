@@ -1,5 +1,6 @@
 import { cx } from '../../utils/cx'
-import { flagFor, IDENTITY_COLUMN_TITLE } from '../../lib/gridColumns'
+import { flagFor } from '../../lib/gridColumns'
+import { Checkbox } from '../ui/Checkbox'
 import type { DraftColumn } from '../../utils/serializeTable'
 import grid from './ColumnGridTable.module.css'
 import type { GridNavigation } from './useGridNavigation'
@@ -15,6 +16,7 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
   const checked = column[flagFor(colId)]
   const isActive =
     nav.active?.rowId === column.rowId && nav.active?.colId === colId
+
   return (
     <td
       className={cx(
@@ -24,11 +26,8 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
         isActive && styles.activeCell,
       )}
       onMouseDown={() => nav.startEdit(column.rowId, colId)}
-      title={colId === 'identity' ? IDENTITY_COLUMN_TITLE : undefined}
     >
-      <input
-        type="checkbox"
-        className={grid.checkInput}
+      <Checkbox
         checked={checked}
         readOnly
         tabIndex={-1}
@@ -39,7 +38,6 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
               ? 'ID'
               : 'NOT NULL'
         }
-        title={colId === 'identity' ? IDENTITY_COLUMN_TITLE : undefined}
       />
     </td>
   )

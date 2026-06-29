@@ -1,4 +1,5 @@
 import { cx } from '../../utils/cx'
+import { Tooltip } from '../ui/Tooltip'
 import {
   GRID_COLUMNS,
   IDENTITY_COLUMN_TITLE,
@@ -87,40 +88,44 @@ export function ColumnGridHeader({
         >
           PK
         </th>
-        <th
-          className={cx(grid.center, grid.groupHeader, grid.gridLabel)}
-          colSpan={MAX_UNIQUE_INDEXES}
-          title={UNIQUE_INDEX_GROUP_TITLE}
-        >
-          {UNIQUE_INDEX_GROUP_LABEL}
-        </th>
+        <Tooltip content={UNIQUE_INDEX_GROUP_TITLE}>
+          <th
+            className={cx(grid.center, grid.groupHeader, grid.gridLabel)}
+            colSpan={MAX_UNIQUE_INDEXES}
+          >
+            {UNIQUE_INDEX_GROUP_LABEL}
+          </th>
+        </Tooltip>
         <th
           className={cx(grid.center, grid.gridLabel)}
           colSpan={MAX_INDEXES}
         >
           Index
         </th>
-        <th
-          className={cx(grid.center, grid.fixedCol, grid.gridLabel)}
-          rowSpan={2}
-          title={IDENTITY_COLUMN_TITLE}
-        >
-          ID
-        </th>
-        <th
-          className={cx(grid.center, grid.gridLabel)}
-          colSpan={MAX_UNIQUE_CONSTRAINTS}
-          title={UNIQUE_CONSTRAINT_TITLE}
-        >
-          {UNIQUE_CONSTRAINT_LABEL}
-        </th>
-        <th
-          className={cx(grid.center, grid.fixedCol, grid.gridLabel)}
-          rowSpan={2}
-          title={NOT_NULL_TITLE}
-        >
-          {NOT_NULL_LABEL}
-        </th>
+        <Tooltip content={IDENTITY_COLUMN_TITLE}>
+          <th
+            className={cx(grid.center, grid.fixedCol, grid.gridLabel)}
+            rowSpan={2}
+          >
+            ID
+          </th>
+        </Tooltip>
+        <Tooltip content={UNIQUE_CONSTRAINT_TITLE}>
+          <th
+            className={cx(grid.center, grid.gridLabel)}
+            colSpan={MAX_UNIQUE_CONSTRAINTS}
+          >
+            {UNIQUE_CONSTRAINT_LABEL}
+          </th>
+        </Tooltip>
+        <Tooltip content={NOT_NULL_TITLE}>
+          <th
+            className={cx(grid.center, grid.fixedCol, grid.gridLabel)}
+            rowSpan={2}
+          >
+            {NOT_NULL_LABEL}
+          </th>
+        </Tooltip>
         {TAIL_COLUMNS.map((column) => (
           <th
             key={column.id}

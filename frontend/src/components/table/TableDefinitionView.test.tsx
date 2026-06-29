@@ -87,7 +87,6 @@ describe('TableDefinitionView 未保存判定', () => {
     // 値を変えずに別セルへ移動して編集終了。
     await user.click(screen.getByText('bigint'))
 
-    expect(screen.getByText('保存済み')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /保存/ })).toBeDisabled()
   })
 
@@ -106,7 +105,6 @@ describe('TableDefinitionView 未保存判定', () => {
     // 別セルへ移動して編集終了。
     await user.click(screen.getByText('bigint'))
 
-    expect(screen.getByText('未保存の変更あり')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /保存/ })).toBeEnabled()
   })
 })
@@ -256,11 +254,11 @@ describe('TableDefinitionView キーボード操作', () => {
     const user = userEvent.setup()
     render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
 
-    const pk = (await screen.findByLabelText('PK')) as HTMLInputElement
-    expect(pk.checked).toBe(false)
+    const pk = await screen.findByLabelText('PK')
+    expect(pk).toHaveAttribute('aria-checked', 'false')
 
     await user.click(pk)
-    expect(((await screen.findByLabelText('PK')) as HTMLInputElement).checked).toBe(true)
+    expect(await screen.findByLabelText('PK')).toHaveAttribute('aria-checked', 'true')
   })
 })
 

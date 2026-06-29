@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://db-gui.local/schema/table.definition.schema.json",
+  "title": "TableDefinition",
+  "description": "SQL Server テーブル定義（*.table.json）",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "columns"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema 参照パス（エディタ補完用）"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "スキーマ版"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "description": "テーブル名（英語、SQL 識別子）"
+    },
+    "nameJa": {
+      "type": "string",
+      "description": "テーブル名（日本語）"
+    },
+    "description": {
+      "type": "string",
+      "description": "テーブル説明"
+    },
+    "primaryKey": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "PK カラム名の並び（複合 PK 可）"
+    },
+    "columns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/column"
+      }
+    },
+    "indexes": {
+      "type": "array",
+      "maxItems": 9,
+      "items": {
+        "$ref": "#/$defs/index"
+      },
+      "description": "インデックス（最大 9 件）"
+    },
+    "uniqueIndexes": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/index"
+      },
+      "description": "ユニークインデックス（最大 3 件。編集グリッドの Unique Index 列に対応）"
+    },
+    "uniqueConstraints": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/uniqueConstraint"
+      },
+      "description": "複合 UNIQUE 制約（2 列以上、最大 3 件。編集グリッドの Unique 列に対応。単一カラム UNIQUE は columns[].unique）"
+    }
+  },
+  "$defs": {
+    "knownDataType": {
+      "type": "string",
+      "enum": [
+        "bit",
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "decimal",
+        "numeric",
+        "float",
+        "real",
+        "money",
+        "smallmoney",
+        "char",
+        "nchar",
+        "varchar",
+        "nvarchar",
+        "date",
+        "time",
+        "datetime",
+        "datetime2",
+        "smalldatetime",
+        "datetimeoffset",
+        "uniqueidentifier",
+        "binary",
+        "varbinary",
+        "rowversion"
+      ],
+      "description": "既知の SQL Server データ型（小文字、エディタ補完用）"
+    },
+    "sortOrder": {
+      "type": "string",
+      "enum": ["asc", "desc"],
+      "default": "asc",
+      "description": "インデックスキーの並び順"
+    },
+    "column": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "dataType"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "description": "カラム名（英語）"
+        },
+        "nameJa": {
+          "type": "string",
+          "description": "カラム名（日本語）"
+        },
+        "dataType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SQL Server データ型（既知型または計算列等の DDL 断片を自由記述）"
+        },
+        "notNull": {
+          "type": "boolean",
+          "default": false,
+          "description": "NOT NULL 制約（デフォルト false = NULL 許可）"
+        },
+        "defaultValue": {
+          "description": "デフォルト値",
+          "type": ["string", "number", "boolean", "null"]
+        },
+        "length": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "const": "max"
+            }
+          ],
+          "description": "文字列型・バイナリ型の長さ（例: nvarchar(100) → 100、nvarchar(max) → \"max\"）"
+        },
+        "precision": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "数値型の精度（例: decimal(18,2) → 18）"
+        },
+        "scale": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "数値型のスケール（例: decimal(18,2) → 2）"
+        },
+        "unique": {
+          "type": "boolean",
+          "default": false,
+          "description": "単一カラム UNIQUE 制約"
+        },
+        "identity": {
+          "type": "boolean",
+          "default": false,
+          "description": "IDENTITY(1,1) 列（seed/increment は固定）"
+        },
+        "remarks": {
+          "type": "string",
+          "description": "備考"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "dataType": { "enum": ["decimal", "numeric"] }
+            },
+            "required": ["dataType"]
+          },
+          "then": {
+            "required": ["precision", "scale"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dataType": { "enum": ["char", "nchar", "varchar", "nvarchar"] }
+            },
+            "required": ["dataType"]
+          },
+          "then": {
+            "required": ["length"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dataType": { "enum": ["binary", "varbinary"] }
+            },
+            "required": ["dataType"]
+          },
+          "then": {
+            "required": ["length"]
+          }
+        }
+      ]
+    },
+    "uniqueConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["columns"],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "複合 UNIQUE のカラム名（2 列以上）"
+        }
+      }
+    },
+    "indexKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["column"],
+      "properties": {
+        "column": {
+          "type": "string",
+          "minLength": 1,
+          "description": "キー列のカラム名"
+        },
+        "order": {
+          "$ref": "#/$defs/sortOrder"
+        }
+      }
+    },
+    "index": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keys"],
+      "properties": {
+        "keys": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/indexKey"
+          },
+          "description": "インデックスキー列"
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "INCLUDE 列（カバリングインデックス用）"
+        }
+      }
+    }
+  }
+}

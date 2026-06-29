@@ -1,5 +1,45 @@
 export namespace app {
 	
+	export class AISetupResult {
+	    schemaWritten: boolean;
+	    cursorRuleWritten: boolean;
+	    claudeMdWritten: boolean;
+	    vscodeSettingsWritten: boolean;
+	    tableJsonPatched: number;
+	    tableJsonSkipped: number;
+	    tableJsonFailed: number;
+	    warnings: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new AISetupResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.schemaWritten = source["schemaWritten"];
+	        this.cursorRuleWritten = source["cursorRuleWritten"];
+	        this.claudeMdWritten = source["claudeMdWritten"];
+	        this.vscodeSettingsWritten = source["vscodeSettingsWritten"];
+	        this.tableJsonPatched = source["tableJsonPatched"];
+	        this.tableJsonSkipped = source["tableJsonSkipped"];
+	        this.tableJsonFailed = source["tableJsonFailed"];
+	        this.warnings = source["warnings"];
+	    }
+	}
+	export class FileStat {
+	    modTimeUnixNano: number;
+	    size: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new FileStat(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.modTimeUnixNano = source["modTimeUnixNano"];
+	        this.size = source["size"];
+	    }
+	}
 	export class ScriptResult {
 	    sql: string;
 	    relPath: string;

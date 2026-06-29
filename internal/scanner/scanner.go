@@ -16,7 +16,17 @@ type TreeNode struct {
 	Children []TreeNode `json:"children"`
 }
 
-const tableJSONSuffix = ".table.json"
+const (
+	tableJSONSuffix = ".table.json"
+	sqlSuffix       = ".sql"
+	xlsxSuffix      = ".xlsx"
+)
+
+func isVisibleFile(name string) bool {
+	return strings.HasSuffix(name, tableJSONSuffix) ||
+		strings.HasSuffix(name, sqlSuffix) ||
+		strings.HasSuffix(name, xlsxSuffix)
+}
 
 func Scan(root string) (TreeNode, error) {
 	root, err := filepath.Abs(filepath.Clean(root))
@@ -62,7 +72,7 @@ func scanDir(dir string) (TreeNode, error) {
 			continue
 		}
 
-		if strings.HasSuffix(name, tableJSONSuffix) {
+		if isVisibleFile(name) {
 			node.Children = append(node.Children, TreeNode{
 				Name:     name,
 				Path:     path,

@@ -60,3 +60,19 @@ export const AddedFile: Story = {
     diff: diffTable(null, right),
   },
 }
+
+const leftMultiline: TableDefinition = {
+  ...mockTableDefinition,
+  description: '1行目\n2行目\n3行目',
+}
+
+const rightMultiline: TableDefinition = {
+  ...mockTableDefinition,
+  description: '短い説明',
+}
+
+export const MultilineDescription: Story = {
+  args: {
+    diff: diffTable(leftMultiline, rightMultiline),
+  },
+}

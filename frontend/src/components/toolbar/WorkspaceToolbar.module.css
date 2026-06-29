@@ -1,0 +1,60 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  min-height: 1.75rem;
+  padding: 0 0.5rem;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-slate-200);
+}
+
+.leading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.trailing {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--color-slate-200);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.sidebarToggle {
+  color: var(--color-slate-500);
+}
+
+.sidebarToggle:hover {
+  color: var(--color-slate-700);
+  background: transparent;
+}
+
+.toolBtn:hover:not(:disabled) {
+  background: transparent;
+}
+
+.saveBtn:not(:disabled) {
+  color: var(--color-blue-600);
+}
+
+.saveBtn:not(:disabled):hover {
+  color: var(--color-blue-700);
+  background: transparent;
+}
+
+.saveError {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-red-700);
+}

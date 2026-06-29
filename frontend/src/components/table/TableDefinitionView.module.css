@@ -5,36 +5,10 @@
   outline: none;
 }
 
-.toolbar {
+.inlineToolbar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.saveBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.toolbarSpacer {
-  flex: 1;
-}
-
-.dirtyBadge {
-  font-size: 0.8125rem;
-  color: var(--color-amber-700);
-  font-weight: 600;
-}
-
-.saved {
-  font-size: 0.8125rem;
-  color: var(--color-slate-500);
-}
-
-.saveError {
-  font-size: 0.8125rem;
-  color: var(--color-red-700);
 }
 
 .metaInput {
@@ -295,9 +269,8 @@
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  line-height: 1.2;
-  min-height: 1.2em;
-  height: 1.2em;
+  line-height: 1.35;
+  min-height: 1.35em;
   padding: 0;
   margin: 0;
   gap: 0.125rem;
@@ -309,9 +282,8 @@
   gap: 0.125rem;
   width: 100%;
   box-sizing: border-box;
-  line-height: 1.2;
-  min-height: 1.2em;
-  height: 1.2em;
+  line-height: 1.35;
+  min-height: 1.35em;
   padding: 0;
   margin: 0;
   cursor: text;
@@ -339,8 +311,8 @@
   color: inherit;
   flex: 1;
   min-width: 0;
-  line-height: 1.2;
-  height: 1.2em;
+  line-height: 1.35;
+  min-height: 1.35em;
 }
 
 .cellComboboxToggle {
@@ -349,7 +321,7 @@
   align-items: center;
   justify-content: center;
   width: 0.75rem;
-  height: 1.2em;
+  min-height: 1.35em;
   padding: 0;
   margin: 0;
   border: none;
@@ -415,11 +387,10 @@
 .cellComboboxDisplay .cellText {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   padding: 0;
-  min-height: 0;
-  height: auto;
   display: block;
 }
 

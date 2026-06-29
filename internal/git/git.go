@@ -59,7 +59,14 @@ func ResolveRepo(directory string) (RepoInfo, error) {
 	return RepoInfo{IsRepo: true, RepoRoot: root}, nil
 }
 
-// ListCommits returns recent commits from the repository containing directory.
+func tableJSONPathspec(prefix string) string {
+	if prefix == "" {
+		return ":(glob)**/*.table.json"
+	}
+	return ":(glob)" + prefix + "**/*.table.json"
+}
+
+// ListCommits returns recent commits that touched *.table.json under directory.
 func ListCommits(directory string, limit, offset int) ([]Commit, error) {
 	info, err := ResolveRepo(directory)
 	if err != nil {
@@ -75,12 +82,19 @@ func ListCommits(directory string, limit, offset int) ([]Commit, error) {
 		offset = 0
 	}
 
+	prefix, err := scopePrefix(directory, info.RepoRoot)
+	if err != nil {
+		return nil, err
+	}
+
 	raw, err := runGit(
 		info.RepoRoot,
 		"log",
 		fmt.Sprintf("-n%d", limit),
 		fmt.Sprintf("--skip=%d", offset),
 		`--format=%H%x1f%h%x1f%s%x1f%ai`,
+		"--",
+		tableJSONPathspec(prefix),
 	)
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ module db-gui
 go 1.23
 
 require (
+	github.com/fsnotify/fsnotify v1.10.1
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/wailsapp/wails/v2 v2.12.0
 )

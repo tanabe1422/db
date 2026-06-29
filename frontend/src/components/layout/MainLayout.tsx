@@ -1,17 +1,23 @@
 import type { ReactNode } from 'react'
-import { CollapsibleSidebar } from './CollapsibleSidebar'
+import { CollapsibleSidebar, SidebarProvider } from './CollapsibleSidebar'
 import styles from './MainLayout.module.css'
 
 interface MainLayoutProps {
   sidebar: ReactNode
   children: ReactNode
+  toolbar?: ReactNode
 }
 
-export function MainLayout({ sidebar, children }: MainLayoutProps) {
+export function MainLayout({ sidebar, children, toolbar }: MainLayoutProps) {
   return (
-    <div className={styles.shell}>
-      <CollapsibleSidebar>{sidebar}</CollapsibleSidebar>
-      <main className={styles.main}>{children}</main>
-    </div>
+    <SidebarProvider>
+      <div className={styles.shell}>
+        {toolbar}
+        <div className={styles.body}>
+          <CollapsibleSidebar>{sidebar}</CollapsibleSidebar>
+          <main className={styles.main}>{children}</main>
+        </div>
+      </div>
+    </SidebarProvider>
   )
 }

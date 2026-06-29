@@ -1,0 +1,13 @@
+---
+description: db-gui プロジェクトの *.table.json 編集ルール
+globs: **/*.table.json
+alwaysApply: false
+---
+
+# *.table.json
+
+- 正本は `*.table.json`。SQL は `gen.exe` の出力であり、手編集の正本にしない。
+- `schemaVersion` は `1`。必須フィールドは `name`, `columns`。
+- カラムのキーは英語 `name`。PK はテーブル直下の `primaryKey` で指定する。
+- `identity` カラムはテーブルに高々 1 つ。`decimal` / `numeric` は `precision` >= `scale`。
+- 新規テーブルは `examples/users.table.json` を参考にする。

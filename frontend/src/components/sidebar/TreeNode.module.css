@@ -14,8 +14,8 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
+  padding-top: 0.1875rem;
+  padding-bottom: 0.1875rem;
   padding-right: 0.5rem;
 }
 
@@ -45,8 +45,23 @@
   color: var(--color-slate-500);
 }
 
+.tableJsonIcon {
+  flex-shrink: 0;
+  color: var(--color-blue-600);
+}
+
+.sqlIcon {
+  flex-shrink: 0;
+  color: var(--color-pink-600);
+}
+
+.xlsxIcon {
+  flex-shrink: 0;
+  color: var(--color-green-600);
+}
+
 .label {
-  margin-left: 0.25rem;
+  margin-left: 0.125rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

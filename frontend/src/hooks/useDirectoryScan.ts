@@ -1,20 +1,25 @@
 import { useCallback, useEffect, useState } from 'react'
+import { EventsOn } from '../../wailsjs/runtime/runtime'
 import type { Settings, TreeNode } from '../types'
-import { scanActiveDirectory } from '../lib/wails'
+import { scanActiveDirectory, startDirectoryWatch } from '../lib/wails'
+
+const RESCAN_DEBOUNCE_MS = 300
 
 export function useDirectoryScan(activeDirectory: string) {
   const [tree, setTree] = useState<TreeNode | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const scan = useCallback(async () => {
+  const scan = useCallback(async (options?: { silent?: boolean }) => {
     if (!activeDirectory) {
       setTree(null)
       setError(null)
       return
     }
 
-    setLoading(true)
+    if (!options?.silent) {
+      setLoading(true)
+    }
     setError(null)
     try {
       const result = await scanActiveDirectory()
@@ -23,12 +28,32 @@ export function useDirectoryScan(activeDirectory: string) {
       setError(err instanceof Error ? err.message : 'スキャンに失敗しました')
       setTree(null)
     } finally {
-      setLoading(false)
+      if (!options?.silent) {
+        setLoading(false)
+      }
     }
   }, [activeDirectory])
 
   useEffect(() => {
     void scan()
+  }, [scan])
+
+  useEffect(() => {
+    void startDirectoryWatch(activeDirectory)
+  }, [activeDirectory])
+
+  useEffect(() => {
+    let timeout: number | undefined
+    const unsubscribe = EventsOn('directory:changed', () => {
+      window.clearTimeout(timeout)
+      timeout = window.setTimeout(() => {
+        void scan({ silent: true })
+      }, RESCAN_DEBOUNCE_MS)
+    })
+    return () => {
+      unsubscribe()
+      window.clearTimeout(timeout)
+    }
   }, [scan])
 
   return { tree, loading, error, rescan: scan }

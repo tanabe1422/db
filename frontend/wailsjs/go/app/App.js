@@ -6,6 +6,22 @@ export function AddDirectory(arg1) {
   return window['go']['app']['App']['AddDirectory'](arg1);
 }
 
+export function CopyFile(arg1, arg2) {
+  return window['go']['app']['App']['CopyFile'](arg1, arg2);
+}
+
+export function CreateDirectory(arg1, arg2) {
+  return window['go']['app']['App']['CreateDirectory'](arg1, arg2);
+}
+
+export function CreateTableJSONFile(arg1, arg2) {
+  return window['go']['app']['App']['CreateTableJSONFile'](arg1, arg2);
+}
+
+export function DeleteFile(arg1) {
+  return window['go']['app']['App']['DeleteFile'](arg1);
+}
+
 export function EnsureExportRelDir(arg1, arg2) {
   return window['go']['app']['App']['EnsureExportRelDir'](arg1, arg2);
 }
@@ -22,12 +38,20 @@ export function GenerateXlsxExport(arg1) {
   return window['go']['app']['App']['GenerateXlsxExport'](arg1);
 }
 
+export function GetFileStat(arg1) {
+  return window['go']['app']['App']['GetFileStat'](arg1);
+}
+
 export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
 }
 
 export function ImportXlsxDirectory(arg1, arg2) {
   return window['go']['app']['App']['ImportXlsxDirectory'](arg1, arg2);
+}
+
+export function InitAISetup(arg1) {
+  return window['go']['app']['App']['InitAISetup'](arg1);
 }
 
 export function ListGitCommits(arg1, arg2, arg3) {
@@ -40,6 +64,18 @@ export function ListGitTableFiles(arg1, arg2) {
 
 export function MoveDirectory(arg1, arg2) {
   return window['go']['app']['App']['MoveDirectory'](arg1, arg2);
+}
+
+export function MoveFile(arg1, arg2) {
+  return window['go']['app']['App']['MoveFile'](arg1, arg2);
+}
+
+export function OpenTerminal(arg1) {
+  return window['go']['app']['App']['OpenTerminal'](arg1);
+}
+
+export function OpenWithDefaultApp(arg1) {
+  return window['go']['app']['App']['OpenWithDefaultApp'](arg1);
 }
 
 export function PickDirectory() {
@@ -58,8 +94,16 @@ export function ReadTableFile(arg1) {
   return window['go']['app']['App']['ReadTableFile'](arg1);
 }
 
+export function ReadTextFile(arg1) {
+  return window['go']['app']['App']['ReadTextFile'](arg1);
+}
+
 export function RemoveDirectory(arg1) {
   return window['go']['app']['App']['RemoveDirectory'](arg1);
+}
+
+export function RenameEntry(arg1, arg2) {
+  return window['go']['app']['App']['RenameEntry'](arg1, arg2);
 }
 
 export function ResolveGitRepo(arg1) {
@@ -82,6 +126,10 @@ export function ShowInExplorer(arg1) {
   return window['go']['app']['App']['ShowInExplorer'](arg1);
 }
 
+export function StartDirectoryWatch(arg1) {
+  return window['go']['app']['App']['StartDirectoryWatch'](arg1);
+}
+
 export function WriteExportBinaryFile(arg1, arg2, arg3) {
   return window['go']['app']['App']['WriteExportBinaryFile'](arg1, arg2, arg3);
 }
@@ -92,4 +140,8 @@ export function WriteExportFile(arg1, arg2, arg3) {
 
 export function WriteTableFile(arg1, arg2) {
   return window['go']['app']['App']['WriteTableFile'](arg1, arg2);
+}
+
+export function WriteTextFile(arg1, arg2) {
+  return window['go']['app']['App']['WriteTextFile'](arg1, arg2);
 }

@@ -8,7 +8,11 @@
 .content {
   flex: 1;
   overflow: auto;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
+}
+
+.contentText {
+  padding: 0;
 }
 
 .panel {

@@ -28,5 +28,11 @@
 
 .item:disabled {
   color: var(--color-slate-400);
-  cursor: not-allowed;
+  cursor: default;
+}
+
+.separator {
+  height: 1px;
+  margin: 0.25rem 0;
+  background: var(--color-slate-200);
 }

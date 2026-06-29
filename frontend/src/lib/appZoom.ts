@@ -55,6 +55,12 @@ export function getAppZoomFactor(): number {
   return levelToFactor(readStoredZoomLevel())
 }
 
+export const ZOOM_CHANGE_EVENT = 'db-gui:zoom-change'
+
+export function dispatchZoomChange() {
+  window.dispatchEvent(new Event(ZOOM_CHANGE_EVENT))
+}
+
 /** Convert viewport pointer coords for `position: fixed` menus under app zoom. */
 export function toContextMenuPosition(
   clientX: number,
@@ -64,5 +70,115 @@ export function toContextMenuPosition(
   return {
     x: clientX / factor,
     y: clientY / factor,
+  }
+}
+
+/** Convert `getBoundingClientRect()` for portaled `position: fixed` overlays under app zoom. */
+export function toFixedOverlayRect(
+  rect: Pick<DOMRect, 'top' | 'left' | 'bottom' | 'width'>,
+  gap = 2,
+): { top: number; left: number; width: number } {
+  const factor = getAppZoomFactor()
+  return {
+    top: (rect.bottom + gap) / factor,
+    left: rect.left / factor,
+    width: rect.width / factor,
+  }
+}
+
+/** Anchor point below trigger center for portaled tooltips (`transform: translateX(-50%)`). */
+export function toTooltipPosition(
+  rect: Pick<DOMRect, 'left' | 'bottom' | 'width'>,
+  gap = 6,
+): { top: number; left: number } {
+  const factor = getAppZoomFactor()
+  return {
+    top: (rect.bottom + gap) / factor,
+    left: (rect.left + rect.width / 2) / factor,
+  }
+}
+
+export type TooltipAlign = 'center' | 'start' | 'end'
+
+export interface TooltipPosition {
+  top: number
+  left: number
+  align: TooltipAlign
+}
+
+function fitsHorizontally(
+  leftEdge: number,
+  rightEdge: number,
+  margin: number,
+  viewportW: number,
+): boolean {
+  return leftEdge >= margin && rightEdge <= viewportW - margin
+}
+
+/** Pick horizontal anchor so the tooltip stays inside the viewport. */
+export function computeTooltipHorizontalPosition(
+  triggerRect: Pick<DOMRect, 'left' | 'width'>,
+  tooltipWidth: number,
+  margin = 8,
+): { left: number; align: TooltipAlign } {
+  const viewportW = window.innerWidth
+  const triggerLeft = triggerRect.left
+  const triggerRight = triggerRect.left + triggerRect.width
+  const triggerCenter = triggerLeft + triggerRect.width / 2
+  const halfW = tooltipWidth / 2
+
+  const centerLeft = triggerCenter - halfW
+  const centerRight = triggerCenter + halfW
+  if (fitsHorizontally(centerLeft, centerRight, margin, viewportW)) {
+    return { left: triggerCenter, align: 'center' }
+  }
+
+  const endRight = triggerRight
+  const endLeft = endRight - tooltipWidth
+  if (fitsHorizontally(endLeft, endRight, margin, viewportW)) {
+    return { left: endRight, align: 'end' }
+  }
+
+  const startLeft = triggerLeft
+  const startRight = startLeft + tooltipWidth
+  if (fitsHorizontally(startLeft, startRight, margin, viewportW)) {
+    return { left: startLeft, align: 'start' }
+  }
+
+  if (triggerCenter >= viewportW / 2) {
+    const right = Math.min(triggerRight, viewportW - margin)
+    return { left: Math.max(margin + tooltipWidth, right), align: 'end' }
+  }
+
+  const left = Math.max(triggerLeft, margin)
+  return { left: Math.min(left, viewportW - margin - tooltipWidth), align: 'start' }
+}
+
+/** Clamp a portaled tooltip within the viewport (zoom-aware). */
+export function computeTooltipPosition(
+  triggerRect: Pick<DOMRect, 'top' | 'left' | 'bottom' | 'width'>,
+  tooltipRect: Pick<DOMRect, 'width' | 'height'>,
+  gap = 6,
+  margin = 8,
+): TooltipPosition {
+  const factor = getAppZoomFactor()
+  const viewportH = window.innerHeight
+
+  const { left: leftViewport, align } = computeTooltipHorizontalPosition(
+    triggerRect,
+    tooltipRect.width,
+    margin,
+  )
+
+  let topViewport = triggerRect.bottom + gap
+  if (topViewport + tooltipRect.height > viewportH - margin) {
+    topViewport = triggerRect.top - gap - tooltipRect.height
+  }
+  topViewport = Math.max(topViewport, margin)
+
+  return {
+    top: topViewport / factor,
+    left: leftViewport / factor,
+    align,
   }
 }

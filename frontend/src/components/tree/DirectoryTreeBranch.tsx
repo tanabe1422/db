@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Folder } from 'lucide-react'
 
 import type { TreeNode } from '../../types'
 import { useTreeExpansion } from '../../hooks/useTreeExpansion'
+import { treeNodeTooltip } from '../../utils/relPathWithinRoot'
 import { Button } from '../ui/Button'
 
 export interface DirectoryTreeBranchStyles {
@@ -15,6 +16,7 @@ export interface DirectoryTreeBranchStyles {
 
 interface DirectoryTreeBranchProps {
   node: TreeNode
+  rootDirectory: string
   depth: number
   paddingLeft: number
   styles: DirectoryTreeBranchStyles
@@ -27,6 +29,7 @@ interface DirectoryTreeBranchProps {
 
 export function DirectoryTreeBranch({
   node,
+  rootDirectory,
   depth,
   paddingLeft,
   styles,
@@ -57,7 +60,8 @@ export function DirectoryTreeBranch({
           ? (event) => onNodeContextMenu(node, event)
           : undefined
       }
-      title={node.path || node.name}
+      tooltip={treeNodeTooltip(rootDirectory, node)}
+      tooltipWrap
     >
       <span className={styles.caret}>
         {hasChildren ? (

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
@@ -13,11 +14,17 @@ import (
 	"db-gui/internal/scanner"
 )
 
-const tableJSONSuffix = ".table.json"
+const (
+	tableJSONSuffix = ".table.json"
+	sqlSuffix       = ".sql"
+)
 
 // App exposes methods to the React frontend via Wails bindings.
 type App struct {
 	ctx context.Context
+
+	watchMu     sync.Mutex
+	watchCancel context.CancelFunc
 }
 
 func New() *App {
@@ -26,6 +33,10 @@ func New() *App {
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+func (a *App) Shutdown(ctx context.Context) {
+	a.stopDirectoryWatch()
 }
 
 func (a *App) GetSettings() (config.Settings, error) {
@@ -155,6 +166,59 @@ func (a *App) ReadTableFile(path string) (string, error) {
 	}
 
 	return string(data), nil
+}
+
+// ReadTextFile reads the raw text content of a *.sql file located under one of
+// the configured directories.
+func (a *App) ReadTextFile(path string) (string, error) {
+	abs, err := filepath.Abs(filepath.Clean(path))
+	if err != nil {
+		return "", err
+	}
+
+	if !strings.HasSuffix(strings.ToLower(abs), sqlSuffix) {
+		return "", errors.New("not a *.sql file")
+	}
+
+	settings, err := config.Load()
+	if err != nil {
+		return "", err
+	}
+
+	if !isUnderConfiguredDirectory(abs, settings.Directories) {
+		return "", errors.New("path is outside the configured directories")
+	}
+
+	data, err := os.ReadFile(abs)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
+// WriteTextFile writes content back to a *.sql file. The same safety checks as
+// ReadTextFile apply.
+func (a *App) WriteTextFile(path string, content string) error {
+	abs, err := filepath.Abs(filepath.Clean(path))
+	if err != nil {
+		return err
+	}
+
+	if !strings.HasSuffix(strings.ToLower(abs), sqlSuffix) {
+		return errors.New("not a *.sql file")
+	}
+
+	settings, err := config.Load()
+	if err != nil {
+		return err
+	}
+
+	if !isUnderConfiguredDirectory(abs, settings.Directories) {
+		return errors.New("path is outside the configured directories")
+	}
+
+	return os.WriteFile(abs, []byte(content), 0o644)
 }
 
 // WriteTableFile writes content back to a *.table.json file. The same safety

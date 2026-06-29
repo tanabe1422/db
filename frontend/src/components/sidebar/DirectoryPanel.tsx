@@ -1,12 +1,9 @@
-import { FolderCog, GitBranch, GitCompare, RefreshCw } from 'lucide-react'
-
 import type { TreeNode as TreeNodeType } from '../../types'
 import { useTreeContextMenu } from '../../hooks/useTreeContextMenu'
-import { truncateMiddle } from '../../utils/truncateMiddle'
-import { SidebarIconBar } from '../layout/SidebarIconBar'
 import { AlertDialog } from '../ui/AlertDialog'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { ContextMenu } from '../ui/ContextMenu'
-import { IconButton } from '../ui/Button'
+import { PromptDialog } from '../ui/PromptDialog'
 
 import styles from './DirectoryPanel.module.css'
 import { TreeNode } from './TreeNode'
@@ -18,10 +15,7 @@ interface DirectoryPanelProps {
   error: string | null
   selectedPath?: string
   onSelectFile?: (path: string) => void
-  onManageDirectories?: () => void
   onRescan?: () => void
-  onEnterDiffMode?: () => void
-  onEnterGitDiffMode?: () => void
 }
 
 export function DirectoryPanel({
@@ -31,84 +25,58 @@ export function DirectoryPanel({
   error,
   selectedPath,
   onSelectFile,
-  onManageDirectories,
   onRescan,
-  onEnterDiffMode,
-  onEnterGitDiffMode,
 }: DirectoryPanelProps) {
-  const { menu, importFailures, closeImportFailures, openNodeMenu, closeMenu } =
-    useTreeContextMenu({
-      activeDirectory,
-      enableCreateScript: true,
-      onRescan,
-    })
+  const {
+    menu,
+    importFailures,
+    prompt,
+    deleteConfirm,
+    closeImportFailures,
+    openNodeMenu,
+    closeMenu,
+    closePrompt,
+    closeDeleteConfirm,
+    confirmDelete,
+  } = useTreeContextMenu({
+    activeDirectory,
+    enableCreateScript: true,
+    enableFileOperations: true,
+    onRescan,
+  })
 
   return (
-    <aside className={styles.panel}>
-      <div className={styles.header}>
-        <SidebarIconBar>
-          <IconButton
-            onClick={onManageDirectories}
-            aria-label="ディレクトリを追加・編集"
-          >
-            <FolderCog size={16} aria-hidden="true" />
-          </IconButton>
-          <IconButton
-            onClick={onRescan}
-            disabled={!activeDirectory || loading}
-            aria-label="再読込"
-          >
-            <RefreshCw size={16} aria-hidden="true" />
-          </IconButton>
-          <IconButton
-            onClick={onEnterDiffMode}
-            disabled={!activeDirectory}
-            aria-label="フォルダ比較"
-            title="フォルダ比較"
-          >
-            <GitCompare size={16} aria-hidden="true" />
-          </IconButton>
-          <IconButton
-            onClick={onEnterGitDiffMode}
-            disabled={!activeDirectory}
-            aria-label="Git 履歴比較"
-            title="Git 履歴比較"
-          >
-            <GitBranch size={16} aria-hidden="true" />
-          </IconButton>
-        </SidebarIconBar>
-        {activeDirectory && (
-          <p className={styles.root} title={activeDirectory}>
-            {truncateMiddle(activeDirectory, 48)}
-          </p>
-        )}
-      </div>
-
-      <div className={styles.body}>
+    <>
+      <div className={styles.root}>
+        <div className={styles.scroll}>
         {!activeDirectory && (
           <p className={styles.empty}>
-            左のパネル上部から参照ディレクトリを追加してください。
+            上部のフォルダボタンから参照ディレクトリを追加してください。
           </p>
         )}
         {activeDirectory && loading && (
           <p className={styles.empty}>スキャン中...</p>
         )}
         {error && <p className={styles.error}>{error}</p>}
-        {activeDirectory && !loading && !error && tree && tree.children.length === 0 && (
-          <p className={styles.empty}>
-            *.table.json が見つかりませんでした。
-          </p>
+        {activeDirectory && !loading && !error && tree && (
+          <>
+            {tree.children.length === 0 && (
+              <p className={styles.empty}>
+                対象ファイル（*.table.json / *.sql / *.xlsx）が見つかりませんでした。ルートを右クリックして作成できます。
+              </p>
+            )}
+            <div className={styles.tree}>
+              <TreeNode
+                node={tree}
+                rootDirectory={activeDirectory}
+                selectedPath={selectedPath}
+                onSelect={onSelectFile}
+                onNodeContextMenu={openNodeMenu}
+              />
+            </div>
+          </>
         )}
-        {activeDirectory && !loading && !error && tree && tree.children.length > 0 && (
-          <div className={styles.tree}>
-            <TreeNode
-              node={tree}
-              selectedPath={selectedPath}
-              onSelect={onSelectFile}
-              onNodeContextMenu={openNodeMenu}
-            />
-          </div>
-        )}
+        </div>
       </div>
 
       {menu && (
@@ -133,6 +101,31 @@ export function DirectoryPanel({
         }))}
         onClose={closeImportFailures}
       />
-    </aside>
+      <PromptDialog
+        open={prompt !== null}
+        title={prompt?.title ?? ''}
+        label={prompt?.label}
+        defaultValue={prompt?.defaultValue}
+        onConfirm={(value) => {
+          void prompt?.onSubmit(value)
+          closePrompt()
+        }}
+        onCancel={closePrompt}
+      />
+      <ConfirmDialog
+        open={deleteConfirm !== null}
+        title="ファイルを削除"
+        message={
+          deleteConfirm
+            ? `「${deleteConfirm.name}」を削除しますか？この操作は元に戻せません。`
+            : ''
+        }
+        confirmLabel="削除"
+        onConfirm={() => {
+          void confirmDelete()
+        }}
+        onCancel={closeDeleteConfirm}
+      />
+    </>
   )
 }

@@ -19,7 +19,7 @@ export function RowActions({ editor, rowId, index, total }: RowActionsProps) {
         onClick={() => editor.moveRowUp(rowId)}
         disabled={index === 0}
         aria-label="上と入れ替え"
-        title="上と入れ替え"
+        tooltip="上と入れ替え"
       >
         <ArrowUp size={14} aria-hidden="true" />
       </IconButton>
@@ -28,7 +28,7 @@ export function RowActions({ editor, rowId, index, total }: RowActionsProps) {
         onClick={() => editor.moveRowDown(rowId)}
         disabled={index === total - 1}
         aria-label="下と入れ替え"
-        title="下と入れ替え"
+        tooltip="下と入れ替え"
       >
         <ArrowDown size={14} aria-hidden="true" />
       </IconButton>
@@ -37,7 +37,7 @@ export function RowActions({ editor, rowId, index, total }: RowActionsProps) {
         onClick={() => editor.deleteRow(rowId)}
         disabled={total <= 1}
         aria-label="削除"
-        title="削除"
+        tooltip="削除"
       >
         <Trash2 size={14} aria-hidden="true" />
       </IconButton>
@@ -45,7 +45,7 @@ export function RowActions({ editor, rowId, index, total }: RowActionsProps) {
         size="sm"
         onClick={() => editor.addRowBelow(rowId)}
         aria-label="下に新しい行を追加"
-        title="下に新しい行を追加"
+        tooltip="下に新しい行を追加"
       >
         <Plus size={14} aria-hidden="true" />
       </IconButton>
@@ -54,7 +54,7 @@ export function RowActions({ editor, rowId, index, total }: RowActionsProps) {
         onClick={() => editor.pasteBelow(rowId)}
         disabled={editor.clipboardCount === 0}
         aria-label="コピーを下に貼り付け"
-        title="コピーを下に貼り付け"
+        tooltip="コピーを下に貼り付け"
       >
         <ClipboardPaste size={14} aria-hidden="true" />
       </IconButton>

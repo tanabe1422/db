@@ -48,7 +48,13 @@ const entries: FileDiffEntry[] = [
 ]
 
 export const WithDifferences: Story = {
-  args: { entries },
+  args: {
+    entries,
+    migrateScriptExport: {
+      onClick: () => undefined,
+      disabled: false,
+    },
+  },
 }
 
 export const Loading: Story = {

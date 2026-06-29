@@ -1,13 +1,13 @@
-import { ArrowLeft, Download } from 'lucide-react'
 import type { MouseEvent } from 'react'
 
 import type { TreeNode } from '../../types'
 import { useTreeContextMenu } from '../../hooks/useTreeContextMenu'
 import { cx } from '../../utils/cx'
+import { relPathWithinRoot } from '../../utils/relPathWithinRoot'
 import { truncateMiddle } from '../../utils/truncateMiddle'
-import { SidebarIconBar } from '../layout/SidebarIconBar'
 import { IconButton } from '../ui/Button'
 import { ContextMenu } from '../ui/ContextMenu'
+import { Tooltip } from '../ui/Tooltip'
 
 import { DirectoryTreeBranch } from '../tree/DirectoryTreeBranch'
 import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
@@ -20,8 +20,6 @@ interface DiffSetupPanelProps {
   rightPath?: string
   onSelectLeft: (node: TreeNode) => void
   onSelectRight: (node: TreeNode) => void
-  onExitDiff: () => void
-  onExportMigrateScripts?: () => void
 }
 
 const branchStyles = {
@@ -36,8 +34,13 @@ function diffPadding(depth: number) {
   return depth * 14 + 8
 }
 
+function displayRelPath(activeDirectory: string, path: string): string {
+  return relPathWithinRoot(activeDirectory, path) || path.split(/[\\/]/).pop() || path
+}
+
 function DiffFolderRow({
   node,
+  rootDirectory,
   depth,
   leftPath,
   rightPath,
@@ -46,6 +49,7 @@ function DiffFolderRow({
   onNodeContextMenu,
 }: {
   node: TreeNode
+  rootDirectory: string
   depth: number
   leftPath?: string
   rightPath?: string
@@ -61,6 +65,7 @@ function DiffFolderRow({
       <DiffFolderRow
         key={child.path || child.name}
         node={child}
+        rootDirectory={rootDirectory}
         depth={childDepth}
         leftPath={leftPath}
         rightPath={rightPath}
@@ -74,6 +79,7 @@ function DiffFolderRow({
   return (
     <DirectoryTreeBranch
       node={node}
+      rootDirectory={rootDirectory}
       depth={depth}
       paddingLeft={diffPadding(depth)}
       styles={branchStyles}
@@ -114,8 +120,6 @@ export function DiffSetupPanel({
   rightPath,
   onSelectLeft,
   onSelectRight,
-  onExitDiff,
-  onExportMigrateScripts,
 }: DiffSetupPanelProps) {
   const { menu, openNodeMenu, closeMenu } = useTreeContextMenu({
     activeDirectory,
@@ -125,51 +129,42 @@ export function DiffSetupPanel({
   })
 
   return (
-    <aside className={styles.panel}>
-      <div className={styles.header}>
-        <SidebarIconBar>
-          <IconButton onClick={onExitDiff} aria-label="編集に戻る" title="編集に戻る">
-            <ArrowLeft size={16} aria-hidden="true" />
-          </IconButton>
-          <IconButton
-            onClick={onExportMigrateScripts}
-            disabled={!leftPath || !rightPath}
-            aria-label="変更スクリプト生成"
-            title="変更スクリプト生成"
-          >
-            <Download size={16} aria-hidden="true" />
-          </IconButton>
-        </SidebarIconBar>
-        <h2 className={styles.title}>フォルダ比較</h2>
+    <div className={styles.root}>
+      <div className={styles.subHeader}>
         <div className={styles.selection}>
           <p className={styles.selRow}>
             <span className={styles.tagLeft} aria-hidden="true">
               <DiffSideMark side="left" />
             </span>
-            <span className={styles.selValue} title={leftPath}>
-              {leftPath ? truncateMiddle(leftPath, 36) : '未選択'}
-            </span>
+            <Tooltip content={leftPath ?? ''} wrap>
+              <span className={styles.selValue}>
+                {leftPath ? truncateMiddle(displayRelPath(activeDirectory, leftPath), 36) : '未選択'}
+              </span>
+            </Tooltip>
           </p>
           <p className={styles.selRow}>
             <span className={styles.tagRight} aria-hidden="true">
               <DiffSideMark side="right" />
             </span>
-            <span className={styles.selValue} title={rightPath}>
-              {rightPath ? truncateMiddle(rightPath, 36) : '未選択'}
-            </span>
+            <Tooltip content={rightPath ?? ''} wrap>
+              <span className={styles.selValue}>
+                {rightPath ? truncateMiddle(displayRelPath(activeDirectory, rightPath), 36) : '未選択'}
+              </span>
+            </Tooltip>
           </p>
         </div>
       </div>
 
-      <div className={styles.body}>
+      <div className={styles.scroll}>
         {!activeDirectory && (
           <p className={styles.empty}>
-            参照ディレクトリが未設定です。先に「編集に戻る」からディレクトリを追加してください。
+            参照ディレクトリが未設定です。上部のフォルダボタンから追加してください。
           </p>
         )}
         {activeDirectory && tree && (
           <DiffFolderRow
             node={tree}
+            rootDirectory={activeDirectory}
             depth={0}
             leftPath={leftPath}
             rightPath={rightPath}
@@ -188,6 +183,6 @@ export function DiffSetupPanel({
           onClose={closeMenu}
         />
       )}
-    </aside>
+    </div>
   )
 }

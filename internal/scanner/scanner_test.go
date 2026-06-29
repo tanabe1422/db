@@ -22,6 +22,12 @@ func TestScanIncludesAllDirectories(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dbDir, "orders.table.json"), []byte("{}"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.WriteFile(filepath.Join(dbDir, "users.sql"), []byte("CREATE TABLE users;"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dbDir, "orders.xlsx"), []byte("xlsx"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(filepath.Join(otherDir, "readme.txt"), []byte("x"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +56,7 @@ func TestScanIncludesAllDirectories(t *testing.T) {
 		}
 	}
 
-	if dbNode == nil || len(dbNode.Children) != 2 {
+	if dbNode == nil || len(dbNode.Children) != 4 {
 		t.Fatalf("unexpected db node: %+v", dbNode)
 	}
 	if dbNode.Children[0].Path == "" || dbNode.Children[1].Path == "" {

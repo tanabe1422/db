@@ -1,7 +1,18 @@
 import { useCallback, useState } from 'react'
 import { useAppZoom } from './hooks/useAppZoom'
 import { MainLayout } from './components/layout/MainLayout'
+import { EditToolbar } from './components/toolbar/EditToolbar'
+import {
+  emptyEditorToolbarBridge,
+  type EditorToolbarBridge,
+} from './components/toolbar/editorToolbarBridge'
+import { OpenTerminalButton } from './components/toolbar/OpenTerminalButton'
+import { WorkspaceToolbar } from './components/toolbar/WorkspaceToolbar'
 import { DirectoryPanel } from './components/sidebar/DirectoryPanel'
+import {
+  SidebarPanelLayout,
+  type SidebarMode,
+} from './components/sidebar/SidebarPanelLayout'
 import { SettingsDialog } from './components/settings/SettingsDialog'
 import { ConfirmDialog } from './components/ui/ConfirmDialog'
 import { TabBar } from './components/tabs/TabBar'
@@ -9,21 +20,27 @@ import { DiffSetupPanel } from './components/diff/DiffSetupPanel'
 import { DiffWorkspace } from './components/diff/DiffWorkspace'
 import { GitDiffSetupPanel } from './components/diff/GitDiffSetupPanel'
 import { GitDiffWorkspace } from './components/diff/GitDiffWorkspace'
-import { TableDefinitionPanel } from './components/workspace/TableDefinitionPanel'
+import { WorkspaceFilePanel } from './components/workspace/WorkspaceFilePanel'
 import { useDirectoryScan } from './hooks/useDirectoryScan'
+import { useOpenTerminal } from './hooks/useOpenTerminal'
 import { useSettings } from './hooks/useSettings'
 import { useTabWorkspace } from './hooks/useTabWorkspace'
-import { exportMigrateScripts } from './lib/scriptExport'
+import { exportGitMigrateScripts, exportMigrateScripts } from './lib/scriptExport'
 import type { GitCommit, TreeNode } from './types'
+import { cx } from './utils/cx'
+import { getTreeFileKindFromPath } from './utils/treeFileKind'
 import styles from './App.module.css'
 
-type AppMode = 'edit' | 'diff' | 'git-diff'
+type AppMode = SidebarMode
 
 function App() {
   useAppZoom()
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [mode, setMode] = useState<AppMode>('edit')
+  const [editorBridge, setEditorBridge] = useState<EditorToolbarBridge>(
+    emptyEditorToolbarBridge,
+  )
   const [leftNode, setLeftNode] = useState<TreeNode | null>(null)
   const [rightNode, setRightNode] = useState<TreeNode | null>(null)
   const [leftCommit, setLeftCommit] = useState<GitCommit | null>(null)
@@ -51,6 +68,8 @@ function App() {
     settings.activeDirectory,
   )
 
+  const openTerminal = useOpenTerminal(settings.activeDirectory)
+
   const handleAdd = useCallback(async () => {
     await addDirectory()
     await rescan()
@@ -68,51 +87,94 @@ function App() {
     async (path: string) => {
       await setActiveDirectory(path)
       resetTabs()
+      setLeftNode(null)
+      setRightNode(null)
+      setLeftCommit(null)
+      setRightCommit(null)
       await rescan()
     },
     [setActiveDirectory, rescan, resetTabs],
   )
 
-  const enterDiffMode = useCallback(() => {
-    setMode('diff')
-  }, [])
-
-  const enterGitDiffMode = useCallback(() => {
-    setMode('git-diff')
-  }, [])
-
-  const exitDiffMode = useCallback(() => {
-    setMode('edit')
-    setLeftNode(null)
-    setRightNode(null)
-  }, [])
-
-  const exitGitDiffMode = useCallback(() => {
-    setMode('edit')
-    setLeftCommit(null)
-    setRightCommit(null)
+  const handleModeChange = useCallback((nextMode: AppMode) => {
+    setMode(nextMode)
   }, [])
 
   const handleExportMigrateScripts = useCallback(() => {
-    if (!leftNode || !rightNode || !settings.activeDirectory) {
+    if (!settings.activeDirectory) {
       return
     }
-    void exportMigrateScripts(
-      settings.activeDirectory,
-      leftNode,
-      rightNode,
-    ).catch((err: unknown) => {
+
+    const run = async () => {
+      if (mode === 'git-diff') {
+        if (!leftCommit || !rightCommit) {
+          return
+        }
+        await exportGitMigrateScripts(
+          settings.activeDirectory,
+          leftCommit.hash,
+          rightCommit.hash,
+        )
+        return
+      }
+
+      if (!leftNode || !rightNode) {
+        return
+      }
+      await exportMigrateScripts(
+        settings.activeDirectory,
+        leftNode,
+        rightNode,
+      )
+    }
+
+    void run().catch((err: unknown) => {
       const message =
         err instanceof Error ? err.message : '変更スクリプトの生成に失敗しました'
       window.alert(message)
     })
-  }, [leftNode, rightNode, settings.activeDirectory])
+  }, [
+    mode,
+    leftNode,
+    rightNode,
+    leftCommit,
+    rightCommit,
+    settings.activeDirectory,
+  ])
+
+  const activeIsTextFile =
+    activePath !== '' && getTreeFileKindFromPath(activePath) === 'sql'
 
   return (
     <>
       <MainLayout
+        toolbar={
+          <WorkspaceToolbar
+            trailing={
+              <OpenTerminalButton
+                disabled={!settings.activeDirectory}
+                onOpen={openTerminal}
+              />
+            }
+          >
+            {mode === 'edit' && (
+              <EditToolbar
+                editor={editorBridge.editor}
+                onSave={editorBridge.onSave}
+              />
+            )}
+          </WorkspaceToolbar>
+        }
         sidebar={
-            mode === 'diff' ? (
+          <SidebarPanelLayout
+            mode={mode}
+            activeDirectory={settings.activeDirectory}
+            loading={loading}
+            onManageDirectories={() => setSettingsOpen(true)}
+            onRescan={() => void rescan()}
+            onModeChange={handleModeChange}
+          >
+            {mode === 'diff' ? (
               <DiffSetupPanel
                 activeDirectory={settings.activeDirectory}
                 tree={tree}
@@ -120,8 +182,6 @@ function App() {
                 rightPath={rightNode?.path}
                 onSelectLeft={setLeftNode}
                 onSelectRight={setRightNode}
-                onExitDiff={exitDiffMode}
-                onExportMigrateScripts={handleExportMigrateScripts}
               />
             ) : mode === 'git-diff' ? (
               <GitDiffSetupPanel
@@ -130,7 +190,6 @@ function App() {
                 rightHash={rightCommit?.hash}
                 onSelectLeft={setLeftCommit}
                 onSelectRight={setRightCommit}
-                onExitGitDiff={exitGitDiffMode}
               />
             ) : (
               <DirectoryPanel
@@ -140,18 +199,24 @@ function App() {
                 error={error}
                 selectedPath={activePath}
                 onSelectFile={handleSelectFile}
-                onManageDirectories={() => setSettingsOpen(true)}
                 onRescan={() => void rescan()}
-                onEnterDiffMode={enterDiffMode}
-                onEnterGitDiffMode={enterGitDiffMode}
               />
-            )
-          }
+            )}
+          </SidebarPanelLayout>
+        }
         >
           {mode === 'diff' ? (
             <div className={styles.workspace}>
               <div className={styles.content}>
-                <DiffWorkspace leftNode={leftNode} rightNode={rightNode} />
+                <DiffWorkspace
+                  activeDirectory={settings.activeDirectory}
+                  leftNode={leftNode}
+                  rightNode={rightNode}
+                  migrateScriptExport={{
+                    onClick: handleExportMigrateScripts,
+                    disabled: !leftNode || !rightNode,
+                  }}
+                />
               </div>
             </div>
           ) : mode === 'git-diff' ? (
@@ -161,6 +226,10 @@ function App() {
                   activeDirectory={settings.activeDirectory}
                   leftCommit={leftCommit}
                   rightCommit={rightCommit}
+                  migrateScriptExport={{
+                    onClick: handleExportMigrateScripts,
+                    disabled: !leftCommit || !rightCommit,
+                  }}
                 />
               </div>
             </div>
@@ -177,7 +246,7 @@ function App() {
                   onCloseAllSaved={closeAllSavedTabs}
                 />
               )}
-              <div className={styles.content}>
+              <div className={cx(styles.content, activeIsTextFile && styles.contentText)}>
                 {openPaths.length === 0 ? (
                   <div className={styles.placeholder}>
                     <h2>テーブル定義を選択</h2>
@@ -190,9 +259,12 @@ function App() {
                       className={styles.panel}
                       style={{ display: path === activePath ? 'block' : 'none' }}
                     >
-                      <TableDefinitionPanel
+                      <WorkspaceFilePanel
                         path={path}
+                        isActive={path === activePath}
+                        inlineToolbar={false}
                         onDirtyChange={(dirty) => updateDirty(path, dirty)}
+                        onEditorBridgeChange={setEditorBridge}
                       />
                     </div>
                   ))
@@ -210,6 +282,7 @@ function App() {
         onRemove={(path) => void handleRemove(path)}
         onSetActive={(path) => void handleSetActive(path)}
         onMove={(path, offset) => void moveDirectory(path, offset)}
+        onAISetupComplete={() => void rescan()}
       />
 
       <ConfirmDialog

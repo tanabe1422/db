@@ -1,4 +1,3 @@
-import { PanelLeft } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -10,8 +9,7 @@ import {
 } from 'react'
 
 import { cx } from '../../utils/cx'
-import { IconButton } from '../ui/Button'
-import { SidebarContext } from './sidebarContext'
+import { SidebarContext, useSidebar } from './sidebarContext'
 import styles from './CollapsibleSidebar.module.css'
 
 const STORAGE_KEY = 'db-gui.sidebarCollapsed'
@@ -60,19 +58,13 @@ function clampWidth(width: number) {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width))
 }
 
-interface CollapsibleSidebarProps {
+interface SidebarProviderProps {
   children: ReactNode
 }
 
-export function CollapsibleSidebar({ children }: CollapsibleSidebarProps) {
+export function SidebarProvider({ children }: SidebarProviderProps) {
   const [collapsed, setCollapsed] = useState(readCollapsed)
   const [width, setWidth] = useState(readWidth)
-  const [resizing, setResizing] = useState(false)
-  const widthRef = useRef(width)
-
-  useEffect(() => {
-    widthRef.current = width
-  }, [width])
 
   useEffect(() => {
     writeCollapsed(collapsed)
@@ -80,6 +72,35 @@ export function CollapsibleSidebar({ children }: CollapsibleSidebarProps) {
 
   const expand = useCallback(() => setCollapsed(false), [])
   const collapse = useCallback(() => setCollapsed(true), [])
+  const setSidebarWidth = useCallback(
+    (nextWidth: number) => setWidth(clampWidth(nextWidth)),
+    [],
+  )
+
+  const contextValue = useMemo(
+    () => ({ collapsed, width, collapse, expand, setWidth: setSidebarWidth }),
+    [collapsed, width, collapse, expand, setSidebarWidth],
+  )
+
+  return (
+    <SidebarContext.Provider value={contextValue}>
+      {children}
+    </SidebarContext.Provider>
+  )
+}
+
+interface CollapsibleSidebarProps {
+  children: ReactNode
+}
+
+export function CollapsibleSidebar({ children }: CollapsibleSidebarProps) {
+  const { collapsed, width, setWidth } = useSidebar()
+  const [resizing, setResizing] = useState(false)
+  const widthRef = useRef(width)
+
+  useEffect(() => {
+    widthRef.current = width
+  }, [width])
 
   const handleResizeStart = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -110,51 +131,32 @@ export function CollapsibleSidebar({ children }: CollapsibleSidebarProps) {
     [collapsed],
   )
 
-  const contextValue = useMemo(
-    () => ({ collapsed, collapse, expand }),
-    [collapsed, collapse, expand],
-  )
-
   const wrapperStyle = {
     '--sidebar-width': `${width}px`,
   } as CSSProperties
 
   return (
-    <SidebarContext.Provider value={contextValue}>
-      <div
-        className={cx(
-          styles.wrapper,
-          collapsed && styles.wrapperCollapsed,
-          resizing && styles.wrapperResizing,
-        )}
-        style={wrapperStyle}
-        data-collapsed={collapsed || undefined}
-      >
-        <div className={styles.content} hidden={collapsed}>
-          {children}
-        </div>
-        {!collapsed && (
-          <div
-            className={styles.resizeHandle}
-            onPointerDown={handleResizeStart}
-            role="separator"
-            aria-orientation="vertical"
-            aria-label="サイドパネルの幅を調整"
-          />
-        )}
-        {collapsed && (
-          <div className={styles.rail}>
-            <IconButton
-              className={styles.railToggle}
-              onClick={expand}
-              aria-label="サイドパネルを開く"
-              title="サイドパネルを開く"
-            >
-              <PanelLeft size={16} aria-hidden="true" />
-            </IconButton>
-          </div>
-        )}
+    <div
+      className={cx(
+        styles.wrapper,
+        collapsed && styles.wrapperCollapsed,
+        resizing && styles.wrapperResizing,
+      )}
+      style={wrapperStyle}
+      data-collapsed={collapsed || undefined}
+    >
+      <div className={styles.content}>
+        {children}
       </div>
-    </SidebarContext.Provider>
+      {!collapsed && (
+        <div
+          className={styles.resizeHandle}
+          onPointerDown={handleResizeStart}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="サイドパネルの幅を調整"
+        />
+      )}
+    </div>
   )
 }

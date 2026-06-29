@@ -56,24 +56,3 @@
   flex-direction: column;
   overflow: hidden;
 }
-
-.wrapperCollapsed .content {
-  display: none;
-}
-
-.rail {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 0.625rem;
-}
-
-.railToggle {
-  color: var(--color-slate-500);
-}
-
-.railToggle:hover {
-  color: var(--color-slate-700);
-}

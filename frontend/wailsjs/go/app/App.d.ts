@@ -7,6 +7,14 @@ import {scanner} from '../models';
 
 export function AddDirectory(arg1:string):Promise<config.Settings>;
 
+export function CopyFile(arg1:string,arg2:string):Promise<string>;
+
+export function CreateDirectory(arg1:string,arg2:string):Promise<void>;
+
+export function CreateTableJSONFile(arg1:string,arg2:string):Promise<string>;
+
+export function DeleteFile(arg1:string):Promise<void>;
+
 export function EnsureExportRelDir(arg1:string,arg2:string):Promise<void>;
 
 export function GenerateCreateScript(arg1:string):Promise<app.ScriptResult>;
@@ -15,15 +23,25 @@ export function GenerateMigrateScript(arg1:string,arg2:string):Promise<app.Scrip
 
 export function GenerateXlsxExport(arg1:string):Promise<app.XlsxExportResult>;
 
+export function GetFileStat(arg1:string):Promise<app.FileStat>;
+
 export function GetSettings():Promise<config.Settings>;
 
 export function ImportXlsxDirectory(arg1:string,arg2:string):Promise<app.XlsxImportResult>;
+
+export function InitAISetup(arg1:string):Promise<app.AISetupResult>;
 
 export function ListGitCommits(arg1:string,arg2:number,arg3:number):Promise<Array<git.Commit>>;
 
 export function ListGitTableFiles(arg1:string,arg2:string):Promise<Array<string>>;
 
 export function MoveDirectory(arg1:string,arg2:number):Promise<config.Settings>;
+
+export function MoveFile(arg1:string,arg2:string):Promise<string>;
+
+export function OpenTerminal(arg1:string):Promise<void>;
+
+export function OpenWithDefaultApp(arg1:string):Promise<void>;
 
 export function PickDirectory():Promise<string>;
 
@@ -33,7 +51,11 @@ export function ReadGitTableFile(arg1:string,arg2:string,arg3:string):Promise<st
 
 export function ReadTableFile(arg1:string):Promise<string>;
 
+export function ReadTextFile(arg1:string):Promise<string>;
+
 export function RemoveDirectory(arg1:string):Promise<config.Settings>;
+
+export function RenameEntry(arg1:string,arg2:string):Promise<void>;
 
 export function ResolveGitRepo(arg1:string):Promise<git.RepoInfo>;
 
@@ -45,8 +67,12 @@ export function SetZoomLevel(arg1:number):Promise<number>;
 
 export function ShowInExplorer(arg1:string):Promise<void>;
 
+export function StartDirectoryWatch(arg1:string):Promise<void>;
+
 export function WriteExportBinaryFile(arg1:string,arg2:string,arg3:Array<number>):Promise<void>;
 
 export function WriteExportFile(arg1:string,arg2:string,arg3:string):Promise<void>;
 
 export function WriteTableFile(arg1:string,arg2:string):Promise<void>;
+
+export function WriteTextFile(arg1:string,arg2:string):Promise<void>;

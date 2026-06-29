@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   clampZoomLevel,
   DEFAULT_ZOOM_LEVEL,
+  dispatchZoomChange,
   levelToFactor,
   readStoredZoomLevel,
   ZOOM_STORAGE_KEY,
@@ -69,6 +70,7 @@ export function useAppZoom() {
   const applyAndSet = useCallback(async (level: number) => {
     const applied = await applyZoom(level)
     setZoomLevelState(applied)
+    dispatchZoomChange()
     return applied
   }, [])
 

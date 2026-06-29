@@ -15,7 +15,7 @@
 
 .button:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  cursor: default;
 }
 
 .ghost {
@@ -26,6 +26,17 @@
 
 .ghost:hover {
   background: var(--color-slate-300);
+}
+
+.secondary {
+  composes: button;
+  background: var(--color-white);
+  color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-300);
+}
+
+.secondary:hover {
+  background: var(--color-slate-50);
 }
 
 .danger {
@@ -51,7 +62,7 @@
 
 .plain:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  cursor: default;
 }
 
 .icon {
@@ -86,7 +97,21 @@
 
 .iconButton:disabled {
   opacity: 0.35;
-  cursor: not-allowed;
+  cursor: default;
+}
+
+.secondaryIcon {
+  composes: iconButton;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  color: var(--color-slate-700);
+}
+
+.secondaryIcon:hover:not(:disabled) {
+  background: var(--color-slate-50);
+  color: var(--color-slate-900);
 }
 
 .ghostIcon {

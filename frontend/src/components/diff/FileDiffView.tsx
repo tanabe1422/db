@@ -1,10 +1,12 @@
 import { ArrowLeft } from 'lucide-react'
 
+import { useMouseBackButton } from '../../hooks/useMouseBackButton'
 import { useSyncedHorizontalScroll } from '../../hooks/useSyncedHorizontalScroll'
 import type { TableDiff } from '../../lib/diffTable'
 import { Button } from '../ui/Button'
+import { Tooltip } from '../ui/Tooltip'
 
-import { DiffMetaPanel } from './DiffMetaPanel'
+import { DiffMetaCompare } from './DiffMetaCompare'
 import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
 import { DiffSideTable } from './DiffSideTable'
 import styles from './FileDiffView.module.css'
@@ -16,6 +18,8 @@ interface FileDiffViewProps {
 }
 
 export function FileDiffView({ relPath, diff, onBack }: FileDiffViewProps) {
+  useMouseBackButton(onBack)
+
   const { leftRef, rightRef, onLeftScroll, onRightScroll } =
     useSyncedHorizontalScroll()
 
@@ -26,35 +30,32 @@ export function FileDiffView({ relPath, diff, onBack }: FileDiffViewProps) {
           <ArrowLeft size={16} aria-hidden="true" />
           ファイル一覧に戻る
         </Button>
-        <span className={styles.fileName} title={relPath}>
-          {relPath}
-        </span>
+        <Tooltip content={relPath} wrap>
+          <span className={styles.fileName}>{relPath}</span>
+        </Tooltip>
       </div>
 
-      <div className={styles.split}>
-        <div className={styles.pane}>
+      <div className={styles.diffBody}>
+        <div className={styles.splitRow}>
           <div className={styles.paneHead}>
             <DiffSideMark side="left" />
             <span>{diffSideAriaLabel('left')}</span>
           </div>
-          <div className={styles.meta}>
-            <DiffMetaPanel diff={diff} side="left" />
+          <div className={styles.paneHead}>
+            <DiffSideMark side="right" />
+            <span>{diffSideAriaLabel('right')}</span>
           </div>
+        </div>
+
+        <DiffMetaCompare diff={diff} />
+
+        <div className={styles.splitRow}>
           <DiffSideTable
             diff={diff}
             side="left"
             wrapperRef={leftRef}
             onScroll={onLeftScroll}
           />
-        </div>
-        <div className={styles.pane}>
-          <div className={styles.paneHead}>
-            <DiffSideMark side="right" />
-            <span>{diffSideAriaLabel('right')}</span>
-          </div>
-          <div className={styles.meta}>
-            <DiffMetaPanel diff={diff} side="right" />
-          </div>
           <DiffSideTable
             diff={diff}
             side="right"

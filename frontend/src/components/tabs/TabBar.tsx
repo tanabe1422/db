@@ -5,6 +5,7 @@ import { relPathWithinRoot } from '../../utils/relPathWithinRoot'
 import { cx } from '../../utils/cx'
 import { ContextMenu } from '../ui/ContextMenu'
 import { IconButton } from '../ui/Button'
+import { Tooltip } from '../ui/Tooltip'
 import styles from './TabBar.module.css'
 
 interface TabBarProps {
@@ -98,28 +99,27 @@ export function TabBar({
           const isDirty = dirtyPaths.has(path)
           const tooltip = relPathWithinRoot(activeDirectory, path) || baseName(path)
           return (
-            <div
-              key={path}
-              ref={(element) => {
-                if (element) {
-                  tabRefs.current.set(path, element)
-                } else {
-                  tabRefs.current.delete(path)
-                }
-              }}
-              role="tab"
-              aria-selected={isActive}
-              className={`${styles.tab}${isActive ? ` ${styles.active}` : ''}`}
-              title={tooltip}
-              onClick={() => onActivate(path)}
-              onContextMenu={openContextMenu}
-              onMouseDown={(event) => {
-                if (event.button === 1) {
-                  event.preventDefault()
-                  onClose(path)
-                }
-              }}
-            >
+            <Tooltip key={path} content={tooltip} wrap>
+              <div
+                ref={(element) => {
+                  if (element) {
+                    tabRefs.current.set(path, element)
+                  } else {
+                    tabRefs.current.delete(path)
+                  }
+                }}
+                role="tab"
+                aria-selected={isActive}
+                className={`${styles.tab}${isActive ? ` ${styles.active}` : ''}`}
+                onClick={() => onActivate(path)}
+                onContextMenu={openContextMenu}
+                onMouseDown={(event) => {
+                  if (event.button === 1) {
+                    event.preventDefault()
+                    onClose(path)
+                  }
+                }}
+              >
               <span className={styles.label}>{baseName(path)}</span>
               <IconButton
                 variant="plain"
@@ -135,6 +135,7 @@ export function TabBar({
                 <X size={14} aria-hidden="true" className={styles.closeIcon} />
               </IconButton>
             </div>
+            </Tooltip>
           )
         })}
       </div>

@@ -7,6 +7,7 @@ import {
 import type { ColumnDiffRow } from '../../lib/diffTable'
 import type { DraftColumn } from '../../utils/serializeTable'
 
+import { Checkbox } from '../ui/Checkbox'
 import { displayColClass, highlightClass } from './diffDisplayStyles'
 import grid from '../table/ColumnGridTable.module.css'
 import styles from './FileDiffView.module.css'
@@ -36,9 +37,7 @@ export function DiffSideCells({ column, row, side }: DiffSideCellsProps) {
           const checked = cellValue(column, col.id) === '1'
           return (
             <td key={`${side}-${col.id}`} className={cellCls}>
-              <input
-                type="checkbox"
-                className={grid.checkInput}
+              <Checkbox
                 checked={checked}
                 readOnly
                 tabIndex={-1}

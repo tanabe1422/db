@@ -1,12 +1,14 @@
 import type { ButtonHTMLAttributes } from 'react'
 
 import { cx } from '../../utils/cx'
+import { Tooltip } from './Tooltip'
 import styles from './Button.module.css'
 
-type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'plain'
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'plain'
 
 const BUTTON_CLASS: Record<ButtonVariant, string> = {
   primary: styles.button,
+  secondary: styles.secondary,
   ghost: styles.ghost,
   danger: styles.danger,
   plain: styles.plain,
@@ -14,20 +16,38 @@ const BUTTON_CLASS: Record<ButtonVariant, string> = {
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
+  tooltip?: string
+  tooltipWrap?: boolean
 }
 
 export function Button({
   variant = 'primary',
   className,
   type = 'button',
+  tooltip,
+  tooltipWrap,
+  title,
   ...rest
 }: ButtonProps) {
-  return (
-    <button type={type} className={cx(BUTTON_CLASS[variant], className)} {...rest} />
+  const button = (
+    <button
+      type={type}
+      className={cx(BUTTON_CLASS[variant], className)}
+      title={tooltip ? undefined : title}
+      {...rest}
+    />
   )
+  if (tooltip) {
+    return (
+      <Tooltip content={tooltip} wrap={tooltipWrap}>
+        {button}
+      </Tooltip>
+    )
+  }
+  return button
 }
 
-type IconButtonVariant = 'primary' | 'ghost' | 'danger' | 'plain'
+type IconButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'plain'
 type IconButtonSize = 'md' | 'sm'
 
 const ICON_BUTTON_CLASS: Record<
@@ -35,6 +55,7 @@ const ICON_BUTTON_CLASS: Record<
   Record<IconButtonSize, string>
 > = {
   primary: { md: styles.icon, sm: styles.icon },
+  secondary: { md: styles.secondaryIcon, sm: styles.secondaryIcon },
   ghost: { md: styles.ghostIcon, sm: styles.ghostIconSm },
   danger: { md: styles.dangerIcon, sm: styles.dangerIcon },
   plain: { md: styles.plainIcon, sm: styles.plainIconSm },
@@ -43,6 +64,8 @@ const ICON_BUTTON_CLASS: Record<
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: IconButtonVariant
   size?: IconButtonSize
+  tooltip?: string
+  tooltipWrap?: boolean
 }
 
 export function IconButton({
@@ -50,13 +73,25 @@ export function IconButton({
   size = 'md',
   className,
   type = 'button',
+  tooltip,
+  tooltipWrap,
+  title,
   ...rest
 }: IconButtonProps) {
-  return (
+  const button = (
     <button
       type={type}
       className={cx(ICON_BUTTON_CLASS[variant][size], className)}
+      title={tooltip ? undefined : title}
       {...rest}
     />
   )
+  if (tooltip) {
+    return (
+      <Tooltip content={tooltip} wrap={tooltipWrap}>
+        {button}
+      </Tooltip>
+    )
+  }
+  return button
 }

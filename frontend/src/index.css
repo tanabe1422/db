@@ -34,6 +34,8 @@
   --color-green-600: #16a34a;
   --color-green-800: #166534;
 
+  --color-pink-600: #db2777;
+
   --color-yellow-100: #fef9c3;
   --color-yellow-200: #fef08a;
   --color-yellow-800: #854d0e;
@@ -56,6 +58,8 @@
   --font-size-grid-header: 0.75rem;
 
   --font-family: system-ui, sans-serif;
+
+  --dialog-radius: 0.375rem;
 }
 
 *,

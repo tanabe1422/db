@@ -1,8 +1,10 @@
 import type { MouseEvent } from 'react'
-import { File } from 'lucide-react'
+import { Database, File, FileJson, Sheet } from 'lucide-react'
 
 import type { TreeNode as TreeNodeType } from '../../types'
 import { cx } from '../../utils/cx'
+import { treeNodeTooltip } from '../../utils/relPathWithinRoot'
+import { getTreeFileKind } from '../../utils/treeFileKind'
 import { Button } from '../ui/Button'
 
 import { DirectoryTreeBranch } from '../tree/DirectoryTreeBranch'
@@ -10,6 +12,7 @@ import styles from './TreeNode.module.css'
 
 interface TreeNodeProps {
   node: TreeNodeType
+  rootDirectory: string
   depth?: number
   selectedPath?: string
   onSelect?: (path: string) => void
@@ -27,8 +30,23 @@ function sidebarPadding(depth: number) {
   return depth * 16 + 12
 }
 
+function TreeFileIcon({ name }: { name: string }) {
+  const iconProps = { size: 14, 'aria-hidden': true as const }
+  switch (getTreeFileKind(name)) {
+    case 'table-json':
+      return <FileJson {...iconProps} className={styles.tableJsonIcon} />
+    case 'sql':
+      return <Database {...iconProps} className={styles.sqlIcon} />
+    case 'xlsx':
+      return <Sheet {...iconProps} className={styles.xlsxIcon} />
+    default:
+      return <File {...iconProps} className={styles.fileIcon} />
+  }
+}
+
 export function TreeNode({
   node,
+  rootDirectory,
   depth = 0,
   selectedPath,
   onSelect,
@@ -39,6 +57,7 @@ export function TreeNode({
       <TreeNode
         key={`${child.path || child.name}-${childDepth}`}
         node={child}
+        rootDirectory={rootDirectory}
         depth={childDepth}
         selectedPath={selectedPath}
         onSelect={onSelect}
@@ -60,10 +79,11 @@ export function TreeNode({
             ? (event) => onNodeContextMenu(node, event)
             : undefined
         }
-        title={node.path}
+        tooltip={treeNodeTooltip(rootDirectory, node)}
+        tooltipWrap
       >
         <span className={styles.caret} />
-        <File size={14} aria-hidden="true" className={styles.fileIcon} />
+        <TreeFileIcon name={node.name} />
         <span className={styles.label}>{node.name}</span>
       </Button>
     )
@@ -72,6 +92,7 @@ export function TreeNode({
   return (
     <DirectoryTreeBranch
       node={node}
+      rootDirectory={rootDirectory}
       depth={depth}
       paddingLeft={sidebarPadding(depth)}
       styles={branchStyles}

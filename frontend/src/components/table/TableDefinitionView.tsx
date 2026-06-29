@@ -1,13 +1,16 @@
 import { useEffect } from 'react'
 
+import type { EditorToolbarBridge } from '../toolbar/editorToolbarBridge'
 import { cx } from '../../utils/cx'
 import type { TableDefinition } from '../../types'
+import { useExternalFileChange } from '../../hooks/useExternalFileChange'
+import { ExternalFileChangeDialog } from '../ui/ExternalFileChangeDialog'
 import { ColumnGridHeader } from './ColumnGridHeader'
 import grid from './ColumnGridTable.module.css'
 import { type TableEditor, useTableEditor } from '../../hooks/useTableEditor'
 import { CheckCell } from './CheckCell'
 import { EditableCell } from './EditableCell'
-import { EditorToolbar } from './EditorToolbar'
+import { EditToolbar } from '../toolbar/EditToolbar'
 import { RowActions } from './RowActions'
 import { TableMetaForm } from './TableMetaForm'
 import {
@@ -21,28 +24,87 @@ import styles from './TableDefinitionView.module.css'
 interface TableDefinitionViewProps {
   definition: TableDefinition
   path: string
+  isActive?: boolean
+  inlineToolbar?: boolean
   onDirtyChange?: (dirty: boolean) => void
+  onEditorBridgeChange?: (bridge: EditorToolbarBridge) => void
+  onReload?: (silent?: boolean) => Promise<void>
 }
 
 export function TableDefinitionView({
   definition,
   path,
+  isActive = true,
+  inlineToolbar = true,
   onDirtyChange,
+  onEditorBridgeChange,
+  onReload,
 }: TableDefinitionViewProps) {
   const editor = useTableEditor(definition, path)
   const dirty = editor?.dirty ?? false
   useEffect(() => {
     onDirtyChange?.(dirty)
   }, [dirty, onDirtyChange])
+
+  const reloadFromDisk = onReload ?? (async () => undefined)
+  const { dialogOpen, handleReload, handleIgnore, handleCancel } =
+    useExternalFileChange({
+      path,
+      dirty,
+      onReload: reloadFromDisk,
+    })
+
+  const fileName = path.split(/[\\/]/).pop() ?? path
+
   if (!editor) {
     return null
   }
-  return <TableEditorGrid editor={editor} />
+  return (
+    <>
+      <TableEditorGrid
+        editor={editor}
+        isActive={isActive}
+        inlineToolbar={inlineToolbar}
+        onEditorBridgeChange={onEditorBridgeChange}
+      />
+      <ExternalFileChangeDialog
+        open={dialogOpen}
+        fileName={fileName}
+        onReload={() => {
+          void handleReload()
+        }}
+        onIgnore={() => {
+          void handleIgnore()
+        }}
+        onCancel={handleCancel}
+      />
+    </>
+  )
 }
 
-function TableEditorGrid({ editor }: { editor: TableEditor }) {
+function TableEditorGrid({
+  editor,
+  isActive,
+  inlineToolbar,
+  onEditorBridgeChange,
+}: {
+  editor: TableEditor
+  isActive: boolean
+  inlineToolbar: boolean
+  onEditorBridgeChange?: (bridge: EditorToolbarBridge) => void
+}) {
   const nav = useGridNavigation(editor)
   const columns = editor.draft.columns
+
+  useEffect(() => {
+    if (!isActive || inlineToolbar) {
+      return
+    }
+    onEditorBridgeChange?.({ editor, onSave: nav.handleSave })
+    return () => {
+      onEditorBridgeChange?.({ editor: null, onSave: null })
+    }
+  }, [editor, inlineToolbar, isActive, nav.handleSave, onEditorBridgeChange])
 
   return (
     <div
@@ -52,7 +114,11 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
       onKeyDown={nav.handleKeyDown}
       onBlur={nav.handleContainerBlur}
     >
-      <EditorToolbar editor={editor} onSave={nav.handleSave} />
+      {inlineToolbar && (
+        <div className={styles.inlineToolbar}>
+          <EditToolbar editor={editor} onSave={nav.handleSave} />
+        </div>
+      )}
 
       <TableMetaForm
         name={editor.draft.name}

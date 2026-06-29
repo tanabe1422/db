@@ -21,6 +21,22 @@ export interface XlsxImportResult {
   failures: XlsxImportFailure[]
 }
 
+export interface FileStat {
+  modTimeUnixNano: number
+  size: number
+}
+
+export interface AISetupResult {
+  schemaWritten: boolean
+  cursorRuleWritten: boolean
+  claudeMdWritten: boolean
+  vscodeSettingsWritten: boolean
+  tableJsonPatched: number
+  tableJsonSkipped: number
+  tableJsonFailed: number
+  warnings: string[]
+}
+
 export interface WailsApp {
   GetSettings(): Promise<Settings>
   AddDirectory(path: string): Promise<Settings>
@@ -29,9 +45,15 @@ export interface WailsApp {
   MoveDirectory(path: string, offset: number): Promise<Settings>
   PickDirectory(): Promise<string>
   ScanActiveDirectory(): Promise<TreeNode>
+  StartDirectoryWatch(path: string): Promise<void>
   ReadTableFile(path: string): Promise<string>
+  ReadTextFile(path: string): Promise<string>
+  GetFileStat(path: string): Promise<FileStat>
   WriteTableFile(path: string, content: string): Promise<void>
+  WriteTextFile(path: string, content: string): Promise<void>
   ShowInExplorer(path: string): Promise<void>
+  OpenTerminal(path: string): Promise<void>
+  OpenWithDefaultApp(path: string): Promise<void>
   PrepareExportDirectory(activeDirectory: string): Promise<string>
   EnsureExportRelDir(exportRoot: string, relativePath: string): Promise<void>
   GenerateCreateScript(tableJSON: string): Promise<ScriptResult>
@@ -63,6 +85,13 @@ export interface WailsApp {
     relPath: string,
   ): Promise<string>
   SetZoomLevel(level: number): Promise<number>
+  CreateDirectory(parentDir: string, name: string): Promise<void>
+  CreateTableJSONFile(parentDir: string, tableName: string): Promise<string>
+  RenameEntry(path: string, newName: string): Promise<void>
+  DeleteFile(path: string): Promise<void>
+  CopyFile(srcPath: string, destDir: string): Promise<string>
+  MoveFile(srcPath: string, destDir: string): Promise<string>
+  InitAISetup(activeDirectory: string): Promise<AISetupResult>
 }
 
 declare global {
@@ -237,12 +266,52 @@ export async function scanActiveDirectory(): Promise<TreeNode> {
   return mockTree
 }
 
+export async function startDirectoryWatch(path: string): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.StartDirectoryWatch(path)
+    return
+  }
+  console.info('[mock] startDirectoryWatch', path)
+}
+
 export async function readTableFile(path: string): Promise<string> {
   const app = getApp()
   if (app) {
     return app.ReadTableFile(path)
   }
   return JSON.stringify(mockTableDefinition)
+}
+
+export async function readTextFile(path: string): Promise<string> {
+  const app = getApp()
+  if (app) {
+    return app.ReadTextFile(path)
+  }
+  return `-- mock SQL for ${path}\nSELECT 1;\n`
+}
+
+export async function writeTextFile(
+  path: string,
+  content: string,
+): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.WriteTextFile(path, content)
+    return
+  }
+  console.info('[mock] writeTextFile', path, content)
+}
+
+export async function getFileStat(path: string): Promise<FileStat> {
+  const app = getApp()
+  if (app) {
+    return app.GetFileStat(path)
+  }
+  return {
+    modTimeUnixNano: Date.now() * 1_000_000,
+    size: 0,
+  }
 }
 
 export async function writeTableFile(
@@ -264,6 +333,24 @@ export async function showInExplorer(path: string): Promise<void> {
     return
   }
   console.info('[mock] showInExplorer', path)
+}
+
+export async function openTerminal(path: string): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.OpenTerminal(path)
+    return
+  }
+  console.info('[mock] openTerminal', path)
+}
+
+export async function openWithDefaultApp(path: string): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.OpenWithDefaultApp(path)
+    return
+  }
+  console.info('[mock] openWithDefaultApp', path)
 }
 
 export async function prepareExportDirectory(
@@ -299,12 +386,21 @@ export async function generateCreateScript(
     ? await app.ReadTableFile(tableFilePath)
     : JSON.stringify(mockTableDefinition)
 
+  return generateCreateScriptFromJSON(tableJSON, { label: tableFilePath })
+}
+
+export async function generateCreateScriptFromJSON(
+  tableJSON: string,
+  labels?: { label?: string },
+): Promise<ScriptResult> {
+  const app = getApp()
   if (app) {
     return app.GenerateCreateScript(tableJSON)
   }
 
+  const label = labels?.label ?? 'table'
   return {
-    sql: `-- mock create script for ${tableFilePath}\n`,
+    sql: `-- mock create script for ${label}\n`,
     relPath: '',
   }
 }
@@ -321,12 +417,26 @@ export async function generateMigrateScript(
     ? await app.ReadTableFile(afterFilePath)
     : JSON.stringify(mockTableDefinition)
 
+  return generateMigrateScriptFromJSON(beforeJSON, afterJSON, {
+    beforeLabel: beforeFilePath,
+    afterLabel: afterFilePath,
+  })
+}
+
+export async function generateMigrateScriptFromJSON(
+  beforeJSON: string,
+  afterJSON: string,
+  labels?: { beforeLabel?: string; afterLabel?: string },
+): Promise<ScriptResult> {
+  const app = getApp()
   if (app) {
     return app.GenerateMigrateScript(beforeJSON, afterJSON)
   }
 
+  const beforeLabel = labels?.beforeLabel ?? 'before'
+  const afterLabel = labels?.afterLabel ?? 'after'
   return {
-    sql: `-- mock migrate script\n-- before: ${beforeFilePath}\n-- after: ${afterFilePath}\n`,
+    sql: `-- mock migrate script\n-- before: ${beforeLabel}\n-- after: ${afterLabel}\n`,
     relPath: '',
   }
 }
@@ -468,6 +578,101 @@ export async function setZoomLevel(level: number): Promise<number> {
     return app.SetZoomLevel(level)
   }
   throw new Error('SetZoomLevel is not available')
+}
+
+export async function createDirectory(
+  parentDir: string,
+  name: string,
+): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.CreateDirectory(parentDir, name)
+    return
+  }
+  console.info('[mock] createDirectory', parentDir, name)
+}
+
+export async function createTableJSONFile(
+  parentDir: string,
+  tableName: string,
+): Promise<string> {
+  const app = getApp()
+  if (app) {
+    return app.CreateTableJSONFile(parentDir, tableName)
+  }
+  const path = `${parentDir}/${tableName}.table.json`
+  console.info('[mock] createTableJSONFile', path)
+  return path
+}
+
+export async function renameEntry(path: string, newName: string): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.RenameEntry(path, newName)
+    return
+  }
+  console.info('[mock] renameEntry', path, newName)
+}
+
+export async function deleteFile(path: string): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.DeleteFile(path)
+    return
+  }
+  console.info('[mock] deleteFile', path)
+}
+
+export async function copyFile(
+  srcPath: string,
+  destDir: string,
+): Promise<string> {
+  const app = getApp()
+  if (app) {
+    return app.CopyFile(srcPath, destDir)
+  }
+  const dest = `${destDir}/${srcPath.split(/[/\\]/).pop()}`
+  console.info('[mock] copyFile', srcPath, destDir)
+  return dest
+}
+
+export async function moveFile(
+  srcPath: string,
+  destDir: string,
+): Promise<string> {
+  const app = getApp()
+  if (app) {
+    return app.MoveFile(srcPath, destDir)
+  }
+  const dest = `${destDir}/${srcPath.split(/[/\\]/).pop()}`
+  console.info('[mock] moveFile', srcPath, destDir)
+  return dest
+}
+
+export async function initAISetup(
+  activeDirectory: string,
+): Promise<AISetupResult> {
+  const app = getApp()
+  if (app?.InitAISetup) {
+    const result = await app.InitAISetup(activeDirectory)
+    return {
+      ...result,
+      warnings: result.warnings ?? [],
+      tableJsonFailed: result.tableJsonFailed ?? 0,
+      claudeMdWritten: result.claudeMdWritten ?? false,
+    }
+  }
+  console.info('[mock] initAISetup', activeDirectory)
+  return {
+    schemaWritten: true,
+    cursorRuleWritten: true,
+    claudeMdWritten: true,
+    vscodeSettingsWritten: true,
+    tableJsonPatched: 0,
+    tableJsonSkipped: 0,
+    tableJsonFailed: 0,
+    warnings: [],
+  }
 }
 
 function formatExportTimestamp(date: Date): string {

@@ -23,13 +23,17 @@ const initialState: TableDefinitionState = {
 export function useTableDefinition(path: string) {
   const [state, setState] = useState<TableDefinitionState>(initialState)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silent = false) => {
     if (!path) {
       setState(initialState)
       return
     }
 
-    setState({ ...initialState, loading: true })
+    setState((prev) =>
+      silent && prev.definition
+        ? { ...prev, error: null }
+        : { ...initialState, loading: true },
+    )
     try {
       const raw = await readTableFile(path)
       let parsed: unknown

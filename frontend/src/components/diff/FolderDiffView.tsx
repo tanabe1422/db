@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, FileDiff, MinusCircle, PlusCircle } from 'lucide-react'
+import { AlertTriangle, Download, FileDiff, Minus, Plus } from 'lucide-react'
 
 import {
   type FileDiffEntry,
@@ -7,6 +7,8 @@ import {
 } from '../../hooks/useFolderDiff'
 import { cx } from '../../utils/cx'
 import { Button } from '../ui/Button'
+import { Checkbox } from '../ui/Checkbox'
+import { Tooltip } from '../ui/Tooltip'
 
 import { DiffSideMark } from './DiffSideMark'
 import styles from './FolderDiffView.module.css'
@@ -18,6 +20,10 @@ interface FolderDiffViewProps {
   loading: boolean
   error: string | null
   onOpenFile: (entry: FileDiffEntry) => void
+  migrateScriptExport?: {
+    onClick: () => void
+    disabled?: boolean
+  }
 }
 
 function rowClass(status: FileDiffEntry['status']): string | undefined {
@@ -40,9 +46,9 @@ function StatusIcon({ status }: { status: FileDiffEntry['status'] }) {
     case 'changed':
       return <FileDiff size={14} aria-hidden="true" />
     case 'added':
-      return <PlusCircle size={14} aria-hidden="true" />
+      return <Plus size={14} aria-hidden="true" />
     case 'removed':
-      return <MinusCircle size={14} aria-hidden="true" />
+      return <Minus size={14} aria-hidden="true" />
     case 'error':
       return <AlertTriangle size={14} aria-hidden="true" />
     default:
@@ -57,6 +63,7 @@ export function FolderDiffView({
   loading,
   error,
   onOpenFile,
+  migrateScriptExport,
 }: FolderDiffViewProps) {
   const [showSame, setShowSame] = useState(false)
 
@@ -70,34 +77,56 @@ export function FolderDiffView({
   return (
     <div className={styles.container}>
       <div className={styles.toolbar}>
-        <div className={styles.summary}>
-          <span className={styles.badgeChanged}>変更 {counts.changed}</span>
-          <span className={styles.badgeAdded}>追加 {counts.added}</span>
-          <span className={styles.badgeRemoved}>削除 {counts.removed}</span>
-          <span className={styles.badgeSame}>一致 {counts.same}</span>
-          {counts.error > 0 && (
-            <span className={styles.badgeError}>エラー {counts.error}</span>
-          )}
+        <div className={styles.toolbarStart}>
+          <label
+            className={styles.toggle}
+            onClick={() => setShowSame((v) => !v)}
+          >
+            <Checkbox
+              checked={showSame}
+              readOnly
+              tabIndex={-1}
+              className={styles.toggleCheckbox}
+              aria-label="変更なしを表示"
+            />
+            変更なしを表示
+          </label>
+          <div className={styles.summary}>
+            <span className={styles.badgeChanged}>変更 {counts.changed}</span>
+            <span className={styles.badgeAdded}>追加 {counts.added}</span>
+            <span className={styles.badgeRemoved}>削除 {counts.removed}</span>
+            <span className={styles.badgeSame}>一致 {counts.same}</span>
+            {counts.error > 0 && (
+              <span className={styles.badgeError}>エラー {counts.error}</span>
+            )}
+          </div>
         </div>
-        <label className={styles.toggle}>
-          <input
-            type="checkbox"
-            checked={showSame}
-            onChange={(e) => setShowSame(e.target.checked)}
-          />
-          変更なしを表示
-        </label>
+        {migrateScriptExport && (
+          <Button
+            variant="secondary"
+            className={styles.exportBtn}
+            onClick={migrateScriptExport.onClick}
+            disabled={migrateScriptExport.disabled}
+          >
+            <Download size={14} aria-hidden="true" />
+            変更スクリプトを生成
+          </Button>
+        )}
       </div>
 
       <div className={styles.headRow}>
-        <div className={styles.headCell} title={leftLabel}>
-          <DiffSideMark side="left" />
-          <span className={styles.headLabel}>{leftLabel}</span>
-        </div>
-        <div className={styles.headCell} title={rightLabel}>
-          <DiffSideMark side="right" />
-          <span className={styles.headLabel}>{rightLabel}</span>
-        </div>
+        <Tooltip content={leftLabel} wrap>
+          <div className={styles.headCell}>
+            <DiffSideMark side="left" />
+            <span className={styles.headLabel}>{leftLabel}</span>
+          </div>
+        </Tooltip>
+        <Tooltip content={rightLabel} wrap>
+          <div className={styles.headCell}>
+            <DiffSideMark side="right" />
+            <span className={styles.headLabel}>{rightLabel}</span>
+          </div>
+        </Tooltip>
       </div>
 
       {loading && <p className={styles.empty}>比較中...</p>}
@@ -121,7 +150,8 @@ export function FolderDiffView({
                   className={cx(styles.row, rowClass(entry.status))}
                   onClick={clickable ? () => onOpenFile(entry) : undefined}
                   disabled={!clickable}
-                  title={entry.error ?? entry.relPath}
+                  tooltip={entry.error ?? entry.relPath}
+                  tooltipWrap
                 >
                   <span className={styles.cell}>
                     {entry.leftPath ? (

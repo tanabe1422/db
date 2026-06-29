@@ -1,4 +1,7 @@
-import { Check, ChevronDown, ChevronUp, FolderPlus, Trash2, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, FolderPlus, Sparkles, Trash2, X } from 'lucide-react'
+import { useState } from 'react'
+import type { AISetupResult } from '../../lib/wails'
+import { initAISetup } from '../../lib/wails'
 import type { Settings } from '../../types'
 import { Button, IconButton } from '../ui/Button'
 import styles from './SettingsDialog.module.css'
@@ -11,6 +14,30 @@ interface SettingsDialogProps {
   onRemove: (path: string) => void
   onSetActive: (path: string) => void
   onMove: (path: string, offset: -1 | 1) => void
+  onAISetupComplete?: () => void
+}
+
+function formatSetupResult(result: AISetupResult): string {
+  const parts: string[] = []
+  if (result.schemaWritten) parts.push('schema を配置')
+  if (result.cursorRuleWritten) parts.push('Cursor Rule を配置')
+  if (result.claudeMdWritten) parts.push('CLAUDE.md を配置')
+  if (result.vscodeSettingsWritten) parts.push('VS Code 設定を更新')
+  if (result.tableJsonPatched > 0) {
+    parts.push(`$schema を ${result.tableJsonPatched} 件付与`)
+  }
+  if (result.tableJsonFailed > 0) {
+    parts.push(`${result.tableJsonFailed} 件スキップ（JSON 不正など）`)
+  }
+  if (parts.length === 0) {
+    return '変更なし（すでにセットアップ済みです）'
+  }
+  const summary = parts.join('、')
+  const warnings = result.warnings ?? []
+  if (warnings.length === 0) {
+    return summary
+  }
+  return `${summary}\n${warnings.join('\n')}`
 }
 
 export function SettingsDialog({
@@ -21,12 +48,36 @@ export function SettingsDialog({
   onRemove,
   onSetActive,
   onMove,
+  onAISetupComplete,
 }: SettingsDialogProps) {
+  const [setupMessage, setSetupMessage] = useState<string | null>(null)
+  const [setupError, setSetupError] = useState<string | null>(null)
+  const [setupLoading, setSetupLoading] = useState(false)
+
   if (!open) {
     return null
   }
 
   const directories = settings.directories ?? []
+  const activeDirectory = settings.activeDirectory ?? ''
+
+  const handleInitAISetup = async () => {
+    if (!activeDirectory) {
+      return
+    }
+    setSetupLoading(true)
+    setSetupMessage(null)
+    setSetupError(null)
+    try {
+      const result = await initAISetup(activeDirectory)
+      setSetupMessage(formatSetupResult(result))
+      onAISetupComplete?.()
+    } catch (err) {
+      setSetupError(err instanceof Error ? err.message : 'セットアップに失敗しました')
+    } finally {
+      setSetupLoading(false)
+    }
+  }
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
@@ -45,19 +96,6 @@ export function SettingsDialog({
         </div>
 
         <div className={styles.body}>
-          <p className={styles.description}>
-            参照ディレクトリの履歴を管理します。
-          </p>
-          <div className={styles.actions}>
-            <IconButton
-              variant="primary"
-              onClick={onAdd}
-              aria-label="ディレクトリを追加"
-            >
-              <FolderPlus size={16} aria-hidden="true" />
-            </IconButton>
-          </div>
-
           {directories.length === 0 ? (
             <p className={styles.empty}>登録されたディレクトリはありません。</p>
           ) : (
@@ -76,7 +114,8 @@ export function SettingsDialog({
                       variant="plain"
                       className={styles.select}
                       onClick={() => onSetActive(path)}
-                      title={path}
+                      tooltip={path}
+                      tooltipWrap
                       aria-current={isActive ? 'true' : undefined}
                     >
                       <span className={styles.path}>{path}</span>
@@ -112,6 +151,38 @@ export function SettingsDialog({
               })}
             </ul>
           )}
+
+          <section className={styles.aiSetup}>
+            <h3 className={styles.aiSetupTitle}>AI / Cursor 向けセットアップ</h3>
+            <p className={styles.aiSetupDesc}>
+              schema・Cursor Rule・CLAUDE.md・$schema 参照をアクティブディレクトリに配置します。
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => void handleInitAISetup()}
+              disabled={!activeDirectory || setupLoading}
+            >
+              <Sparkles size={14} aria-hidden="true" />
+              {setupLoading ? '実行中…' : 'セットアップを実行'}
+            </Button>
+            {setupMessage ? (
+              <p className={styles.aiSetupMessage}>{setupMessage}</p>
+            ) : null}
+            {setupError ? (
+              <p className={styles.aiSetupError}>{setupError}</p>
+            ) : null}
+          </section>
+
+          <div className={styles.footer}>
+            <IconButton
+              variant="secondary"
+              onClick={onAdd}
+              aria-label="ディレクトリを追加"
+            >
+              <FolderPlus size={16} aria-hidden="true" />
+            </IconButton>
+            <Button onClick={onClose}>OK</Button>
+          </div>
         </div>
       </div>
     </div>

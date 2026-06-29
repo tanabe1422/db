@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { mockTree } from '../../mocks/data'
 import type { TreeNode } from '../../types'
 
-import { CollapsibleSidebar } from '../layout/CollapsibleSidebar'
+import { CollapsibleSidebar, SidebarProvider } from '../layout/CollapsibleSidebar'
+import { SidebarPanelLayout } from '../sidebar/SidebarPanelLayout'
 import { DiffSetupPanel } from './DiffSetupPanel'
 
 const meta = {
@@ -15,18 +16,26 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div style={{ height: '100vh', display: 'flex' }}>
-        <CollapsibleSidebar>
-          <Story />
+      <SidebarProvider>
+        <div style={{ height: '100vh', display: 'flex' }}>
+          <CollapsibleSidebar>
+          <SidebarPanelLayout
+            mode="diff"
+            activeDirectory="C:\\project"
+            onManageDirectories={() => undefined}
+            onRescan={() => undefined}
+            onModeChange={() => undefined}
+          >
+            <Story />
+          </SidebarPanelLayout>
         </CollapsibleSidebar>
-      </div>
+        </div>
+      </SidebarProvider>
     ),
   ],
   args: {
     onSelectLeft: () => undefined,
     onSelectRight: () => undefined,
-    onExitDiff: () => undefined,
-    onExportMigrateScripts: () => undefined,
   },
 } satisfies Meta<typeof DiffSetupPanel>
 
@@ -38,6 +47,25 @@ export const NoDirectory: Story = {
     activeDirectory: '',
     tree: null,
   },
+  decorators: [
+    (Story) => (
+      <SidebarProvider>
+        <div style={{ height: '100vh', display: 'flex' }}>
+          <CollapsibleSidebar>
+          <SidebarPanelLayout
+            mode="diff"
+            activeDirectory=""
+            onManageDirectories={() => undefined}
+            onRescan={() => undefined}
+            onModeChange={() => undefined}
+          >
+            <Story />
+          </SidebarPanelLayout>
+        </CollapsibleSidebar>
+        </div>
+      </SidebarProvider>
+    ),
+  ],
 }
 
 export const WithTree: Story = {
@@ -68,7 +96,6 @@ function InteractivePanel() {
       rightPath={right?.path}
       onSelectLeft={setLeft}
       onSelectRight={setRight}
-      onExitDiff={() => undefined}
     />
   )
 }

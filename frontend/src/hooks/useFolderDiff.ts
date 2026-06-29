@@ -9,6 +9,12 @@ import {
   buildFileDiffEntry,
 } from '../lib/fileDiffEntry'
 
+const TABLE_JSON_SUFFIX = '.table.json'
+
+function isTableJson(path: string): boolean {
+  return path.endsWith(TABLE_JSON_SUFFIX)
+}
+
 export type { FileDiffEntry, FileDiffStatus, FolderDiffCounts } from '../lib/fileDiffEntry'
 export { countEntries } from '../lib/fileDiffEntry'
 
@@ -112,10 +118,14 @@ export function useFolderDiff(left: TreeNode | null, right: TreeNode | null) {
     setError(null)
 
     const leftFiles = new Map(
-      collectFiles(left).map((file) => [file.relPath, file.fullPath]),
+      collectFiles(left)
+        .filter((file) => isTableJson(file.fullPath))
+        .map((file) => [file.relPath, file.fullPath]),
     )
     const rightFiles = new Map(
-      collectFiles(right).map((file) => [file.relPath, file.fullPath]),
+      collectFiles(right)
+        .filter((file) => isTableJson(file.fullPath))
+        .map((file) => [file.relPath, file.fullPath]),
     )
     const relPaths = Array.from(
       new Set([...leftFiles.keys(), ...rightFiles.keys()]),

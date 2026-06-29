@@ -63,3 +63,50 @@ func TestGitAvailable(t *testing.T) {
 		t.Skip("git is not available in PATH")
 	}
 }
+
+func TestListCommitsFiltersTableJSONOnly(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git is not available in PATH")
+	}
+
+	dir := t.TempDir()
+	run := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+
+	run("init", "-b", "main")
+	run("config", "user.email", "test@example.com")
+	run("config", "user.name", "test")
+
+	if err := os.WriteFile(filepath.Join(dir, "users.table.json"), []byte(`{"name":"users"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "README.md"), []byte("# demo"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	run("add", "users.table.json", "README.md")
+	run("commit", "-m", "add users table")
+
+	if err := os.WriteFile(filepath.Join(dir, "README.md"), []byte("# demo updated"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	run("add", "README.md")
+	run("commit", "-m", "update readme only")
+
+	commits, err := ListCommits(dir, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(commits) != 1 {
+		t.Fatalf("expected 1 table.json commit, got %d", len(commits))
+	}
+	if commits[0].Subject != "add users table" {
+		t.Fatalf("unexpected subject %q", commits[0].Subject)
+	}
+}

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { toFixedOverlayRect, ZOOM_CHANGE_EVENT } from '../../lib/appZoom'
 import { cx } from '../../utils/cx'
 import styles from './TableDefinitionView.module.css'
 
@@ -47,11 +48,7 @@ export function DataTypeCombobox({
     }
     const cell = el.closest('td')
     const rect = (cell ?? el).getBoundingClientRect()
-    setPosition({
-      top: rect.bottom + 2,
-      left: rect.left,
-      width: rect.width,
-    })
+    setPosition(toFixedOverlayRect(rect))
   }
 
   useLayoutEffect(() => {
@@ -70,9 +67,11 @@ export function DataTypeCombobox({
     const onScrollOrResize = () => updatePosition()
     window.addEventListener('scroll', onScrollOrResize, true)
     window.addEventListener('resize', onScrollOrResize)
+    window.addEventListener(ZOOM_CHANGE_EVENT, onScrollOrResize)
     return () => {
       window.removeEventListener('scroll', onScrollOrResize, true)
       window.removeEventListener('resize', onScrollOrResize)
+      window.removeEventListener(ZOOM_CHANGE_EVENT, onScrollOrResize)
     }
   }, [open, value])
 
