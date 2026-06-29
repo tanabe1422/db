@@ -1,20 +1,22 @@
-import type {
-  Column,
-  DataType,
-  Index,
-  IndexKey,
-  TableDefinition,
-} from '../types'
-import { MAX_INDEXES, indexMarker } from './columnMeta'
+import type { Column, Index, IndexKey, TableDefinition, UniqueConstraint } from '../types'
+import {
+  MAX_INDEXES,
+  MAX_UNIQUE_CONSTRAINTS,
+  MAX_UNIQUE_INDEXES,
+  constraintMarker,
+  indexMarker,
+} from './columnMeta'
+
+export type MarkerField = 'markers' | 'uniqueIndexMarkers' | 'uniqueMarkers'
 
 // 編集中の1行（カラム）。数値・既定値は生のテキストで保持し、保存時に正規化する。
 export interface DraftColumn {
   rowId: number
   name: string
   nameJa: string
-  dataType: DataType
+  dataType: string
   notNull: boolean
-  unique: boolean
+  identity: boolean
   pk: boolean
   length: string
   precision: string
@@ -23,6 +25,10 @@ export interface DraftColumn {
   remarks: string
   // Index 1〜MAX_INDEXES のマーカー（手入力）。例: "1", "2d", "(1)"
   markers: string[]
+  // UniqueIndex 1〜MAX_UNIQUE_INDEXES のマーカー
+  uniqueIndexMarkers: string[]
+  // Unique 1〜MAX_UNIQUE_CONSTRAINTS のマーカー（複合 UNIQUE または単一カラム UNIQUE）
+  uniqueMarkers: string[]
 }
 
 export interface DraftTable {
@@ -44,10 +50,12 @@ const KNOWN_TOP_LEVEL_KEYS = new Set([
   'primaryKey',
   'columns',
   'indexes',
+  'uniqueIndexes',
+  'uniqueConstraints',
 ])
 
-function emptyMarkers(): string[] {
-  return Array.from({ length: MAX_INDEXES }, () => '')
+function emptyMarkers(length: number): string[] {
+  return Array.from({ length }, () => '')
 }
 
 export function createEmptyDraftColumn(rowId: number): DraftColumn {
@@ -57,19 +65,31 @@ export function createEmptyDraftColumn(rowId: number): DraftColumn {
     nameJa: '',
     dataType: 'int',
     notNull: false,
-    unique: false,
+    identity: false,
     pk: false,
     length: '',
     precision: '',
     scale: '',
     defaultValue: '',
     remarks: '',
-    markers: emptyMarkers(),
+    markers: emptyMarkers(MAX_INDEXES),
+    uniqueIndexMarkers: emptyMarkers(MAX_UNIQUE_INDEXES),
+    uniqueMarkers: emptyMarkers(MAX_UNIQUE_CONSTRAINTS),
   }
 }
 
 function numberToText(value: number | undefined): string {
   return value == null ? '' : String(value)
+}
+
+function lengthToText(value: Column['length']): string {
+  if (value == null) {
+    return ''
+  }
+  if (value === 'max') {
+    return 'max'
+  }
+  return String(value)
 }
 
 function defaultValueToText(value: Column['defaultValue']): string {
@@ -85,6 +105,44 @@ function defaultValueToText(value: Column['defaultValue']): string {
   return String(value)
 }
 
+function loadIndexMarkers(
+  indexes: Index[],
+  columnName: string,
+  maxPositions: number,
+): string[] {
+  const markers = emptyMarkers(maxPositions)
+  indexes.forEach((index, position) => {
+    if (position < maxPositions) {
+      markers[position] = indexMarker(index, columnName)
+    }
+  })
+  return markers
+}
+
+function loadUniqueMarkers(
+  uniqueConstraints: UniqueConstraint[],
+  column: Column,
+): string[] {
+  const markers = emptyMarkers(MAX_UNIQUE_CONSTRAINTS)
+  let inComposite = false
+
+  uniqueConstraints.forEach((constraint, position) => {
+    if (position < MAX_UNIQUE_CONSTRAINTS) {
+      const marker = constraintMarker(constraint, column.name)
+      if (marker !== '') {
+        markers[position] = marker
+        inComposite = true
+      }
+    }
+  })
+
+  if (column.unique && !inComposite) {
+    markers[0] = '1'
+  }
+
+  return markers
+}
+
 // TableDefinition -> 編集用 Draft。マーカーのグリッドは indexes から復元する。
 export function toDraft(
   definition: TableDefinition,
@@ -92,31 +150,30 @@ export function toDraft(
 ): DraftTable {
   const primaryKey = new Set(definition.primaryKey ?? [])
   const indexes = definition.indexes ?? []
+  const uniqueIndexes = definition.uniqueIndexes ?? []
+  const uniqueConstraints = definition.uniqueConstraints ?? []
 
-  const columns: DraftColumn[] = definition.columns.map((column) => {
-    const markers = emptyMarkers()
-    indexes.forEach((index, position) => {
-      if (position < MAX_INDEXES) {
-        markers[position] = indexMarker(index, column.name)
-      }
-    })
-
-    return {
-      rowId: nextRowId(),
-      name: column.name,
-      nameJa: column.nameJa ?? '',
-      dataType: column.dataType,
-      notNull: column.notNull ?? false,
-      unique: column.unique ?? false,
-      pk: primaryKey.has(column.name),
-      length: numberToText(column.length),
-      precision: numberToText(column.precision),
-      scale: numberToText(column.scale),
-      defaultValue: defaultValueToText(column.defaultValue),
-      remarks: column.remarks ?? '',
-      markers,
-    }
-  })
+  const columns: DraftColumn[] = definition.columns.map((column) => ({
+    rowId: nextRowId(),
+    name: column.name,
+    nameJa: column.nameJa ?? '',
+    dataType: column.dataType,
+    notNull: column.notNull ?? false,
+    identity: column.identity ?? false,
+    pk: primaryKey.has(column.name),
+    length: lengthToText(column.length),
+    precision: numberToText(column.precision),
+    scale: numberToText(column.scale),
+    defaultValue: defaultValueToText(column.defaultValue),
+    remarks: column.remarks ?? '',
+    markers: loadIndexMarkers(indexes, column.name, MAX_INDEXES),
+    uniqueIndexMarkers: loadIndexMarkers(
+      uniqueIndexes,
+      column.name,
+      MAX_UNIQUE_INDEXES,
+    ),
+    uniqueMarkers: loadUniqueMarkers(uniqueConstraints, column),
+  }))
 
   const extra: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(definition)) {
@@ -170,18 +227,22 @@ function parseDefaultValue(text: string): Column['defaultValue'] | undefined {
 }
 
 // マーカーグリッド -> indexes 配列。マーカーが1つも無い列は省略（詰める）。
-export function markersToIndexes(columns: DraftColumn[]): Index[] {
+export function markersToIndexes(
+  columns: DraftColumn[],
+  field: MarkerField,
+  maxPositions: number,
+): Index[] {
   const keyPattern = /^(\d+)(d)?$/i
   const includePattern = /^\((\d+)\)$/
 
   const indexes: Index[] = []
 
-  for (let position = 0; position < MAX_INDEXES; position += 1) {
+  for (let position = 0; position < maxPositions; position += 1) {
     const keyEntries: { column: string; orderNum: number; desc: boolean }[] = []
     const includeEntries: { column: string; orderNum: number }[] = []
 
     columns.forEach((column) => {
-      const marker = column.markers[position]?.trim() ?? ''
+      const marker = column[field][position]?.trim() ?? ''
       if (marker === '') {
         return
       }
@@ -224,7 +285,59 @@ export function markersToIndexes(columns: DraftColumn[]): Index[] {
   return indexes
 }
 
-function draftColumnToColumn(draft: DraftColumn): Column {
+function markersToUniqueConstraints(columns: DraftColumn[]): UniqueConstraint[] {
+  const keyPattern = /^(\d+)$/i
+  const constraints: UniqueConstraint[] = []
+
+  for (let position = 0; position < MAX_UNIQUE_CONSTRAINTS; position += 1) {
+    const entries: { column: string; orderNum: number }[] = []
+
+    columns.forEach((column) => {
+      const marker = column.uniqueMarkers[position]?.trim() ?? ''
+      if (marker === '') {
+        return
+      }
+      const match = keyPattern.exec(marker)
+      if (match) {
+        entries.push({
+          column: column.name,
+          orderNum: Number(match[1]),
+        })
+      }
+    })
+
+    if (entries.length < 2) {
+      continue
+    }
+
+    entries.sort((a, b) => a.orderNum - b.orderNum)
+    constraints.push({ columns: entries.map((entry) => entry.column) })
+  }
+
+  return constraints
+}
+
+function isSingleColumnUnique(
+  column: DraftColumn,
+  columns: DraftColumn[],
+): boolean {
+  for (let position = 0; position < MAX_UNIQUE_CONSTRAINTS; position += 1) {
+    const entries = columns.filter((entry) => {
+      const marker = entry.uniqueMarkers[position]?.trim() ?? ''
+      return marker !== ''
+    })
+    if (entries.length === 1 && entries[0].rowId === column.rowId) {
+      const marker = column.uniqueMarkers[position]?.trim() ?? ''
+      return marker === '1'
+    }
+  }
+  return false
+}
+
+function draftColumnToColumn(
+  draft: DraftColumn,
+  allColumns: DraftColumn[],
+): Column {
   const column: Column = {
     name: draft.name.trim(),
     dataType: draft.dataType,
@@ -237,13 +350,21 @@ function draftColumnToColumn(draft: DraftColumn): Column {
   if (draft.notNull) {
     column.notNull = true
   }
-  if (draft.unique) {
+  if (draft.identity) {
+    column.identity = true
+  }
+  if (isSingleColumnUnique(draft, allColumns)) {
     column.unique = true
   }
 
-  const length = parseIntOrUndefined(draft.length)
-  if (length != null) {
-    column.length = length
+  const lengthText = draft.length.trim()
+  if (lengthText.toLowerCase() === 'max') {
+    column.length = 'max'
+  } else {
+    const length = parseIntOrUndefined(draft.length)
+    if (length != null) {
+      column.length = length
+    }
   }
   const precision = parseIntOrUndefined(draft.precision)
   if (precision != null) {
@@ -295,11 +416,27 @@ export function cleanDefinition(draft: DraftTable): Record<string, unknown> {
     result.primaryKey = primaryKey
   }
 
-  result.columns = draft.columns.map(draftColumnToColumn)
+  result.columns = draft.columns.map((column) =>
+    draftColumnToColumn(column, draft.columns),
+  )
 
-  const indexes = markersToIndexes(draft.columns)
+  const indexes = markersToIndexes(draft.columns, 'markers', MAX_INDEXES)
   if (indexes.length > 0) {
     result.indexes = indexes
+  }
+
+  const uniqueIndexes = markersToIndexes(
+    draft.columns,
+    'uniqueIndexMarkers',
+    MAX_UNIQUE_INDEXES,
+  )
+  if (uniqueIndexes.length > 0) {
+    result.uniqueIndexes = uniqueIndexes
+  }
+
+  const uniqueConstraints = markersToUniqueConstraints(draft.columns)
+  if (uniqueConstraints.length > 0) {
+    result.uniqueConstraints = uniqueConstraints
   }
 
   for (const [key, value] of Object.entries(draft.extra)) {

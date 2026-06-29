@@ -1,3 +1,82 @@
+export namespace app {
+	
+	export class ScriptResult {
+	    sql: string;
+	    relPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScriptResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sql = source["sql"];
+	        this.relPath = source["relPath"];
+	    }
+	}
+	export class XlsxExportResult {
+	    data: number[];
+	    relPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new XlsxExportResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.data = source["data"];
+	        this.relPath = source["relPath"];
+	    }
+	}
+	export class XlsxImportFailure {
+	    sourcePath: string;
+	    message: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new XlsxImportFailure(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sourcePath = source["sourcePath"];
+	        this.message = source["message"];
+	    }
+	}
+	export class XlsxImportResult {
+	    imported: number;
+	    failures: XlsxImportFailure[];
+	
+	    static createFrom(source: any = {}) {
+	        return new XlsxImportResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.imported = source["imported"];
+	        this.failures = this.convertValues(source["failures"], XlsxImportFailure);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace config {
 	
 	export class Settings {

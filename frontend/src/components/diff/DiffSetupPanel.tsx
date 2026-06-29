@@ -1,11 +1,12 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Download } from 'lucide-react'
 import type { MouseEvent } from 'react'
 
 import type { TreeNode } from '../../types'
 import { useTreeContextMenu } from '../../hooks/useTreeContextMenu'
 import { cx } from '../../utils/cx'
 import { truncateMiddle } from '../../utils/truncateMiddle'
-import { Button, IconButton } from '../ui/Button'
+import { SidebarIconBar } from '../layout/SidebarIconBar'
+import { IconButton } from '../ui/Button'
 import { ContextMenu } from '../ui/ContextMenu'
 
 import { DirectoryTreeBranch } from '../tree/DirectoryTreeBranch'
@@ -20,7 +21,7 @@ interface DiffSetupPanelProps {
   onSelectLeft: (node: TreeNode) => void
   onSelectRight: (node: TreeNode) => void
   onExitDiff: () => void
-  onExportDiff?: () => void
+  onExportMigrateScripts?: () => void
 }
 
 const branchStyles = {
@@ -114,23 +115,32 @@ export function DiffSetupPanel({
   onSelectLeft,
   onSelectRight,
   onExitDiff,
-  onExportDiff,
+  onExportMigrateScripts,
 }: DiffSetupPanelProps) {
   const { menu, openNodeMenu, closeMenu } = useTreeContextMenu({
     activeDirectory,
-    enableExport: false,
+    enableCreateScript: false,
+    enableXlsxExport: false,
+    enableXlsxImport: false,
   })
 
   return (
     <aside className={styles.panel}>
       <div className={styles.header}>
-        <div className={styles.titleRow}>
-          <h2>フォルダ比較</h2>
-          <Button variant="plain" className={styles.backBtn} onClick={onExitDiff}>
-            <ArrowLeft size={14} aria-hidden="true" />
-            編集に戻る
-          </Button>
-        </div>
+        <SidebarIconBar>
+          <IconButton onClick={onExitDiff} aria-label="編集に戻る" title="編集に戻る">
+            <ArrowLeft size={16} aria-hidden="true" />
+          </IconButton>
+          <IconButton
+            onClick={onExportMigrateScripts}
+            disabled={!leftPath || !rightPath}
+            aria-label="変更スクリプト生成"
+            title="変更スクリプト生成"
+          >
+            <Download size={16} aria-hidden="true" />
+          </IconButton>
+        </SidebarIconBar>
+        <h2 className={styles.title}>フォルダ比較</h2>
         <div className={styles.selection}>
           <p className={styles.selRow}>
             <span className={styles.tagLeft} aria-hidden="true">
@@ -149,14 +159,6 @@ export function DiffSetupPanel({
             </span>
           </p>
         </div>
-        <Button
-          variant="ghost"
-          className={styles.exportBtn}
-          disabled={!leftPath || !rightPath}
-          onClick={onExportDiff}
-        >
-          差分エクスポート
-        </Button>
       </div>
 
       <div className={styles.body}>

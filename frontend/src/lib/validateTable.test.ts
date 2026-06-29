@@ -115,6 +115,47 @@ describe('validateTableDefinition', () => {
     ).toEqual([])
   })
 
+  it('accepts uniqueIndexes', () => {
+    expect(
+      validateTableDefinition({
+        schemaVersion: 1,
+        name: 'orders',
+        columns: [
+          { name: 'customerId', dataType: 'int', notNull: true },
+          { name: 'orderNo', dataType: 'nvarchar', length: 50, notNull: true },
+        ],
+        uniqueIndexes: [
+          {
+            keys: [
+              { column: 'customerId', order: 'asc' },
+              { column: 'orderNo' },
+            ],
+          },
+        ],
+      }),
+    ).toEqual([])
+  })
+
+  it('rejects more than 3 uniqueIndexes via JSON Schema', () => {
+    const errors = validateTableDefinition({
+      schemaVersion: 1,
+      name: 'orders',
+      columns: [
+        { name: 'a', dataType: 'int' },
+        { name: 'b', dataType: 'int' },
+        { name: 'c', dataType: 'int' },
+        { name: 'd', dataType: 'int' },
+      ],
+      uniqueIndexes: [
+        { keys: [{ column: 'a' }] },
+        { keys: [{ column: 'b' }] },
+        { keys: [{ column: 'c' }] },
+        { keys: [{ column: 'd' }] },
+      ],
+    })
+    expect(errors.length).toBeGreaterThan(0)
+  })
+
   it('accepts uniqueConstraints', () => {
     expect(
       validateTableDefinition({

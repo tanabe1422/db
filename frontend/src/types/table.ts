@@ -63,5 +63,6 @@ export interface TableDefinition {
   primaryKey?: string[]
   columns: Column[]
   indexes?: Index[]
+  uniqueIndexes?: Index[]
   uniqueConstraints?: UniqueConstraint[]
 }

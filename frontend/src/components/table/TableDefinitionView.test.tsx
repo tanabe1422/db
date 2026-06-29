@@ -111,29 +111,113 @@ describe('TableDefinitionView 未保存判定', () => {
   })
 })
 
-describe('TableDefinitionView データ型セル(select)', () => {
-  it('データ型セルをクリックすると select が表示される', async () => {
+describe('TableDefinitionView データ型セル(combobox)', () => {
+  it('データ型セルは1回目クリックで選択のみ、2回目で編集に入る', async () => {
     const user = userEvent.setup()
     render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
 
     const cell = await screen.findByText('bigint')
     await user.click(cell)
-    const select = screen.getByRole('combobox') as HTMLSelectElement
-    expect(select).toBeInTheDocument()
-    expect(select.value).toBe('bigint')
+    expect(screen.queryByDisplayValue('bigint')).toBeNull()
+
+    await user.click(cell)
+    const input = screen.getByDisplayValue('bigint') as HTMLInputElement
+    expect(input).toBeInTheDocument()
+    expect(input).not.toHaveAttribute('list')
   })
 
-  it('select で型を変更すると値が反映される', async () => {
+  it('候補リストから型を選択できる', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    await user.click(screen.getByRole('button', { name: '型の候補を表示' }))
+    await user.click(screen.getByRole('button', { name: 'int' }))
+
+    expect(screen.getByDisplayValue('int')).toBeInTheDocument()
+  })
+
+  it('未選択の型セルで三角をクリックすると候補リストが開く', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    await user.click(screen.getByRole('button', { name: '型の候補を表示' }))
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('bigint')).toBeInTheDocument()
+  })
+
+  it('未選択の型セル本体をクリックすると選択のみ', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    await user.click(await screen.findByText('bigint'))
+
+    expect(screen.queryByDisplayValue('bigint')).toBeNull()
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  })
+
+  it('選択済みの型セル本体をクリックしても候補リストは開かない', async () => {
     const user = userEvent.setup()
     render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
 
     const cell = await screen.findByText('bigint')
     await user.click(cell)
+    await user.click(cell)
 
-    const select = screen.getByRole('combobox') as HTMLSelectElement
-    await user.selectOptions(select, 'int')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  })
 
-    expect(select.value).toBe('int')
+  it('入力中は候補リストを表示しない', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const cell = await screen.findByText('bigint')
+    await user.click(cell)
+    await user.click(cell)
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+
+    const input = screen.getByDisplayValue('bigint') as HTMLInputElement
+    await user.type(input, 'x')
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  })
+
+  it('自由入力で任意の型を指定できる', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const cell = await screen.findByText('bigint')
+    await user.click(cell)
+    await user.click(cell)
+
+    const input = screen.getByDisplayValue('bigint') as HTMLInputElement
+    await user.clear(input)
+    await user.type(input, 'text')
+
+    await user.click(screen.getByText('id'))
+
+    expect(screen.getByText('text')).toBeInTheDocument()
+  })
+
+  it('行追加直後の型セルは int を表示する', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    await user.click(await screen.findByLabelText('下に新しい行を追加'))
+
+    expect(screen.getByText('int')).toBeInTheDocument()
+  })
+
+  it('行追加直後に型セルを編集すると int が入力欄に入っている', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    await user.click(await screen.findByLabelText('下に新しい行を追加'))
+    await user.click(screen.getByText('int'))
+    await user.click(screen.getByText('int'))
+
+    expect(screen.getByDisplayValue('int')).toBeInTheDocument()
   })
 
   it('型変更後にデータ型セルの表示が更新される', async () => {
@@ -142,8 +226,11 @@ describe('TableDefinitionView データ型セル(select)', () => {
 
     const cell = await screen.findByText('bigint')
     await user.click(cell)
+    await user.click(cell)
 
-    await user.selectOptions(screen.getByRole('combobox'), 'int')
+    const input = screen.getByDisplayValue('bigint') as HTMLInputElement
+    await user.clear(input)
+    await user.type(input, 'int')
     // 別セルへ移動して編集終了 → セル表示が 'int' になる。
     await user.click(screen.getByText('id'))
 

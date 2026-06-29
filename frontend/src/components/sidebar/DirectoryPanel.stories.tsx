@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { CollapsibleSidebar } from '../layout/CollapsibleSidebar'
 import { DirectoryPanel } from './DirectoryPanel'
 import { mockTree } from '../../mocks/data'
 
@@ -8,6 +9,15 @@ const meta = {
   parameters: {
     layout: 'fullscreen',
   },
+  decorators: [
+    (Story) => (
+      <div style={{ height: '100vh', display: 'flex' }}>
+        <CollapsibleSidebar>
+          <Story />
+        </CollapsibleSidebar>
+      </div>
+    ),
+  ],
   args: {
     onManageDirectories: () => undefined,
     onRescan: () => undefined,

@@ -1,14 +1,23 @@
 import { useEffect } from 'react'
 
 import type { TableDefinition } from '../../types'
-import { MAX_INDEXES } from '../../utils/columnMeta'
+import { IDENTITY_COLUMN_TITLE } from '../../lib/gridColumns'
+import {
+  MAX_INDEXES,
+  MAX_UNIQUE_CONSTRAINTS,
+  MAX_UNIQUE_INDEXES,
+} from '../../utils/columnMeta'
 import { type TableEditor, useTableEditor } from '../../hooks/useTableEditor'
 import { CheckCell } from './CheckCell'
 import { EditableCell } from './EditableCell'
 import { EditorToolbar } from './EditorToolbar'
 import { RowActions } from './RowActions'
 import { TableMetaForm } from './TableMetaForm'
-import { indexNumbers } from './navColumns'
+import {
+  indexNumbers,
+  uniqueIndexNumbers,
+  uniqueNumbers,
+} from './navColumns'
 import { useGridNavigation } from './useGridNavigation'
 import styles from './TableDefinitionView.module.css'
 
@@ -86,15 +95,28 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
               <th className={`${styles.center} ${styles.fixedCol}`} rowSpan={2}>
                 PK
               </th>
+              <th
+                className={`${styles.center} ${styles.groupHeader}`}
+                colSpan={MAX_UNIQUE_INDEXES}
+              >
+                <span className={styles.headerStack}>
+                  Unique
+                  <br />
+                  Index
+                </span>
+              </th>
               <th className={styles.center} colSpan={MAX_INDEXES}>
                 Index
               </th>
               <th
                 className={`${styles.center} ${styles.fixedCol}`}
                 rowSpan={2}
-                title="Unique"
+                title={IDENTITY_COLUMN_TITLE}
               >
-                UQ
+                ID
+              </th>
+              <th className={styles.center} colSpan={MAX_UNIQUE_CONSTRAINTS}>
+                Unique
               </th>
               <th
                 className={`${styles.center} ${styles.fixedCol}`}
@@ -120,8 +142,18 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
               </th>
             </tr>
             <tr>
+              {uniqueIndexNumbers.map((number) => (
+                <th key={`uidx${number}`} className={styles.markerCol}>
+                  {number}
+                </th>
+              ))}
               {indexNumbers.map((number) => (
-                <th key={number} className={styles.markerCol}>
+                <th key={`idx${number}`} className={styles.markerCol}>
+                  {number}
+                </th>
+              ))}
+              {uniqueNumbers.map((number) => (
+                <th key={`uq${number}`} className={styles.markerCol}>
                   {number}
                 </th>
               ))}
@@ -152,6 +184,16 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                     {index + 1}
                   </td>
                   <CheckCell column={column} colId="pk" nav={nav} />
+                  {uniqueIndexNumbers.map((number) => (
+                    <EditableCell
+                      key={`uidx${number - 1}`}
+                      column={column}
+                      colId={`uidx${number - 1}`}
+                      tdClass={styles.markerCol}
+                      nav={nav}
+                      editor={editor}
+                    />
+                  ))}
                   {indexNumbers.map((number) => (
                     <EditableCell
                       key={`idx${number - 1}`}
@@ -162,7 +204,17 @@ function TableEditorGrid({ editor }: { editor: TableEditor }) {
                       editor={editor}
                     />
                   ))}
-                  <CheckCell column={column} colId="uq" nav={nav} />
+                  <CheckCell column={column} colId="identity" nav={nav} />
+                  {uniqueNumbers.map((number) => (
+                    <EditableCell
+                      key={`uq${number - 1}`}
+                      column={column}
+                      colId={`uq${number - 1}`}
+                      tdClass={styles.markerCol}
+                      nav={nav}
+                      editor={editor}
+                    />
+                  ))}
                   <CheckCell column={column} colId="nn" nav={nav} />
                   <EditableCell
                     column={column}

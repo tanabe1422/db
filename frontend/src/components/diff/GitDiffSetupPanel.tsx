@@ -4,6 +4,7 @@ import type { GitCommit } from '../../types'
 import { useGitCommits } from '../../hooks/useGitDiff'
 import { cx } from '../../utils/cx'
 import { truncateMiddle } from '../../utils/truncateMiddle'
+import { SidebarIconBar } from '../layout/SidebarIconBar'
 import { Button, IconButton } from '../ui/Button'
 
 import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
@@ -108,13 +109,12 @@ export function GitDiffSetupPanel({
   return (
     <aside className={setupStyles.panel}>
       <div className={setupStyles.header}>
-        <div className={setupStyles.titleRow}>
-          <h2>Git 履歴比較</h2>
-          <Button variant="plain" className={setupStyles.backBtn} onClick={onExitGitDiff}>
-            <ArrowLeft size={14} aria-hidden="true" />
-            編集に戻る
-          </Button>
-        </div>
+        <SidebarIconBar>
+          <IconButton onClick={onExitGitDiff} aria-label="編集に戻る" title="編集に戻る">
+            <ArrowLeft size={16} aria-hidden="true" />
+          </IconButton>
+        </SidebarIconBar>
+        <h2 className={setupStyles.title}>Git 履歴比較</h2>
         <div className={setupStyles.selection}>
           <p className={setupStyles.selRow}>
             <span className={setupStyles.tagLeft} aria-hidden="true">

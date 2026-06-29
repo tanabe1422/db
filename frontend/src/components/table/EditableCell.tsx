@@ -3,6 +3,10 @@ import { cellValue } from '../../lib/gridColumns'
 import type { DraftColumn } from '../../utils/serializeTable'
 import type { TableEditor } from '../../hooks/useTableEditor'
 import { DATA_TYPES, colKind } from './navColumns'
+import {
+  DataTypeCombobox,
+  DataTypeComboboxDisplay,
+} from './DataTypeCombobox'
 import type { GridNavigation } from './useGridNavigation'
 import styles from './TableDefinitionView.module.css'
 
@@ -19,7 +23,6 @@ export function EditableCell({
   colId,
   tdClass,
   nav,
-  editor,
 }: EditableCellProps) {
   const isActive =
     nav.active?.rowId === column.rowId && nav.active?.colId === colId
@@ -34,11 +37,15 @@ export function EditableCell({
         isEditing
           ? undefined
           : () => {
-              // select は1回目クリックで編集開始（プルダウン表示）。
-              // それ以外は1回目: 選択、2回目: 編集開始。
-              // onClick（クリック完了後）に発火させることで、編集要素の生成直後に
-              // フォーカス競合で onBlur が走り select が即閉じする問題を防ぐ。
-              if (kind === 'select' || isActive) {
+              if (kind === 'combobox') {
+                if (!isActive) {
+                  nav.activateCell(column.rowId, colId)
+                } else {
+                  nav.startEdit(column.rowId, colId, undefined, false)
+                }
+                return
+              }
+              if (isActive) {
                 nav.startEdit(column.rowId, colId, undefined, false)
               } else {
                 nav.activateCell(column.rowId, colId)
@@ -46,33 +53,18 @@ export function EditableCell({
             }
       }
     >
-      {isEditing && kind === 'select' ? (
-        <select
-          ref={(el) => {
-            nav.inputRef.current = el
-          }}
-          className={styles.cellSelect}
+      {isEditing && kind === 'combobox' ? (
+        <DataTypeCombobox
           value={nav.editValue}
-          onChange={(ev) => {
-            nav.setEditValue(ev.target.value)
-            editor.updateCell(column.rowId, 'dataType', ev.target.value)
-          }}
-          onBlur={() => nav.stopEditing()}
-        >
-          {DATA_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          onChange={nav.setEditValue}
+          inputRef={nav.inputRef as React.MutableRefObject<HTMLInputElement | null>}
+          suggestions={DATA_TYPES}
+          requestOpenOnMount={nav.takeComboboxOpenRequest}
+        />
       ) : isEditing && colId === 'remarks' ? (
         <textarea
           ref={(el) => {
             nav.inputRef.current = el
-            if (el) {
-              el.style.height = 'auto'
-              el.style.height = `${el.scrollHeight}px`
-            }
           }}
           className={styles.cellTextarea}
           value={nav.editValue}
@@ -92,6 +84,13 @@ export function EditableCell({
           className={styles.cellInput}
           value={nav.editValue}
           onChange={(ev) => nav.setEditValue(ev.target.value)}
+        />
+      ) : kind === 'combobox' ? (
+        <DataTypeComboboxDisplay
+          value={value}
+          onOpenList={() =>
+            nav.startEdit(column.rowId, colId, undefined, false, { openCombobox: true })
+          }
         />
       ) : colId === 'remarks' ? (
         <span className={`${styles.cellText} ${styles.cellTextRemarks}`}>

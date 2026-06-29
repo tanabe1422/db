@@ -10,8 +10,24 @@ export function EnsureExportRelDir(arg1, arg2) {
   return window['go']['app']['App']['EnsureExportRelDir'](arg1, arg2);
 }
 
+export function GenerateCreateScript(arg1) {
+  return window['go']['app']['App']['GenerateCreateScript'](arg1);
+}
+
+export function GenerateMigrateScript(arg1, arg2) {
+  return window['go']['app']['App']['GenerateMigrateScript'](arg1, arg2);
+}
+
+export function GenerateXlsxExport(arg1) {
+  return window['go']['app']['App']['GenerateXlsxExport'](arg1);
+}
+
 export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
+}
+
+export function ImportXlsxDirectory(arg1, arg2) {
+  return window['go']['app']['App']['ImportXlsxDirectory'](arg1, arg2);
 }
 
 export function ListGitCommits(arg1, arg2, arg3) {
@@ -58,8 +74,20 @@ export function SetActiveDirectory(arg1) {
   return window['go']['app']['App']['SetActiveDirectory'](arg1);
 }
 
+export function SetZoomLevel(arg1) {
+  return window['go']['app']['App']['SetZoomLevel'](arg1);
+}
+
 export function ShowInExplorer(arg1) {
   return window['go']['app']['App']['ShowInExplorer'](arg1);
+}
+
+export function WriteExportBinaryFile(arg1, arg2, arg3) {
+  return window['go']['app']['App']['WriteExportBinaryFile'](arg1, arg2, arg3);
+}
+
+export function WriteExportFile(arg1, arg2, arg3) {
+  return window['go']['app']['App']['WriteExportFile'](arg1, arg2, arg3);
 }
 
 export function WriteTableFile(arg1, arg2) {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { isDecimal } from '../../utils/columnMeta'
-import { cellValue, flagFor } from '../../lib/gridColumns'
+import { cellValue, flagFor, markerFieldFor, markerPosition } from '../../lib/gridColumns'
 import { cleanDefinition, type DraftColumn } from '../../utils/serializeTable'
 import {
   validateTableDefinition,
@@ -35,7 +35,9 @@ export interface GridNavigation {
     colId: string,
     initial?: string,
     selectAll?: boolean,
+    options?: { openCombobox?: boolean },
   ) => void
+  takeComboboxOpenRequest: () => boolean
   activateCell: (rowId: number, colId: string) => void
   stopEditing: () => void
 }
@@ -53,6 +55,7 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
   // 編集開始時にテキストを全選択するか（Enter/文字入力起点）、
   // 末尾キャレットのみにするか（クリック起点）を切り替える。
   const selectAllRef = useRef(true)
+  const comboboxOpenRequestRef = useRef(false)
 
   const errors = useMemo(
     () => validateTableDefinition(cleanDefinition(editor.draft)),
@@ -103,8 +106,10 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     colId: string,
     value: string,
   ) {
-    if (colId.startsWith('idx')) {
-      editor.updateMarker(rowId, Number(colId.slice(3)), value)
+    const markerField = markerFieldFor(colId)
+    const position = markerPosition(colId)
+    if (markerField != null && position != null) {
+      editor.updateMarker(rowId, markerField, position, value)
       return
     }
     if (colId === 'len') {
@@ -145,10 +150,13 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     colId: string,
     initial?: string,
     selectAll = true,
+    options?: { openCombobox?: boolean },
   ) {
     flushEdit()
     setActive({ rowId, colId })
     const kind = colKind(colId)
+    comboboxOpenRequestRef.current =
+      kind === 'combobox' && (options?.openCombobox ?? false)
     if (kind === 'check') {
       editor.toggleFlag(rowId, flagFor(colId))
       setEditing(false)
@@ -162,6 +170,12 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
 
   function stopEditing() {
     setEditing(false)
+  }
+
+  function takeComboboxOpenRequest(): boolean {
+    const requested = comboboxOpenRequestRef.current
+    comboboxOpenRequestRef.current = false
+    return requested
   }
 
   function computeNext(current: ActiveCell, forward: boolean): ActiveCell | null {
@@ -290,7 +304,7 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
         editor.toggleFlag(active.rowId, flagFor(active.colId))
         return
       }
-      if (kind !== 'check' && kind !== 'select' && e.key.length === 1 && !mod) {
+      if (kind !== 'check' && e.key.length === 1 && !mod) {
         e.preventDefault()
         startEdit(active.rowId, active.colId, e.key)
       }
@@ -331,6 +345,7 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     handleContainerBlur,
     handleRowSelect,
     startEdit,
+    takeComboboxOpenRequest,
     activateCell,
     stopEditing,
   }

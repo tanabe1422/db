@@ -1,0 +1,22 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.collapse {
+  flex-shrink: 0;
+  color: var(--color-slate-500);
+}
+
+.collapse:hover {
+  color: var(--color-slate-700);
+}

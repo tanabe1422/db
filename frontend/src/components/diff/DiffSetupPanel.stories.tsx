@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { mockTree } from '../../mocks/data'
 import type { TreeNode } from '../../types'
 
+import { CollapsibleSidebar } from '../layout/CollapsibleSidebar'
 import { DiffSetupPanel } from './DiffSetupPanel'
 
 const meta = {
@@ -15,7 +16,9 @@ const meta = {
   decorators: [
     (Story) => (
       <div style={{ height: '100vh', display: 'flex' }}>
-        <Story />
+        <CollapsibleSidebar>
+          <Story />
+        </CollapsibleSidebar>
       </div>
     ),
   ],
@@ -23,7 +26,7 @@ const meta = {
     onSelectLeft: () => undefined,
     onSelectRight: () => undefined,
     onExitDiff: () => undefined,
-    onExportDiff: () => undefined,
+    onExportMigrateScripts: () => undefined,
   },
 } satisfies Meta<typeof DiffSetupPanel>
 

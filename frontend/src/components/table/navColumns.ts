@@ -1,9 +1,13 @@
 import type { DataType } from '../../types'
-import { MAX_INDEXES } from '../../utils/columnMeta'
+import {
+  MAX_INDEXES,
+  MAX_UNIQUE_CONSTRAINTS,
+  MAX_UNIQUE_INDEXES,
+} from '../../utils/columnMeta'
 import { GRID_COLUMNS } from '../../lib/gridColumns'
 
 // 編集グリッドのセル種別。差分表示(DISPLAY_COLS)とは別に編集 UI 固有の概念。
-export type CellKind = 'check' | 'text' | 'select' | 'marker'
+export type CellKind = 'check' | 'text' | 'combobox' | 'marker'
 
 export interface NavCol {
   id: string
@@ -11,9 +15,17 @@ export interface NavCol {
 }
 
 export const indexNumbers = Array.from({ length: MAX_INDEXES }, (_, i) => i + 1)
+export const uniqueIndexNumbers = Array.from(
+  { length: MAX_UNIQUE_INDEXES },
+  (_, i) => i + 1,
+)
+export const uniqueNumbers = Array.from(
+  { length: MAX_UNIQUE_CONSTRAINTS },
+  (_, i) => i + 1,
+)
 
 // 編集グリッドのセル種別は共通の列定義(GRID_COLUMNS)から導出する。
-// データ型はプルダウン編集なので select、桁数/精度などは text 扱い。
+// データ型は候補付き自由入力(combobox)、桁数/精度などは text 扱い。
 export const NAV_COLS: NavCol[] = GRID_COLUMNS.map((column) => ({
   id: column.id,
   kind:
@@ -22,7 +34,7 @@ export const NAV_COLS: NavCol[] = GRID_COLUMNS.map((column) => ({
       : column.role === 'marker'
         ? 'marker'
         : column.id === 'dataType'
-          ? 'select'
+          ? 'combobox'
           : 'text',
 }))
 

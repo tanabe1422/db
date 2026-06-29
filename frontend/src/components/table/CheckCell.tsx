@@ -1,5 +1,5 @@
 import { cx } from '../../utils/cx'
-import { flagFor } from '../../lib/gridColumns'
+import { flagFor, IDENTITY_COLUMN_TITLE } from '../../lib/gridColumns'
 import type { DraftColumn } from '../../utils/serializeTable'
 import type { GridNavigation } from './useGridNavigation'
 import styles from './TableDefinitionView.module.css'
@@ -23,6 +23,7 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
         isActive && styles.activeCell,
       )}
       onMouseDown={() => nav.startEdit(column.rowId, colId)}
+      title={colId === 'identity' ? IDENTITY_COLUMN_TITLE : undefined}
     >
       <input
         type="checkbox"
@@ -30,7 +31,14 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
         checked={checked}
         readOnly
         tabIndex={-1}
-        aria-label={colId === 'pk' ? 'PK' : colId === 'uq' ? 'UQ' : 'NOT NULL'}
+        aria-label={
+          colId === 'pk'
+            ? 'PK'
+            : colId === 'identity'
+              ? 'ID'
+              : 'NOT NULL'
+        }
+        title={colId === 'identity' ? IDENTITY_COLUMN_TITLE : undefined}
       />
     </td>
   )

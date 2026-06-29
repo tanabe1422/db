@@ -5,6 +5,7 @@ import type { TableDiff } from '../../lib/diffTable'
 import { Button } from '../ui/Button'
 
 import { DiffMetaPanel } from './DiffMetaPanel'
+import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
 import { DiffSideTable } from './DiffSideTable'
 import styles from './FileDiffView.module.css'
 
@@ -32,6 +33,10 @@ export function FileDiffView({ relPath, diff, onBack }: FileDiffViewProps) {
 
       <div className={styles.split}>
         <div className={styles.pane}>
+          <div className={styles.paneHead}>
+            <DiffSideMark side="left" />
+            <span>{diffSideAriaLabel('left')}</span>
+          </div>
           <div className={styles.meta}>
             <DiffMetaPanel diff={diff} side="left" />
           </div>
@@ -43,6 +48,10 @@ export function FileDiffView({ relPath, diff, onBack }: FileDiffViewProps) {
           />
         </div>
         <div className={styles.pane}>
+          <div className={styles.paneHead}>
+            <DiffSideMark side="right" />
+            <span>{diffSideAriaLabel('right')}</span>
+          </div>
           <div className={styles.meta}>
             <DiffMetaPanel diff={diff} side="right" />
           </div>

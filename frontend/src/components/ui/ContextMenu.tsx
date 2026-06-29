@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 import styles from './ContextMenu.module.css'
 
@@ -40,7 +41,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
     }
   }, [onClose])
 
-  return (
+  return createPortal(
     <div
       ref={menuRef}
       className={styles.menu}
@@ -62,6 +63,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
           {item.label}
         </button>
       ))}
-    </div>
+    </div>,
+    document.body,
   )
 }

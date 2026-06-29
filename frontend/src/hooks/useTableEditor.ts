@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { DataType, TableDefinition } from '../types'
+import type { TableDefinition } from '../types'
 import { writeTableFile } from '../lib/wails'
 import type { FlagField } from '../lib/gridColumns'
 import {
   type DraftColumn,
   type DraftTable,
+  type MarkerField,
   createEmptyDraftColumn,
   serialize,
   toDraft,
@@ -41,7 +42,12 @@ export interface TableEditor {
   updateMeta: (field: MetaField, value: string) => void
   updateCell: (rowId: number, field: EditableField, value: string) => void
   toggleFlag: (rowId: number, field: FlagField) => void
-  updateMarker: (rowId: number, position: number, value: string) => void
+  updateMarker: (
+    rowId: number,
+    field: MarkerField,
+    position: number,
+    value: string,
+  ) => void
   moveRowUp: (rowId: number) => void
   moveRowDown: (rowId: number) => void
   deleteRow: (rowId: number) => void
@@ -61,6 +67,8 @@ function cloneColumn(column: DraftColumn, rowId: number): DraftColumn {
     ...column,
     rowId,
     markers: [...column.markers],
+    uniqueIndexMarkers: [...column.uniqueIndexMarkers],
+    uniqueMarkers: [...column.uniqueMarkers],
   }
 }
 
@@ -154,9 +162,6 @@ export function useTableEditor(
             return column
           }
           changed = true
-          if (field === 'dataType') {
-            return { ...column, dataType: value as DataType }
-          }
           return { ...column, [field]: value }
         })
         return changed ? next : columns
@@ -179,17 +184,17 @@ export function useTableEditor(
   )
 
   const updateMarker = useCallback(
-    (rowId: number, position: number, value: string) => {
+    (rowId: number, field: MarkerField, position: number, value: string) => {
       updateColumns((columns) => {
         let changed = false
         const next = columns.map((column) => {
-          if (column.rowId !== rowId || column.markers[position] === value) {
+          if (column.rowId !== rowId || column[field][position] === value) {
             return column
           }
           changed = true
-          const markers = [...column.markers]
+          const markers = [...column[field]]
           markers[position] = value
-          return { ...column, markers }
+          return { ...column, [field]: markers }
         })
         return changed ? next : columns
       })

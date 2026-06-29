@@ -1,8 +1,17 @@
-import { MAX_INDEXES, isDecimal } from '../utils/columnMeta'
-import type { DraftColumn } from '../utils/serializeTable'
+import {
+  MAX_INDEXES,
+  MAX_UNIQUE_CONSTRAINTS,
+  MAX_UNIQUE_INDEXES,
+  isDecimal,
+} from '../utils/columnMeta'
+import type { DraftColumn, MarkerField } from '../utils/serializeTable'
 
 // カラムのフラグ系プロパティ（チェックボックス列）。
-export type FlagField = 'pk' | 'notNull' | 'unique'
+export type FlagField = 'pk' | 'notNull' | 'identity'
+
+export const IDENTITY_COLUMN_LABEL = 'ID'
+export const IDENTITY_COLUMN_TITLE =
+  'SQL Server では IDENTITY と呼ばれる自動採番です'
 
 // グリッド列の意味的な役割。描画上の見た目（select/num など）は各 View が role から導出する。
 export type ColumnRole = 'check' | 'marker' | 'text' | 'key'
@@ -13,19 +22,31 @@ export interface GridColumn {
   role: ColumnRole
   // role が 'check' の列が対応するフラグ。
   flag?: FlagField
+  // role が 'marker' の列が対応する DraftColumn 上のマーカー配列。
+  markerField?: MarkerField
 }
 
-const indexColumns: GridColumn[] = Array.from(
-  { length: MAX_INDEXES },
-  (_, i) => ({ id: `idx${i}`, label: String(i + 1), role: 'marker' }),
-)
+function markerColumns(
+  prefix: string,
+  count: number,
+  field: MarkerField,
+): GridColumn[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `${prefix}${i}`,
+    label: String(i + 1),
+    role: 'marker' as const,
+    markerField: field,
+  }))
+}
 
 // テーブル定義グリッドの列順・ラベル・役割の単一情報源。
 // 編集グリッド(NAV_COLS)・差分表示(DISPLAY_COLS)・比較(COMPARE_COLS)はすべてこれから導出する。
 export const GRID_COLUMNS: GridColumn[] = [
   { id: 'pk', label: 'PK', role: 'check', flag: 'pk' },
-  ...indexColumns,
-  { id: 'uq', label: 'UQ', role: 'check', flag: 'unique' },
+  ...markerColumns('uidx', MAX_UNIQUE_INDEXES, 'uniqueIndexMarkers'),
+  ...markerColumns('idx', MAX_INDEXES, 'markers'),
+  { id: 'identity', label: IDENTITY_COLUMN_LABEL, role: 'check', flag: 'identity' },
+  ...markerColumns('uq', MAX_UNIQUE_CONSTRAINTS, 'uniqueMarkers'),
   { id: 'nn', label: 'NN', role: 'check', flag: 'notNull' },
   { id: 'name', label: 'カラム名（英）', role: 'key' },
   { id: 'nameJa', label: 'カラム名（日）', role: 'text' },
@@ -46,6 +67,15 @@ export function flagFor(colId: string): FlagField {
   return columnById.get(colId)?.flag ?? 'notNull'
 }
 
+export function markerFieldFor(colId: string): MarkerField | null {
+  return columnById.get(colId)?.markerField ?? null
+}
+
+export function markerPosition(colId: string): number | null {
+  const match = /^(?:uidx|idx|uq)(\d+)$/.exec(colId)
+  return match ? Number(match[1]) : null
+}
+
 // 差分比較の対象 colId（キー列 name は値ではなくマッチングに使うため除外）。
 export const COMPARE_COLS: string[] = GRID_COLUMNS.filter(
   (column) => column.role !== 'key',
@@ -56,8 +86,8 @@ export function cellValue(column: DraftColumn, colId: string): string {
   switch (colId) {
     case 'pk':
       return column.pk ? '1' : '0'
-    case 'uq':
-      return column.unique ? '1' : '0'
+    case 'identity':
+      return column.identity ? '1' : '0'
     case 'nn':
       return column.notNull ? '1' : '0'
     case 'name':
@@ -74,10 +104,13 @@ export function cellValue(column: DraftColumn, colId: string): string {
       return column.defaultValue
     case 'remarks':
       return column.remarks
-    default:
-      if (colId.startsWith('idx')) {
-        return column.markers[Number(colId.slice(3))] ?? ''
+    default: {
+      const field = markerFieldFor(colId)
+      const position = markerPosition(colId)
+      if (field != null && position != null) {
+        return column[field][position] ?? ''
       }
       return ''
+    }
   }
 }

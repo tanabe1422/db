@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useAppZoom } from './hooks/useAppZoom'
 import { MainLayout } from './components/layout/MainLayout'
 import { DirectoryPanel } from './components/sidebar/DirectoryPanel'
 import { SettingsDialog } from './components/settings/SettingsDialog'
@@ -12,13 +13,15 @@ import { TableDefinitionPanel } from './components/workspace/TableDefinitionPane
 import { useDirectoryScan } from './hooks/useDirectoryScan'
 import { useSettings } from './hooks/useSettings'
 import { useTabWorkspace } from './hooks/useTabWorkspace'
-import { exportDiff } from './lib/export'
+import { exportMigrateScripts } from './lib/scriptExport'
 import type { GitCommit, TreeNode } from './types'
 import styles from './App.module.css'
 
 type AppMode = 'edit' | 'diff' | 'git-diff'
 
 function App() {
+  useAppZoom()
+
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [mode, setMode] = useState<AppMode>('edit')
   const [leftNode, setLeftNode] = useState<TreeNode | null>(null)
@@ -89,105 +92,112 @@ function App() {
     setRightCommit(null)
   }, [])
 
-  const handleExportDiff = useCallback(() => {
+  const handleExportMigrateScripts = useCallback(() => {
     if (!leftNode || !rightNode || !settings.activeDirectory) {
       return
     }
-    void exportDiff(settings.activeDirectory, leftNode, rightNode)
+    void exportMigrateScripts(
+      settings.activeDirectory,
+      leftNode,
+      rightNode,
+    ).catch((err: unknown) => {
+      const message =
+        err instanceof Error ? err.message : '変更スクリプトの生成に失敗しました'
+      window.alert(message)
+    })
   }, [leftNode, rightNode, settings.activeDirectory])
 
   return (
     <>
       <MainLayout
-        onOpenSettings={() => setSettingsOpen(true)}
         sidebar={
-          mode === 'diff' ? (
-            <DiffSetupPanel
-              activeDirectory={settings.activeDirectory}
-              tree={tree}
-              leftPath={leftNode?.path}
-              rightPath={rightNode?.path}
-              onSelectLeft={setLeftNode}
-              onSelectRight={setRightNode}
-              onExitDiff={exitDiffMode}
-              onExportDiff={handleExportDiff}
-            />
-          ) : mode === 'git-diff' ? (
-            <GitDiffSetupPanel
-              activeDirectory={settings.activeDirectory}
-              leftHash={leftCommit?.hash}
-              rightHash={rightCommit?.hash}
-              onSelectLeft={setLeftCommit}
-              onSelectRight={setRightCommit}
-              onExitGitDiff={exitGitDiffMode}
-            />
-          ) : (
-            <DirectoryPanel
-              activeDirectory={settings.activeDirectory}
-              tree={tree}
-              loading={loading}
-              error={error}
-              selectedPath={activePath}
-              onSelectFile={handleSelectFile}
-              onManageDirectories={() => setSettingsOpen(true)}
-              onRescan={() => void rescan()}
-              onEnterDiffMode={enterDiffMode}
-              onEnterGitDiffMode={enterGitDiffMode}
-            />
-          )
-        }
-      >
-        {mode === 'diff' ? (
-          <div className={styles.workspace}>
-            <div className={styles.content}>
-              <DiffWorkspace leftNode={leftNode} rightNode={rightNode} />
-            </div>
-          </div>
-        ) : mode === 'git-diff' ? (
-          <div className={styles.workspace}>
-            <div className={styles.content}>
-              <GitDiffWorkspace
+            mode === 'diff' ? (
+              <DiffSetupPanel
                 activeDirectory={settings.activeDirectory}
-                leftCommit={leftCommit}
-                rightCommit={rightCommit}
+                tree={tree}
+                leftPath={leftNode?.path}
+                rightPath={rightNode?.path}
+                onSelectLeft={setLeftNode}
+                onSelectRight={setRightNode}
+                onExitDiff={exitDiffMode}
+                onExportMigrateScripts={handleExportMigrateScripts}
               />
+            ) : mode === 'git-diff' ? (
+              <GitDiffSetupPanel
+                activeDirectory={settings.activeDirectory}
+                leftHash={leftCommit?.hash}
+                rightHash={rightCommit?.hash}
+                onSelectLeft={setLeftCommit}
+                onSelectRight={setRightCommit}
+                onExitGitDiff={exitGitDiffMode}
+              />
+            ) : (
+              <DirectoryPanel
+                activeDirectory={settings.activeDirectory}
+                tree={tree}
+                loading={loading}
+                error={error}
+                selectedPath={activePath}
+                onSelectFile={handleSelectFile}
+                onManageDirectories={() => setSettingsOpen(true)}
+                onRescan={() => void rescan()}
+                onEnterDiffMode={enterDiffMode}
+                onEnterGitDiffMode={enterGitDiffMode}
+              />
+            )
+          }
+        >
+          {mode === 'diff' ? (
+            <div className={styles.workspace}>
+              <div className={styles.content}>
+                <DiffWorkspace leftNode={leftNode} rightNode={rightNode} />
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className={styles.workspace}>
-            {openPaths.length > 0 && (
-              <TabBar
-                paths={openPaths}
-                activePath={activePath}
-                dirtyPaths={dirtyPaths}
-                onActivate={setActivePath}
-                onClose={handleRequestClose}
-              />
-            )}
-            <div className={styles.content}>
-              {openPaths.length === 0 ? (
-                <div className={styles.placeholder}>
-                  <h2>テーブル定義を選択</h2>
-                  <p>左のパネルから *.table.json ファイルを選択してください。</p>
-                </div>
-              ) : (
-                openPaths.map((path) => (
-                  <div
-                    key={path}
-                    className={styles.panel}
-                    style={{ display: path === activePath ? 'block' : 'none' }}
-                  >
-                    <TableDefinitionPanel
-                      path={path}
-                      onDirtyChange={(dirty) => updateDirty(path, dirty)}
-                    />
-                  </div>
-                ))
+          ) : mode === 'git-diff' ? (
+            <div className={styles.workspace}>
+              <div className={styles.content}>
+                <GitDiffWorkspace
+                  activeDirectory={settings.activeDirectory}
+                  leftCommit={leftCommit}
+                  rightCommit={rightCommit}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className={styles.workspace}>
+              {openPaths.length > 0 && (
+                <TabBar
+                  paths={openPaths}
+                  activePath={activePath}
+                  dirtyPaths={dirtyPaths}
+                  onActivate={setActivePath}
+                  onClose={handleRequestClose}
+                />
               )}
+              <div className={styles.content}>
+                {openPaths.length === 0 ? (
+                  <div className={styles.placeholder}>
+                    <h2>テーブル定義を選択</h2>
+                    <p>左のパネルから *.table.json ファイルを選択してください。</p>
+                  </div>
+                ) : (
+                  openPaths.map((path) => (
+                    <div
+                      key={path}
+                      className={styles.panel}
+                      style={{ display: path === activePath ? 'block' : 'none' }}
+                    >
+                      <TableDefinitionPanel
+                        path={path}
+                        onDirtyChange={(dirty) => updateDirty(path, dirty)}
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </MainLayout>
+          )}
+        </MainLayout>
 
       <SettingsDialog
         open={settingsOpen}

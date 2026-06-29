@@ -108,6 +108,25 @@ export function validateTableSemantic(def: TableDefinition): ValidationError[] {
     })
   })
 
+  def.uniqueIndexes?.forEach((idx, index) => {
+    idx.keys.forEach((key, keyIndex) => {
+      if (!columnNames.has(key.column)) {
+        errors.push({
+          path: `/uniqueIndexes/${index}/keys/${keyIndex}/column`,
+          message: `unknown column "${key.column}"`,
+        })
+      }
+    })
+    idx.include?.forEach((col, includeIndex) => {
+      if (!columnNames.has(col)) {
+        errors.push({
+          path: `/uniqueIndexes/${index}/include/${includeIndex}`,
+          message: `unknown column "${col}"`,
+        })
+      }
+    })
+  })
+
   def.uniqueConstraints?.forEach((constraint, index) => {
     constraint.columns.forEach((col, colIndex) => {
       if (!columnNames.has(col)) {

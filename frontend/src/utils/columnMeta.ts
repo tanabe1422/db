@@ -1,10 +1,26 @@
-import type { Column, DataType, Index, TableDefinition } from '../types'
+import type { Column, Index, TableDefinition } from '../types'
 
 export const MAX_INDEXES = 9
+export const MAX_UNIQUE_INDEXES = 3
+export const MAX_UNIQUE_CONSTRAINTS = 3
+
+function parseBaseDataType(dataType: string): string {
+  const trimmed = dataType.trim()
+  if (!trimmed) {
+    return ''
+  }
+  const token = trimmed.split(/\s+/)[0]
+  const parenIndex = token.indexOf('(')
+  if (parenIndex >= 0) {
+    return token.slice(0, parenIndex).toLowerCase()
+  }
+  return token.toLowerCase()
+}
 
 // 桁数(len)に precision を使う型。decimal/numeric は小数点以下桁数(scale)を持つ。
-export function isDecimal(dataType: DataType): boolean {
-  return dataType === 'decimal' || dataType === 'numeric'
+export function isDecimal(dataType: string): boolean {
+  const base = parseBaseDataType(dataType)
+  return base === 'decimal' || base === 'numeric'
 }
 
 export function pkOrder(def: TableDefinition, columnName: string): string {
@@ -27,10 +43,18 @@ export function indexMarker(index: Index, columnName: string): string {
   return ''
 }
 
+export function constraintMarker(
+  constraint: { columns: string[] },
+  columnName: string,
+): string {
+  const position = constraint.columns.indexOf(columnName)
+  return position >= 0 ? String(position + 1) : ''
+}
+
 // 桁数: 文字列・バイナリ型は length、decimal/numeric は precision（整数・小数の合計桁数）。
 export function columnLength(column: Column): string {
   if (column.length != null) {
-    return String(column.length)
+    return column.length === 'max' ? 'max' : String(column.length)
   }
   if (column.precision != null) {
     return String(column.precision)

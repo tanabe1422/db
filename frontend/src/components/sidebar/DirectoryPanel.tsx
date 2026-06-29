@@ -3,6 +3,8 @@ import { FolderCog, GitBranch, GitCompare, RefreshCw } from 'lucide-react'
 import type { TreeNode as TreeNodeType } from '../../types'
 import { useTreeContextMenu } from '../../hooks/useTreeContextMenu'
 import { truncateMiddle } from '../../utils/truncateMiddle'
+import { SidebarIconBar } from '../layout/SidebarIconBar'
+import { AlertDialog } from '../ui/AlertDialog'
 import { ContextMenu } from '../ui/ContextMenu'
 import { IconButton } from '../ui/Button'
 
@@ -34,15 +36,17 @@ export function DirectoryPanel({
   onEnterDiffMode,
   onEnterGitDiffMode,
 }: DirectoryPanelProps) {
-  const { menu, openNodeMenu, closeMenu } = useTreeContextMenu({
-    activeDirectory,
-    enableExport: true,
-  })
+  const { menu, importFailures, closeImportFailures, openNodeMenu, closeMenu } =
+    useTreeContextMenu({
+      activeDirectory,
+      enableCreateScript: true,
+      onRescan,
+    })
 
   return (
     <aside className={styles.panel}>
       <div className={styles.header}>
-        <div className={styles.toolbar}>
+        <SidebarIconBar>
           <IconButton
             onClick={onManageDirectories}
             aria-label="ディレクトリを追加・編集"
@@ -72,7 +76,7 @@ export function DirectoryPanel({
           >
             <GitBranch size={16} aria-hidden="true" />
           </IconButton>
-        </div>
+        </SidebarIconBar>
         {activeDirectory && (
           <p className={styles.root} title={activeDirectory}>
             {truncateMiddle(activeDirectory, 48)}
@@ -115,6 +119,20 @@ export function DirectoryPanel({
           onClose={closeMenu}
         />
       )}
+      <AlertDialog
+        open={importFailures !== null}
+        title="インポートに失敗しました"
+        message={
+          importFailures
+            ? `${importFailures.length} 件のファイルを変換できませんでした。`
+            : ''
+        }
+        items={importFailures?.map((failure) => ({
+          label: failure.sourcePath,
+          detail: failure.message,
+        }))}
+        onClose={closeImportFailures}
+      />
     </aside>
   )
 }

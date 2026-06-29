@@ -1,6 +1,26 @@
 import type { GitCommit, GitRepoInfo, Settings, TreeNode } from '../types'
 import { mockTableDefinition } from '../mocks/data'
 
+export interface ScriptResult {
+  sql: string
+  relPath: string
+}
+
+export interface XlsxExportResult {
+  data: number[]
+  relPath: string
+}
+
+export interface XlsxImportFailure {
+  sourcePath: string
+  message: string
+}
+
+export interface XlsxImportResult {
+  imported: number
+  failures: XlsxImportFailure[]
+}
+
 export interface WailsApp {
   GetSettings(): Promise<Settings>
   AddDirectory(path: string): Promise<Settings>
@@ -14,6 +34,26 @@ export interface WailsApp {
   ShowInExplorer(path: string): Promise<void>
   PrepareExportDirectory(activeDirectory: string): Promise<string>
   EnsureExportRelDir(exportRoot: string, relativePath: string): Promise<void>
+  GenerateCreateScript(tableJSON: string): Promise<ScriptResult>
+  GenerateMigrateScript(
+    beforeJSON: string,
+    afterJSON: string,
+  ): Promise<ScriptResult>
+  WriteExportFile(
+    exportRoot: string,
+    relativePath: string,
+    content: string,
+  ): Promise<void>
+  GenerateXlsxExport(tableJSON: string): Promise<XlsxExportResult>
+  WriteExportBinaryFile(
+    exportRoot: string,
+    relativePath: string,
+    data: number[],
+  ): Promise<void>
+  ImportXlsxDirectory(
+    sourceDir: string,
+    targetDir: string,
+  ): Promise<XlsxImportResult>
   ResolveGitRepo(directory: string): Promise<GitRepoInfo>
   ListGitCommits(directory: string, limit: number, offset: number): Promise<GitCommit[]>
   ListGitTableFiles(directory: string, commitHash: string): Promise<string[]>
@@ -22,6 +62,7 @@ export interface WailsApp {
     commitHash: string,
     relPath: string,
   ): Promise<string>
+  SetZoomLevel(level: number): Promise<number>
 }
 
 declare global {
@@ -250,6 +291,104 @@ export async function ensureExportRelDir(
   console.info('[mock] ensureExportRelDir', exportRoot, relativePath)
 }
 
+export async function generateCreateScript(
+  tableFilePath: string,
+): Promise<ScriptResult> {
+  const app = getApp()
+  const tableJSON = app
+    ? await app.ReadTableFile(tableFilePath)
+    : JSON.stringify(mockTableDefinition)
+
+  if (app) {
+    return app.GenerateCreateScript(tableJSON)
+  }
+
+  return {
+    sql: `-- mock create script for ${tableFilePath}\n`,
+    relPath: '',
+  }
+}
+
+export async function generateMigrateScript(
+  beforeFilePath: string,
+  afterFilePath: string,
+): Promise<ScriptResult> {
+  const app = getApp()
+  const beforeJSON = app
+    ? await app.ReadTableFile(beforeFilePath)
+    : JSON.stringify(mockTableDefinition)
+  const afterJSON = app
+    ? await app.ReadTableFile(afterFilePath)
+    : JSON.stringify(mockTableDefinition)
+
+  if (app) {
+    return app.GenerateMigrateScript(beforeJSON, afterJSON)
+  }
+
+  return {
+    sql: `-- mock migrate script\n-- before: ${beforeFilePath}\n-- after: ${afterFilePath}\n`,
+    relPath: '',
+  }
+}
+
+export async function writeExportFile(
+  exportRoot: string,
+  relativePath: string,
+  content: string,
+): Promise<void> {
+  const app = getApp()
+  if (app) {
+    await app.WriteExportFile(exportRoot, relativePath, content)
+    return
+  }
+  console.info('[mock] writeExportFile', exportRoot, relativePath, content)
+}
+
+export async function generateXlsxExport(
+  tableFilePath: string,
+): Promise<XlsxExportResult> {
+  const app = getApp()
+  const tableJSON = app
+    ? await app.ReadTableFile(tableFilePath)
+    : JSON.stringify(mockTableDefinition)
+
+  if (app) {
+    return app.GenerateXlsxExport(tableJSON)
+  }
+
+  return {
+    data: [0x50, 0x4b, 0x03, 0x04],
+    relPath: '',
+  }
+}
+
+export async function writeExportBinaryFile(
+  exportRoot: string,
+  relativePath: string,
+  data: number[] | Uint8Array,
+): Promise<void> {
+  const app = getApp()
+  const bytes = Array.isArray(data) ? data : Array.from(data)
+  if (app) {
+    await app.WriteExportBinaryFile(exportRoot, relativePath, bytes)
+    return
+  }
+  console.info('[mock] writeExportBinaryFile', exportRoot, relativePath, bytes.length)
+}
+
+export async function importXlsxDirectory(
+  sourceDir: string,
+  targetDir: string,
+): Promise<XlsxImportResult> {
+  const app = getApp()
+  if (app) {
+    return app.ImportXlsxDirectory(sourceDir, targetDir)
+  }
+
+  console.info('[mock] importXlsxDirectory', sourceDir, targetDir)
+  return { imported: 0, failures: [] }
+}
+
 const mockCommits: GitCommit[] = [
   {
     hash: 'cccccccccccccccccccccccccccccccccccccccc',
@@ -321,6 +460,14 @@ export async function readGitTableFile(
   }
   requireGitBindings()
   return JSON.stringify(mockTableDefinition)
+}
+
+export async function setZoomLevel(level: number): Promise<number> {
+  const app = getApp()
+  if (app?.SetZoomLevel) {
+    return app.SetZoomLevel(level)
+  }
+  throw new Error('SetZoomLevel is not available')
 }
 
 function formatExportTimestamp(date: Date): string {
