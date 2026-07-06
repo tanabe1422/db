@@ -20,7 +20,7 @@
 }
 
 .item:hover {
-  background: var(--color-slate-50);
+  background: var(--overlay-slate-50);
 }
 
 .selected {

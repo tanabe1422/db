@@ -21,8 +21,6 @@ export function GenerateCreateScript(arg1:string):Promise<app.ScriptResult>;
 
 export function GenerateMigrateScript(arg1:string,arg2:string):Promise<app.ScriptResult>;
 
-export function GenerateXlsxExport(arg1:string):Promise<app.XlsxExportResult>;
-
 export function GetFileStat(arg1:string):Promise<app.FileStat>;
 
 export function GetSettings():Promise<config.Settings>;
@@ -69,10 +67,10 @@ export function ShowInExplorer(arg1:string):Promise<void>;
 
 export function StartDirectoryWatch(arg1:string):Promise<void>;
 
-export function WriteExportBinaryFile(arg1:string,arg2:string,arg3:Array<number>):Promise<void>;
-
 export function WriteExportFile(arg1:string,arg2:string,arg3:string):Promise<void>;
 
 export function WriteTableFile(arg1:string,arg2:string):Promise<void>;
 
 export function WriteTextFile(arg1:string,arg2:string):Promise<void>;
+
+export function WriteXlsxExport(arg1:string,arg2:string,arg3:string):Promise<void>;

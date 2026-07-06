@@ -34,10 +34,6 @@ export function GenerateMigrateScript(arg1, arg2) {
   return window['go']['app']['App']['GenerateMigrateScript'](arg1, arg2);
 }
 
-export function GenerateXlsxExport(arg1) {
-  return window['go']['app']['App']['GenerateXlsxExport'](arg1);
-}
-
 export function GetFileStat(arg1) {
   return window['go']['app']['App']['GetFileStat'](arg1);
 }
@@ -130,10 +126,6 @@ export function StartDirectoryWatch(arg1) {
   return window['go']['app']['App']['StartDirectoryWatch'](arg1);
 }
 
-export function WriteExportBinaryFile(arg1, arg2, arg3) {
-  return window['go']['app']['App']['WriteExportBinaryFile'](arg1, arg2, arg3);
-}
-
 export function WriteExportFile(arg1, arg2, arg3) {
   return window['go']['app']['App']['WriteExportFile'](arg1, arg2, arg3);
 }
@@ -144,4 +136,8 @@ export function WriteTableFile(arg1, arg2) {
 
 export function WriteTextFile(arg1, arg2) {
   return window['go']['app']['App']['WriteTextFile'](arg1, arg2);
+}
+
+export function WriteXlsxExport(arg1, arg2, arg3) {
+  return window['go']['app']['App']['WriteXlsxExport'](arg1, arg2, arg3);
 }

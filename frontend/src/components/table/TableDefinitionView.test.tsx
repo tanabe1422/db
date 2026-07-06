@@ -260,6 +260,60 @@ describe('TableDefinitionView キーボード操作', () => {
     await user.click(pk)
     expect(await screen.findByLabelText('PK')).toHaveAttribute('aria-checked', 'true')
   })
+
+  it('選択済みセルで左右矢印キーで隣のセルへ移動できる', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    await user.click(await screen.findByText('id'))
+    await user.keyboard('{ArrowRight}')
+
+    // nameJa セルへ移動した状態で文字入力すると、そのセルが編集される。
+    await user.keyboard('x')
+    expect(screen.getByDisplayValue('x')).toBeInTheDocument()
+  })
+
+  it('選択済みセルで上下矢印キーで同じ列の別行へ移動できる', async () => {
+    const user = userEvent.setup()
+    const definition: TableDefinition = {
+      schemaVersion: 1,
+      name: 'users',
+      columns: [
+        { name: 'id', dataType: 'bigint' },
+        { name: 'name', dataType: 'varchar' },
+      ],
+    }
+    render(<TableDefinitionView definition={definition} path="/tmp/users.table.json" />)
+
+    await user.click(await screen.findByText('id'))
+    await user.keyboard('{ArrowDown}')
+    await user.keyboard('{Enter}')
+
+    expect(screen.getByDisplayValue('name')).toBeInTheDocument()
+  })
+
+  it('編集中は矢印キーでセル移動しない', async () => {
+    const user = userEvent.setup()
+    const definition: TableDefinition = {
+      schemaVersion: 1,
+      name: 'users',
+      columns: [
+        { name: 'id', dataType: 'bigint' },
+        { name: 'name', dataType: 'varchar' },
+      ],
+    }
+    render(<TableDefinitionView definition={definition} path="/tmp/users.table.json" />)
+
+    await user.click(await screen.findByText('id'))
+    await user.click(screen.getByText('id'))
+    const input = screen.getByDisplayValue('id') as HTMLInputElement
+
+    await user.keyboard('{ArrowDown}')
+
+    // 編集は継続し、下の行へは移動しない。
+    expect(screen.getByDisplayValue('id')).toBe(input)
+    expect(screen.queryByDisplayValue('name')).toBeNull()
+  })
 })
 
 describe('TableDefinitionView 保存前検証', () => {
@@ -297,5 +351,70 @@ describe('TableDefinitionView 保存前検証', () => {
 
     expect(screen.queryByText(/検証エラー/)).toBeNull()
     expect(mockWrite).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('TableDefinitionView 行選択', () => {
+  function noCell(rowIndex = 0) {
+    const row = document.querySelectorAll('tbody tr')[rowIndex]
+    return row.querySelectorAll('td')[1] as HTMLTableCellElement
+  }
+
+  function rowForNo(rowIndex = 0) {
+    return document.querySelectorAll('tbody tr')[rowIndex] as HTMLTableRowElement
+  }
+
+  function cellTd(text: string) {
+    return screen.getByText(text).closest('td')!
+  }
+
+  it('Noクリックで行がハイライトされる', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const row = rowForNo()
+    expect(row.className).not.toMatch(/selectedRow/)
+
+    await user.click(noCell())
+    expect(row.className).toMatch(/selectedRow/)
+  })
+
+  it('単独選択中の No 再クリックで行選択が解除される', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const cell = noCell()
+    const row = rowForNo()
+
+    await user.click(cell)
+    expect(row.className).toMatch(/selectedRow/)
+
+    await user.click(cell)
+    expect(row.className).not.toMatch(/selectedRow/)
+  })
+
+  it('セルクリックで行選択が解除される', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const row = rowForNo()
+    await user.click(noCell())
+    expect(row.className).toMatch(/selectedRow/)
+
+    await user.click(screen.getByText('id'))
+    expect(row.className).not.toMatch(/selectedRow/)
+  })
+
+  it('セル選択中に No クリックでセル選択が解除される', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const cell = await screen.findByText('id')
+    const td = cellTd('id')
+    await user.click(cell)
+    expect(td.className).toMatch(/activeCell/)
+
+    await user.click(noCell())
+    expect(td.className).not.toMatch(/activeCell/)
   })
 })

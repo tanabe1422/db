@@ -25,7 +25,7 @@
 }
 
 .backBtn:hover {
-  background: var(--color-slate-50);
+  background: var(--overlay-slate-50);
 }
 
 .fileName {
@@ -146,6 +146,14 @@
 
 .emptyCell {
   background: var(--color-slate-50);
+}
+
+.diffTable tbody tr.pkRow td:not(.changedCell):not(.addedCell):not(.removedCell):not(.emptyCell) {
+  background: color-mix(
+    in srgb,
+    var(--color-white),
+    var(--grid-pk-fill) var(--grid-pk-accent-mix)
+  );
 }
 
 /* 変更セル = 黄 */

@@ -13,12 +13,6 @@ import (
 
 const xlsxSuffix = ".xlsx"
 
-// XlsxExportResult is the output of xlsx export generation.
-type XlsxExportResult struct {
-	Data    []byte `json:"data"`
-	RelPath string `json:"relPath"`
-}
-
 // XlsxImportFailure describes one failed xlsx import.
 type XlsxImportFailure struct {
 	SourcePath string `json:"sourcePath"`
@@ -31,18 +25,30 @@ type XlsxImportResult struct {
 	Failures []XlsxImportFailure `json:"failures"`
 }
 
-// GenerateXlsxExport turns one *.table.json into xlsx bytes via gen.exe.
-func (a *App) GenerateXlsxExport(tableJSON string) (XlsxExportResult, error) {
-	data, relPath, err := gencli.XlsxExport([]byte(tableJSON))
+// WriteXlsxExport reads tableFilePath, generates xlsx via gen.exe, and writes
+// under exportRoot. fallbackRelPath is used when gen.exe returns an empty relPath.
+func (a *App) WriteXlsxExport(exportRoot, tableFilePath, fallbackRelPath string) error {
+	tableJSON, err := a.ReadTableFile(tableFilePath)
 	if err != nil {
-		return XlsxExportResult{}, err
+		return err
 	}
 
-	return XlsxExportResult{Data: data, RelPath: relPath}, nil
+	data, relPath, err := gencli.XlsxExport([]byte(tableJSON))
+	if err != nil {
+		return err
+	}
+	if len(data) == 0 {
+		return nil
+	}
+
+	if relPath == "" {
+		relPath = fallbackRelPath
+	}
+
+	return a.writeExportBinaryFile(exportRoot, relPath, data)
 }
 
-// WriteExportBinaryFile writes a binary file under exportRoot at relativePath.
-func (a *App) WriteExportBinaryFile(exportRoot, relativePath string, data []byte) error {
+func (a *App) writeExportBinaryFile(exportRoot, relativePath string, data []byte) error {
 	root, err := filepath.Abs(filepath.Clean(exportRoot))
 	if err != nil {
 		return err

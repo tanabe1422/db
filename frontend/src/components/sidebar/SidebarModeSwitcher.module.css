@@ -36,7 +36,7 @@
 }
 
 .modeActive:hover:not(:disabled) {
-  background: var(--color-blue-100);
+  background: var(--overlay-blue-100), var(--color-blue-100);
   color: var(--color-blue-700);
 }
 
@@ -87,7 +87,7 @@
 }
 
 .menuItem:hover:not(:disabled) {
-  background: var(--color-slate-50);
+  background: var(--overlay-slate-50);
 }
 
 .menuItem:disabled {

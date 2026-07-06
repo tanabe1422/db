@@ -57,6 +57,7 @@ export interface TableEditor {
   selectRow: (rowId: number) => void
   toggleRow: (rowId: number) => void
   selectRange: (rowId: number) => void
+  clearRowSelection: () => void
   copySelected: () => void
   undo: () => void
   redo: () => void
@@ -301,6 +302,11 @@ export function useTableEditor(
     setAnchorRowId(rowId)
   }, [])
 
+  const clearRowSelection = useCallback(() => {
+    setSelectedRowIds(new Set())
+    setAnchorRowId(null)
+  }, [])
+
   const selectRange = useCallback(
     (rowId: number) => {
       setDraft((current) => {
@@ -418,6 +424,7 @@ export function useTableEditor(
       selectRow,
       toggleRow,
       selectRange,
+      clearRowSelection,
       copySelected,
       undo,
       redo,
@@ -444,6 +451,7 @@ export function useTableEditor(
     selectRow,
     toggleRow,
     selectRange,
+    clearRowSelection,
     copySelected,
     undo,
     redo,

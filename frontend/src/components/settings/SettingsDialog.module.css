@@ -128,7 +128,7 @@
 }
 
 .delete:hover:not(:disabled) {
-  background: var(--color-red-50);
+  background: var(--overlay-red-50);
   color: var(--color-red-700);
 }
 

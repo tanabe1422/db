@@ -6,11 +6,6 @@ export interface ScriptResult {
   relPath: string
 }
 
-export interface XlsxExportResult {
-  data: number[]
-  relPath: string
-}
-
 export interface XlsxImportFailure {
   sourcePath: string
   message: string
@@ -66,11 +61,10 @@ export interface WailsApp {
     relativePath: string,
     content: string,
   ): Promise<void>
-  GenerateXlsxExport(tableJSON: string): Promise<XlsxExportResult>
-  WriteExportBinaryFile(
+  WriteXlsxExport(
     exportRoot: string,
-    relativePath: string,
-    data: number[],
+    tableFilePath: string,
+    fallbackRelPath: string,
   ): Promise<void>
   ImportXlsxDirectory(
     sourceDir: string,
@@ -454,36 +448,17 @@ export async function writeExportFile(
   console.info('[mock] writeExportFile', exportRoot, relativePath, content)
 }
 
-export async function generateXlsxExport(
-  tableFilePath: string,
-): Promise<XlsxExportResult> {
-  const app = getApp()
-  const tableJSON = app
-    ? await app.ReadTableFile(tableFilePath)
-    : JSON.stringify(mockTableDefinition)
-
-  if (app) {
-    return app.GenerateXlsxExport(tableJSON)
-  }
-
-  return {
-    data: [0x50, 0x4b, 0x03, 0x04],
-    relPath: '',
-  }
-}
-
-export async function writeExportBinaryFile(
+export async function writeXlsxExport(
   exportRoot: string,
-  relativePath: string,
-  data: number[] | Uint8Array,
+  tableFilePath: string,
+  fallbackRelPath: string,
 ): Promise<void> {
   const app = getApp()
-  const bytes = Array.isArray(data) ? data : Array.from(data)
   if (app) {
-    await app.WriteExportBinaryFile(exportRoot, relativePath, bytes)
+    await app.WriteXlsxExport(exportRoot, tableFilePath, fallbackRelPath)
     return
   }
-  console.info('[mock] writeExportBinaryFile', exportRoot, relativePath, bytes.length)
+  console.info('[mock] writeXlsxExport', exportRoot, tableFilePath, fallbackRelPath)
 }
 
 export async function importXlsxDirectory(

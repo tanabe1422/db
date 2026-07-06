@@ -158,8 +158,41 @@
   padding: 0.125rem 0.125rem;
 }
 
+.editorTable {
+  --pk-fill: var(--grid-pk-fill);
+}
+
+.editorTable tbody tr {
+  --row-fill: var(--color-white);
+  --hover-mix: 0%;
+}
+
 .editorTable tbody tr:hover {
-  background: var(--color-slate-50);
+  --hover-mix: 5%;
+}
+
+.editorTable tbody tr.selectedRow {
+  --row-fill: var(--color-blue-100);
+}
+
+.editorTable tbody tr.pkRow {
+  --pk-accent-mix: var(--grid-pk-accent-mix);
+}
+
+.editorTable tbody td {
+  background: color-mix(
+    in srgb,
+    color-mix(
+      in srgb,
+      color-mix(
+        in srgb,
+        var(--row-fill),
+        var(--color-slate-900) var(--hover-mix)
+      ),
+      var(--pk-fill) var(--pk-accent-mix, 0%)
+    ),
+    var(--color-blue-50) var(--focus-accent-mix, 0%)
+  );
 }
 
 .rowActions {
@@ -182,18 +215,10 @@
   user-select: none;
 }
 
-.selectedRow {
-  background: var(--color-blue-100);
-}
-
-.selectedRow:hover {
-  background: var(--color-blue-200);
-}
-
 .activeCell {
   outline: 2px solid var(--color-blue-600);
   outline-offset: -2px;
-  background: var(--color-blue-50);
+  --focus-accent-mix: 55%;
 }
 
 .checkCell {
@@ -380,7 +405,7 @@
 
 .cellComboboxOption:hover,
 .cellComboboxOption:focus-visible {
-  background: var(--color-blue-50);
+  background: var(--overlay-blue-50);
   outline: none;
 }
 

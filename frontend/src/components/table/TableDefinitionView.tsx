@@ -158,7 +158,10 @@ function TableEditorGrid({
               return (
                 <tr
                   key={column.rowId}
-                  className={selected ? styles.selectedRow : undefined}
+                  className={cx(
+                    selected && styles.selectedRow,
+                    column.pk && styles.pkRow,
+                  )}
                 >
                   <td
                     className={cx(

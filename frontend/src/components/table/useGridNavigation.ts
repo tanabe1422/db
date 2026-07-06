@@ -138,7 +138,14 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     }
   }
 
+  function deactivateCell() {
+    flushEdit()
+    setActive(null)
+    setEditing(false)
+  }
+
   function activateCell(rowId: number, colId: string) {
+    editor.clearRowSelection()
     flushEdit()
     setActive({ rowId, colId })
     setEditing(false)
@@ -152,6 +159,7 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     selectAll = true,
     options?: { openCombobox?: boolean },
   ) {
+    editor.clearRowSelection()
     flushEdit()
     setActive({ rowId, colId })
     const kind = colKind(colId)
@@ -178,6 +186,8 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     return requested
   }
 
+  type MoveDirection = 'up' | 'down' | 'left' | 'right'
+
   function computeNext(current: ActiveCell, forward: boolean): ActiveCell | null {
     const rowIndex = columns.findIndex((c) => c.rowId === current.rowId)
     const colIndex = NAV_COLS.findIndex((c) => c.id === current.colId)
@@ -194,17 +204,48 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     return { rowId: columns[nextRow].rowId, colId: NAV_COLS[nextCol].id }
   }
 
-  function moveActive(forward: boolean) {
-    if (!active) {
-      const first = columns[0]
-      if (first) {
-        setActive({ rowId: first.rowId, colId: NAV_COLS[0].id })
-      }
-      return
+  function computeNextDirection(
+    current: ActiveCell,
+    direction: MoveDirection,
+  ): ActiveCell | null {
+    const rowIndex = columns.findIndex((c) => c.rowId === current.rowId)
+    const colIndex = NAV_COLS.findIndex((c) => c.id === current.colId)
+    if (rowIndex < 0 || colIndex < 0) {
+      return null
     }
-    const wasEditing = editing
-    flushEdit()
-    const next = computeNext(active, forward)
+
+    let nextRow = rowIndex
+    let nextCol = colIndex
+    switch (direction) {
+      case 'left':
+        if (colIndex <= 0) {
+          return null
+        }
+        nextCol = colIndex - 1
+        break
+      case 'right':
+        if (colIndex >= NAV_COLS.length - 1) {
+          return null
+        }
+        nextCol = colIndex + 1
+        break
+      case 'up':
+        if (rowIndex <= 0) {
+          return null
+        }
+        nextRow = rowIndex - 1
+        break
+      case 'down':
+        if (rowIndex >= columns.length - 1) {
+          return null
+        }
+        nextRow = rowIndex + 1
+        break
+    }
+    return { rowId: columns[nextRow].rowId, colId: NAV_COLS[nextCol].id }
+  }
+
+  function applyActiveMove(next: ActiveCell | null, wasEditing: boolean) {
     if (!next) {
       setEditing(false)
       return
@@ -216,7 +257,34 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
       setEditing(true)
     } else {
       setEditing(false)
+      containerRef.current?.focus()
     }
+  }
+
+  function moveActive(forward: boolean) {
+    if (!active) {
+      const first = columns[0]
+      if (first) {
+        setActive({ rowId: first.rowId, colId: NAV_COLS[0].id })
+      }
+      return
+    }
+    const wasEditing = editing
+    flushEdit()
+    applyActiveMove(computeNext(active, forward), wasEditing)
+  }
+
+  function moveActiveDirection(direction: MoveDirection) {
+    if (!active) {
+      const first = columns[0]
+      if (first) {
+        setActive({ rowId: first.rowId, colId: NAV_COLS[0].id })
+      }
+      return
+    }
+    const wasEditing = editing
+    flushEdit()
+    applyActiveMove(computeNextDirection(active, direction), wasEditing)
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
@@ -258,6 +326,29 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     if (e.key === 'Tab') {
       e.preventDefault()
       moveActive(!e.shiftKey)
+      return
+    }
+
+    if (
+      e.key === 'ArrowUp' ||
+      e.key === 'ArrowDown' ||
+      e.key === 'ArrowLeft' ||
+      e.key === 'ArrowRight'
+    ) {
+      // 編集中は入力欄の通常操作（キャレット移動など）に任せる。
+      if (editing) {
+        return
+      }
+      e.preventDefault()
+      const direction =
+        e.key === 'ArrowUp'
+          ? 'up'
+          : e.key === 'ArrowDown'
+            ? 'down'
+            : e.key === 'ArrowLeft'
+              ? 'left'
+              : 'right'
+      moveActiveDirection(direction)
       return
     }
 
@@ -312,12 +403,18 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
   }
 
   function handleRowSelect(e: React.MouseEvent, rowId: number) {
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+    deactivateCell()
+
+    if (e.shiftKey) {
       editor.selectRange(rowId)
-    } else if (e.ctrlKey || e.metaKey) {
+      return
+    }
+    if (e.ctrlKey || e.metaKey) {
       editor.toggleRow(rowId)
-    } else if (e.shiftKey) {
-      editor.selectRange(rowId)
+      return
+    }
+    if (editor.selectedRowIds.size === 1 && editor.selectedRowIds.has(rowId)) {
+      editor.clearRowSelection()
     } else {
       editor.selectRow(rowId)
     }
@@ -325,9 +422,7 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
 
   function handleContainerBlur(e: React.FocusEvent<HTMLDivElement>) {
     if (!containerRef.current?.contains(e.relatedTarget as Node)) {
-      flushEdit()
-      setActive(null)
-      setEditing(false)
+      deactivateCell()
     }
   }
 

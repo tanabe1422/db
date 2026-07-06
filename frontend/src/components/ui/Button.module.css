@@ -25,7 +25,7 @@
 }
 
 .ghost:hover {
-  background: var(--color-slate-300);
+  background: var(--overlay-slate-300), var(--color-slate-200);
 }
 
 .secondary {
@@ -36,7 +36,7 @@
 }
 
 .secondary:hover {
-  background: var(--color-slate-50);
+  background: var(--overlay-slate-50), var(--color-white);
 }
 
 .danger {
@@ -46,7 +46,7 @@
 }
 
 .danger:hover {
-  background: var(--color-red-200);
+  background: var(--overlay-red-200), var(--color-red-100);
 }
 
 /* コンテキスト固有の見た目は className で上書きするベース */
@@ -91,7 +91,7 @@
 }
 
 .iconButton:hover:not(:disabled) {
-  background: var(--color-slate-100);
+  background: var(--overlay-slate-100);
   color: var(--color-slate-900);
 }
 
@@ -110,7 +110,7 @@
 }
 
 .secondaryIcon:hover:not(:disabled) {
-  background: var(--color-slate-50);
+  background: var(--overlay-slate-50), var(--color-white);
   color: var(--color-slate-900);
 }
 

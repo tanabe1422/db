@@ -7,12 +7,10 @@ import {
   reportBatchProgress,
 } from './batchProgress'
 import {
-  ensureExportRelDir,
-  generateXlsxExport,
   importXlsxDirectory,
   pickDirectory,
   prepareExportDirectory,
-  writeExportBinaryFile,
+  writeXlsxExport,
   type XlsxImportResult,
 } from './wails'
 
@@ -52,20 +50,6 @@ function collectTableJsonFiles(
     }))
 }
 
-async function writeXlsxResult(
-  exportRoot: string,
-  result: { data: number[]; relPath: string },
-  fallbackRelPath: string,
-): Promise<void> {
-  if (!result.data || result.data.length === 0) {
-    return
-  }
-
-  const outPath = result.relPath || fallbackRelPath
-  await ensureExportRelDir(exportRoot, outPath)
-  await writeExportBinaryFile(exportRoot, outPath, result.data)
-}
-
 /**
  * Exports *.table.json as xlsx under {activeDirectory}/export/YYYYMMDDHHmm/.
  */
@@ -89,8 +73,11 @@ export async function exportXlsxFiles(
       total,
       label: file.relPath,
     })
-    const result = await generateXlsxExport(file.fullPath)
-    await writeXlsxResult(exportRoot, result, defaultXlsxPath(file.relPath))
+    await writeXlsxExport(
+      exportRoot,
+      file.fullPath,
+      defaultXlsxPath(file.relPath),
+    )
     reportBatchProgress(onProgress, {
       current: index + 1,
       total,

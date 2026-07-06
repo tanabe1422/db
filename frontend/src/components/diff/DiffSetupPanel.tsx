@@ -84,6 +84,7 @@ function DiffFolderRow({
       paddingLeft={diffPadding(depth)}
       styles={branchStyles}
       buttonClassName={styles.expand}
+      expansionThreshold={Infinity}
       childFilter={(child) => child.isDir}
       renderTrailing={() => (
         <span className={styles.assign}>

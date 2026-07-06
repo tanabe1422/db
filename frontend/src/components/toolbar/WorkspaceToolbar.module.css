@@ -37,11 +37,11 @@
 
 .sidebarToggle:hover {
   color: var(--color-slate-700);
-  background: transparent;
+  background: var(--overlay-slate-100);
 }
 
 .toolBtn:hover:not(:disabled) {
-  background: transparent;
+  background: var(--overlay-slate-100);
 }
 
 .saveBtn:not(:disabled) {
@@ -50,7 +50,7 @@
 
 .saveBtn:not(:disabled):hover {
   color: var(--color-blue-700);
-  background: transparent;
+  background: var(--overlay-blue-50);
 }
 
 .saveError {

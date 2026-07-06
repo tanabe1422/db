@@ -25,6 +25,8 @@ interface DirectoryTreeBranchProps {
   renderTrailing?: (node: TreeNode) => ReactNode
   renderChild: (child: TreeNode, depth: number) => ReactNode
   onNodeContextMenu?: (node: TreeNode, event: MouseEvent) => void
+  /** depth < threshold のフォルダを初期展開。Infinity で全展開。 */
+  expansionThreshold?: number
 }
 
 export function DirectoryTreeBranch({
@@ -38,8 +40,9 @@ export function DirectoryTreeBranch({
   renderTrailing,
   renderChild,
   onNodeContextMenu,
+  expansionThreshold = 1,
 }: DirectoryTreeBranchProps) {
-  const [expanded, setExpanded] = useTreeExpansion(depth)
+  const [expanded, setExpanded] = useTreeExpansion(depth, expansionThreshold)
   const children = node.children.filter(childFilter ?? (() => true))
   const hasChildren = children.length > 0
 

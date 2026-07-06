@@ -57,6 +57,24 @@
   /* テーブルヘッダー（16px root 換算で 12px） */
   --font-size-grid-header: 0.75rem;
 
+  /* 編集グリッド・Diff グリッド共通の PK 行背景 */
+  --grid-pk-fill: color-mix(
+    in srgb,
+    var(--color-yellow-100) 50%,
+    var(--color-yellow-200) 50%
+  );
+  --grid-pk-accent-mix: 44%;
+
+  /* 半透明ホバーオーバーレイ。白背景上では従来の slate/red/blue 系と同程度に見える。 */
+  --overlay-slate-50: color-mix(in srgb, var(--color-slate-900) 3%, transparent);
+  --overlay-slate-100: color-mix(in srgb, var(--color-slate-900) 6%, transparent);
+  --overlay-slate-300: color-mix(in srgb, var(--color-slate-900) 18%, transparent);
+  --overlay-red-50: color-mix(in srgb, var(--color-red-600) 6%, transparent);
+  --overlay-red-100: color-mix(in srgb, var(--color-red-600) 10%, transparent);
+  --overlay-red-200: color-mix(in srgb, var(--color-red-600) 18%, transparent);
+  --overlay-blue-50: color-mix(in srgb, var(--color-blue-600) 8%, transparent);
+  --overlay-blue-100: color-mix(in srgb, var(--color-blue-600) 15%, transparent);
+
   --font-family: system-ui, sans-serif;
 
   --dialog-radius: 0.375rem;

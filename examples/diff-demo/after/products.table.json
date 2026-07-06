@@ -5,7 +5,8 @@
   "nameJa": "商品",
   "description": "新バージョンで追加されたテーブル",
   "primaryKey": [
-    "id"
+    "id",
+    "hoge"
   ],
   "columns": [
     {
@@ -15,11 +16,24 @@
       "notNull": true
     },
     {
+      "name": "hoge",
+      "dataType": "int"
+    },
+    {
       "name": "name",
       "dataType": "nvarchar",
       "nameJa": "商品名",
       "notNull": true,
       "length": 200
+    }
+  ],
+  "indexes": [
+    {
+      "keys": [
+        {
+          "column": "id"
+        }
+      ]
     }
   ]
 }

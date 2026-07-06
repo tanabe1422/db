@@ -87,7 +87,7 @@
 }
 
 .row:hover {
-  background: var(--color-slate-50);
+  background: var(--overlay-slate-50);
 }
 
 .expand {
@@ -146,7 +146,7 @@
 }
 
 .side:hover {
-  background: var(--color-slate-100);
+  background: var(--overlay-slate-100);
 }
 
 .sideLeftActive {
