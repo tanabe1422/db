@@ -99,6 +99,7 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 
 	result := XlsxImportResult{Failures: []XlsxImportFailure{}}
 
+	var xlsxPaths []string
 	err = filepath.WalkDir(sourceRoot, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			result.Failures = append(result.Failures, XlsxImportFailure{
@@ -113,6 +114,20 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 		if !strings.EqualFold(filepath.Ext(entry.Name()), xlsxSuffix) {
 			return nil
 		}
+		xlsxPaths = append(xlsxPaths, path)
+		return nil
+	})
+	if err != nil {
+		return XlsxImportResult{}, err
+	}
+
+	total := len(xlsxPaths)
+	for index, path := range xlsxPaths {
+		label := path
+		if rel, relErr := filepath.Rel(sourceRoot, path); relErr == nil {
+			label = rel
+		}
+		a.emitGenProgress(index, total, label)
 
 		xlsxData, err := os.ReadFile(path)
 		if err != nil {
@@ -120,7 +135,7 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 				SourcePath: path,
 				Message:    err.Error(),
 			})
-			return nil
+			continue
 		}
 
 		tableJSON, relPath, err := gencli.XlsxImport(xlsxData)
@@ -129,7 +144,7 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 				SourcePath: path,
 				Message:    err.Error(),
 			})
-			return nil
+			continue
 		}
 
 		outPath, err := importOutputPath(targetRoot, sourceRoot, path, relPath)
@@ -138,7 +153,7 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 				SourcePath: path,
 				Message:    err.Error(),
 			})
-			return nil
+			continue
 		}
 
 		if err := a.WriteTableFile(outPath, string(tableJSON)); err != nil {
@@ -146,14 +161,11 @@ func (a *App) ImportXlsxDirectory(sourceDir, targetDir string) (XlsxImportResult
 				SourcePath: path,
 				Message:    err.Error(),
 			})
-			return nil
+			continue
 		}
 
 		result.Imported++
-		return nil
-	})
-	if err != nil {
-		return XlsxImportResult{}, err
+		a.emitGenProgress(index+1, total, label)
 	}
 
 	return result, nil

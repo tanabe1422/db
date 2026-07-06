@@ -1,12 +1,19 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, Download, FileDiff, Minus, Plus } from 'lucide-react'
+import {
+  AlertTriangle,
+  Download,
+  FileDiff,
+  Minus,
+  Plus,
+  RefreshCw,
+} from 'lucide-react'
 
 import {
   type FileDiffEntry,
   countEntries,
 } from '../../hooks/useFolderDiff'
 import { cx } from '../../utils/cx'
-import { Button } from '../ui/Button'
+import { Button, IconButton } from '../ui/Button'
 import { Checkbox } from '../ui/Checkbox'
 import { Tooltip } from '../ui/Tooltip'
 
@@ -20,6 +27,7 @@ interface FolderDiffViewProps {
   loading: boolean
   error: string | null
   onOpenFile: (entry: FileDiffEntry) => void
+  onReload?: () => void
   migrateScriptExport?: {
     onClick: () => void
     disabled?: boolean
@@ -63,6 +71,7 @@ export function FolderDiffView({
   loading,
   error,
   onOpenFile,
+  onReload,
   migrateScriptExport,
 }: FolderDiffViewProps) {
   const [showSame, setShowSame] = useState(false)
@@ -101,17 +110,29 @@ export function FolderDiffView({
             )}
           </div>
         </div>
-        {migrateScriptExport && (
-          <Button
-            variant="secondary"
-            className={styles.exportBtn}
-            onClick={migrateScriptExport.onClick}
-            disabled={migrateScriptExport.disabled}
-          >
-            <Download size={14} aria-hidden="true" />
-            変更スクリプトを生成
-          </Button>
-        )}
+        <div className={styles.toolbarEnd}>
+          {onReload && (
+            <IconButton
+              onClick={onReload}
+              disabled={loading}
+              aria-label="再読込"
+              tooltip="再読込"
+            >
+              <RefreshCw size={16} aria-hidden="true" />
+            </IconButton>
+          )}
+          {migrateScriptExport && (
+            <Button
+              variant="secondary"
+              className={styles.exportBtn}
+              onClick={migrateScriptExport.onClick}
+              disabled={migrateScriptExport.disabled}
+            >
+              <Download size={14} aria-hidden="true" />
+              変更スクリプトを生成
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className={styles.headRow}>

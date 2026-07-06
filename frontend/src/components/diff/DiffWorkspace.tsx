@@ -31,7 +31,7 @@ export function DiffWorkspace({
   rightNode,
   migrateScriptExport,
 }: DiffWorkspaceProps) {
-  const { entries, loading, error } = useFolderDiff(leftNode, rightNode)
+  const { entries, loading, error, reload } = useFolderDiff(leftNode, rightNode)
   const [openRelPath, setOpenRelPath] = useState<string | null>(null)
 
   if (!leftNode || !rightNode) {
@@ -53,7 +53,11 @@ export function DiffWorkspace({
       <FileDiffView
         relPath={openEntry.relPath}
         diff={openEntry.diff}
+        loading={loading}
         onBack={() => setOpenRelPath(null)}
+        onReload={() => {
+          void reload()
+        }}
       />
     )
   }
@@ -66,6 +70,9 @@ export function DiffWorkspace({
       loading={loading}
       error={error}
       onOpenFile={(entry) => setOpenRelPath(entry.relPath)}
+      onReload={() => {
+        void reload()
+      }}
       migrateScriptExport={migrateScriptExport}
     />
   )

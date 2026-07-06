@@ -45,6 +45,7 @@ const right: TableDefinition = {
 export const Changed: Story = {
   args: {
     diff: diffTable(left, right),
+    onReload: () => undefined,
   },
 }
 

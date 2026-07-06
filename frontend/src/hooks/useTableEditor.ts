@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { TableDefinition } from '../types'
+import { errorMessage } from '../lib/errorMessage'
 import { writeTableFile } from '../lib/wails'
 import type { FlagField } from '../lib/gridColumns'
 import {
@@ -385,7 +385,7 @@ export function useTableEditor(
       setSaving(false)
       return { ok: true }
     } catch (err) {
-      const message = err instanceof Error ? err.message : '保存に失敗しました'
+      const message = errorMessage(err, '保存に失敗しました')
       setSaveError(message)
       setSaving(false)
       return { ok: false, error: message }

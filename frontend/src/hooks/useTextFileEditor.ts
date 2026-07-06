@@ -3,6 +3,7 @@ import type { EditorView } from '@codemirror/view'
 import { redo, redoDepth, undo, undoDepth } from '@codemirror/commands'
 
 import type { ToolbarEditor } from '../components/toolbar/editorToolbarBridge'
+import { errorMessage } from '../lib/errorMessage'
 import { writeTextFile } from '../lib/wails'
 
 export function useTextFileEditor(path: string, initialContent: string) {
@@ -50,7 +51,7 @@ export function useTextFileEditor(path: string, initialContent: string) {
       setDirty(false)
     } catch (err) {
       setSaveError(
-        err instanceof Error ? err.message : '保存に失敗しました',
+        errorMessage(err, '保存に失敗しました'),
       )
     } finally {
       setSaving(false)

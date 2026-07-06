@@ -24,8 +24,10 @@ import { WorkspaceFilePanel } from './components/workspace/WorkspaceFilePanel'
 import { useDirectoryScan } from './hooks/useDirectoryScan'
 import { useOpenTerminal } from './hooks/useOpenTerminal'
 import { useSettings } from './hooks/useSettings'
+import { useGenBatchProgress } from './hooks/useGenBatchProgress'
 import { useTabWorkspace } from './hooks/useTabWorkspace'
 import { exportGitMigrateScripts, exportMigrateScripts } from './lib/scriptExport'
+import { errorMessage } from './lib/errorMessage'
 import type { GitCommit, TreeNode } from './types'
 import { cx } from './utils/cx'
 import { getTreeFileKindFromPath } from './utils/treeFileKind'
@@ -69,6 +71,7 @@ function App() {
   )
 
   const openTerminal = useOpenTerminal(settings.activeDirectory)
+  const { runGenBatch, isRunning: genBatchRunning } = useGenBatchProgress()
 
   const handleAdd = useCallback(async () => {
     await addDirectory()
@@ -105,33 +108,34 @@ function App() {
       return
     }
 
-    const run = async () => {
-      if (mode === 'git-diff') {
-        if (!leftCommit || !rightCommit) {
+    void runGenBatch({
+      title: '変更スクリプトを生成中…',
+      task: async (report) => {
+        if (mode === 'git-diff') {
+          if (!leftCommit || !rightCommit) {
+            return
+          }
+          await exportGitMigrateScripts(
+            settings.activeDirectory,
+            leftCommit.hash,
+            rightCommit.hash,
+            report,
+          )
           return
         }
-        await exportGitMigrateScripts(
+
+        if (!leftNode || !rightNode) {
+          return
+        }
+        await exportMigrateScripts(
           settings.activeDirectory,
-          leftCommit.hash,
-          rightCommit.hash,
+          leftNode,
+          rightNode,
+          report,
         )
-        return
-      }
-
-      if (!leftNode || !rightNode) {
-        return
-      }
-      await exportMigrateScripts(
-        settings.activeDirectory,
-        leftNode,
-        rightNode,
-      )
-    }
-
-    void run().catch((err: unknown) => {
-      const message =
-        err instanceof Error ? err.message : '変更スクリプトの生成に失敗しました'
-      window.alert(message)
+      },
+    }).catch((err: unknown) => {
+      window.alert(errorMessage(err, '変更スクリプトの生成に失敗しました'))
     })
   }, [
     mode,
@@ -140,6 +144,7 @@ function App() {
     leftCommit,
     rightCommit,
     settings.activeDirectory,
+    runGenBatch,
   ])
 
   const activeIsTextFile =
@@ -214,7 +219,7 @@ function App() {
                   rightNode={rightNode}
                   migrateScriptExport={{
                     onClick: handleExportMigrateScripts,
-                    disabled: !leftNode || !rightNode,
+                    disabled: !leftNode || !rightNode || genBatchRunning,
                   }}
                 />
               </div>
@@ -228,7 +233,7 @@ function App() {
                   rightCommit={rightCommit}
                   migrateScriptExport={{
                     onClick: handleExportMigrateScripts,
-                    disabled: !leftCommit || !rightCommit,
+                    disabled: !leftCommit || !rightCommit || genBatchRunning,
                   }}
                 />
               </div>

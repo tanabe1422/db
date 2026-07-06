@@ -1,11 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
+import { errorMessage } from '../lib/errorMessage'
 import { openTerminal } from '../lib/wails'
 
 function reportError(err: unknown): void {
-  const message =
-    err instanceof Error ? err.message : 'ターミナルを開けませんでした'
-  window.alert(message)
+  window.alert(errorMessage(err, 'ターミナルを開けませんでした'))
 }
 
 function isTerminalShortcut(event: KeyboardEvent): boolean {

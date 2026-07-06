@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { GitCommit } from '../types'
+import { errorMessage } from '../lib/errorMessage'
 import {
   listGitCommits,
   listGitTableFiles,
@@ -68,7 +69,7 @@ export function useGitCommits(activeDirectory: string) {
         setHasMore(page.length === PAGE_SIZE)
         setCommits((prev) => (reset ? page : [...prev, ...page]))
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'コミット一覧の取得に失敗しました')
+        setError(errorMessage(err, 'コミット一覧の取得に失敗しました'))
         if (reset) {
           setCommits([])
         }
@@ -204,7 +205,7 @@ export function useGitDiff(
       if (isStale()) {
         return
       }
-      setError(err instanceof Error ? err.message : '比較に失敗しました')
+      setError(errorMessage(err, '比較に失敗しました'))
       setEntries([])
     } finally {
       if (!isStale()) {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { EventsOn } from '../../wailsjs/runtime/runtime'
 import type { Settings, TreeNode } from '../types'
+import { errorMessage } from '../lib/errorMessage'
 import { scanActiveDirectory, startDirectoryWatch } from '../lib/wails'
 
 const RESCAN_DEBOUNCE_MS = 300
@@ -25,7 +26,7 @@ export function useDirectoryScan(activeDirectory: string) {
       const result = await scanActiveDirectory()
       setTree(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'スキャンに失敗しました')
+      setError(errorMessage(err, 'スキャンに失敗しました'))
       setTree(null)
     } finally {
       if (!options?.silent) {

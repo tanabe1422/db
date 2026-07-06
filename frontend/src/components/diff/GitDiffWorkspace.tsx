@@ -33,7 +33,7 @@ export function GitDiffWorkspace({
   rightCommit,
   migrateScriptExport,
 }: GitDiffWorkspaceProps) {
-  const { entries, loading, error } = useGitDiff(
+  const { entries, loading, error, reload } = useGitDiff(
     activeDirectory,
     leftCommit?.hash ?? null,
     rightCommit?.hash ?? null,
@@ -62,7 +62,11 @@ export function GitDiffWorkspace({
       <FileDiffView
         relPath={openEntry.relPath}
         diff={openEntry.diff}
+        loading={loading}
         onBack={() => setOpenRelPath(null)}
+        onReload={() => {
+          void reload()
+        }}
       />
     )
   }
@@ -75,6 +79,9 @@ export function GitDiffWorkspace({
       loading={loading}
       error={error}
       onOpenFile={(entry) => setOpenRelPath(entry.relPath)}
+      onReload={() => {
+        void reload()
+      }}
       migrateScriptExport={migrateScriptExport}
     />
   )

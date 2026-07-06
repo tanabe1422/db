@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Settings } from '../types'
+import { errorMessage } from '../lib/errorMessage'
 import {
   addDirectory,
   getSettings,
@@ -25,7 +26,7 @@ export function useSettings(onSettingsChange?: (settings: Settings) => void) {
       setSettings(next)
       onSettingsChange?.(next)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '設定の読み込みに失敗しました')
+      setError(errorMessage(err, '設定の読み込みに失敗しました'))
     } finally {
       setLoading(false)
     }

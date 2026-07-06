@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { TableDefinition } from '../types'
+import { errorMessage } from '../lib/errorMessage'
 import { readTableFile } from '../lib/wails'
 import {
   validateTableDefinition,
@@ -61,7 +62,7 @@ export function useTableDefinition(path: string) {
         definition: null,
         errors: [],
         loading: false,
-        error: err instanceof Error ? err.message : 'ファイルの読込に失敗しました',
+        error: errorMessage(err, 'ファイルの読込に失敗しました'),
       })
     }
   }, [path])

@@ -1,6 +1,11 @@
 import type { TreeNode } from '../types'
 import { collectFiles, type LeafFile } from '../utils/treeFiles'
 import { relPathWithinRoot } from '../utils/relPathWithinRoot'
+import { EventsOn } from '../../wailsjs/runtime/runtime'
+import {
+  type BatchProgressHandler,
+  reportBatchProgress,
+} from './batchProgress'
 import {
   ensureExportRelDir,
   generateXlsxExport,
@@ -67,6 +72,7 @@ async function writeXlsxResult(
 export async function exportXlsxFiles(
   activeDirectory: string,
   node: TreeNode,
+  onProgress?: BatchProgressHandler,
 ): Promise<string> {
   const exportRoot = await prepareExportDirectory(activeDirectory)
   const files = collectTableJsonFiles(activeDirectory, node)
@@ -75,12 +81,32 @@ export async function exportXlsxFiles(
     throw new Error('*.table.json ファイルが見つかりません')
   }
 
-  for (const file of files) {
+  const total = files.length
+  for (let index = 0; index < files.length; index++) {
+    const file = files[index]
+    reportBatchProgress(onProgress, {
+      current: index,
+      total,
+      label: file.relPath,
+    })
     const result = await generateXlsxExport(file.fullPath)
     await writeXlsxResult(exportRoot, result, defaultXlsxPath(file.relPath))
+    reportBatchProgress(onProgress, {
+      current: index + 1,
+      total,
+      label: file.relPath,
+    })
   }
 
   return exportRoot
+}
+
+const GEN_PROGRESS_EVENT = 'gen:progress'
+
+interface GenProgressPayload {
+  current: number
+  total: number
+  label?: string
 }
 
 /**
@@ -88,11 +114,26 @@ export async function exportXlsxFiles(
  */
 export async function importXlsxToFolder(
   targetDir: string,
+  onProgress?: BatchProgressHandler,
 ): Promise<XlsxImportResult> {
   const sourceDir = await pickDirectory()
   if (!sourceDir) {
     return { imported: 0, failures: [] }
   }
 
-  return importXlsxDirectory(sourceDir, targetDir)
+  const unsubscribe = onProgress
+    ? EventsOn(GEN_PROGRESS_EVENT, (payload: GenProgressPayload) => {
+        reportBatchProgress(onProgress, {
+          current: payload.current,
+          total: payload.total,
+          label: payload.label,
+        })
+      })
+    : undefined
+
+  try {
+    return await importXlsxDirectory(sourceDir, targetDir)
+  } finally {
+    unsubscribe?.()
+  }
 }

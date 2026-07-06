@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { errorMessage } from '../lib/errorMessage'
 import { readTextFile } from '../lib/wails'
 
 interface TextFileState {
@@ -38,7 +39,7 @@ export function useTextFile(path: string) {
       setState({
         content: null,
         loading: false,
-        error: err instanceof Error ? err.message : 'ファイルの読込に失敗しました',
+        error: errorMessage(err, 'ファイルの読込に失敗しました'),
       })
     }
   }, [path])

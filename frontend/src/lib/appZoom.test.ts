@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  computeContextMenuPosition,
   computeTooltipHorizontalPosition,
   computeTooltipPosition,
   levelToFactor,
@@ -85,6 +86,36 @@ describe('appZoom', () => {
       top: 104,
       left: 320,
       align: 'center',
+    })
+  })
+
+  it('keeps context menu at click position when it fits', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 600 })
+
+    expect(computeContextMenuPosition(200, 300, 160, 120)).toEqual({
+      x: 200,
+      y: 300,
+    })
+  })
+
+  it('flips context menu upward when below viewport', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 400 })
+
+    expect(computeContextMenuPosition(200, 350, 160, 120)).toEqual({
+      x: 200,
+      y: 230,
+    })
+  })
+
+  it('flips context menu leftward when past right viewport edge', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 400 })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 600 })
+
+    expect(computeContextMenuPosition(350, 200, 160, 80)).toEqual({
+      x: 190,
+      y: 200,
     })
   })
 })

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { TreeNode } from '../types'
+import { errorMessage } from '../lib/errorMessage'
 import { readTableFile } from '../lib/wails'
 import { compareRelPaths } from '../lib/relPathSort'
 import { collectFiles } from '../utils/treeFiles'
@@ -145,7 +146,7 @@ export function useFolderDiff(left: TreeNode | null, right: TreeNode | null) {
       if (isStale()) {
         return
       }
-      setError(err instanceof Error ? err.message : '比較に失敗しました')
+      setError(errorMessage(err, '比較に失敗しました'))
       setEntries([])
     } finally {
       if (!isStale()) {

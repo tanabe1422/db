@@ -133,6 +133,7 @@ func XlsxImport(xlsxData []byte) (tableJSON []byte, relPath string, err error) {
 
 func run(exe string, args []string, stdin []byte, out interface{}) error {
 	cmd := exec.Command(exe, args...)
+	configureCmd(cmd)
 	if len(stdin) > 0 {
 		cmd.Stdin = bytes.NewReader(stdin)
 	}

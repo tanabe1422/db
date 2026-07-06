@@ -1,6 +1,7 @@
 import { Check, ChevronDown, ChevronUp, FolderPlus, Sparkles, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import type { AISetupResult } from '../../lib/wails'
+import { errorMessage } from '../../lib/errorMessage'
 import { initAISetup } from '../../lib/wails'
 import type { Settings } from '../../types'
 import { Button, IconButton } from '../ui/Button'
@@ -73,7 +74,7 @@ export function SettingsDialog({
       setSetupMessage(formatSetupResult(result))
       onAISetupComplete?.()
     } catch (err) {
-      setSetupError(err instanceof Error ? err.message : 'セットアップに失敗しました')
+      setSetupError(errorMessage(err, 'セットアップに失敗しました'))
     } finally {
       setSetupLoading(false)
     }

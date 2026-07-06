@@ -17,8 +17,10 @@ import {
   showInExplorer,
   type XlsxImportFailure,
 } from '../lib/wails'
+import { errorMessage } from '../lib/errorMessage'
 import { exportXlsxFiles, importXlsxToFolder } from '../lib/xlsxTransfer'
 import type { TreeNode } from '../types'
+import { useGenBatchProgress } from './useGenBatchProgress'
 
 interface ContextMenuState {
   x: number
@@ -49,8 +51,7 @@ interface UseTreeContextMenuOptions {
 }
 
 function reportError(err: unknown, fallback: string): void {
-  const message = err instanceof Error ? err.message : fallback
-  window.alert(message)
+  window.alert(errorMessage(err, fallback))
 }
 
 function appendSection(target: ContextMenuEntry[], section: ContextMenuEntry[]) {
@@ -71,6 +72,7 @@ export function useTreeContextMenu({
   enableFileOperations = false,
   onRescan,
 }: UseTreeContextMenuOptions) {
+  const { runGenBatch } = useGenBatchProgress()
   const [menu, setMenu] = useState<ContextMenuState | null>(null)
   const [importFailures, setImportFailures] = useState<XlsxImportFailure[] | null>(
     null,
@@ -274,7 +276,11 @@ export function useTreeContextMenu({
           toolSection.push({
             label: '作成スクリプト生成',
             onClick: () => {
-              void exportCreateScripts(activeDirectory, node).catch((err: unknown) => {
+              void runGenBatch({
+                title: '作成スクリプトを生成中…',
+                task: (report) =>
+                  exportCreateScripts(activeDirectory, node, report),
+              }).catch((err: unknown) => {
                 reportError(err, '作成スクリプトの生成に失敗しました')
               })
             },
@@ -285,7 +291,10 @@ export function useTreeContextMenu({
           toolSection.push({
             label: '定義書インポート',
             onClick: () => {
-              void importXlsxToFolder(node.path)
+              void runGenBatch({
+                title: '定義書をインポート中…',
+                task: (report) => importXlsxToFolder(node.path, report),
+              })
                 .then(async (result) => {
                   if (result.imported > 0) {
                     await onRescan?.()
@@ -305,7 +314,11 @@ export function useTreeContextMenu({
           toolSection.push({
             label: '定義書エクスポート',
             onClick: () => {
-              void exportXlsxFiles(activeDirectory, node).catch((err: unknown) => {
+              void runGenBatch({
+                title: '定義書をエクスポート中…',
+                task: (report) =>
+                  exportXlsxFiles(activeDirectory, node, report),
+              }).catch((err: unknown) => {
                 reportError(err, '定義書のエクスポートに失敗しました')
               })
             },
@@ -327,6 +340,7 @@ export function useTreeContextMenu({
       onRescan,
       openPrompt,
       rescanAfter,
+      runGenBatch,
     ],
   )
 

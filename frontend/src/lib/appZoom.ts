@@ -73,6 +73,36 @@ export function toContextMenuPosition(
   }
 }
 
+/** Clamp a portaled context menu within the viewport (zoom-aware). */
+export function computeContextMenuPosition(
+  clientX: number,
+  clientY: number,
+  menuWidth: number,
+  menuHeight: number,
+  margin = 8,
+): { x: number; y: number } {
+  const factor = getAppZoomFactor()
+  const viewportW = window.innerWidth
+  const viewportH = window.innerHeight
+
+  let topViewport = clientY
+  if (topViewport + menuHeight > viewportH - margin) {
+    topViewport = clientY - menuHeight
+  }
+  topViewport = Math.max(margin, Math.min(topViewport, viewportH - menuHeight - margin))
+
+  let leftViewport = clientX
+  if (leftViewport + menuWidth > viewportW - margin) {
+    leftViewport = clientX - menuWidth
+  }
+  leftViewport = Math.max(margin, Math.min(leftViewport, viewportW - menuWidth - margin))
+
+  return {
+    x: leftViewport / factor,
+    y: topViewport / factor,
+  }
+}
+
 /** Convert `getBoundingClientRect()` for portaled `position: fixed` overlays under app zoom. */
 export function toFixedOverlayRect(
   rect: Pick<DOMRect, 'top' | 'left' | 'bottom' | 'width'>,

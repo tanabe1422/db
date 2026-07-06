@@ -1,9 +1,9 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, RefreshCw } from 'lucide-react'
 
 import { useMouseBackButton } from '../../hooks/useMouseBackButton'
 import { useSyncedHorizontalScroll } from '../../hooks/useSyncedHorizontalScroll'
 import type { TableDiff } from '../../lib/diffTable'
-import { Button } from '../ui/Button'
+import { Button, IconButton } from '../ui/Button'
 import { Tooltip } from '../ui/Tooltip'
 
 import { DiffMetaCompare } from './DiffMetaCompare'
@@ -14,10 +14,18 @@ import styles from './FileDiffView.module.css'
 interface FileDiffViewProps {
   relPath: string
   diff: TableDiff
+  loading?: boolean
   onBack: () => void
+  onReload?: () => void
 }
 
-export function FileDiffView({ relPath, diff, onBack }: FileDiffViewProps) {
+export function FileDiffView({
+  relPath,
+  diff,
+  loading = false,
+  onBack,
+  onReload,
+}: FileDiffViewProps) {
   useMouseBackButton(onBack)
 
   const { leftRef, rightRef, onLeftScroll, onRightScroll } =
@@ -33,9 +41,21 @@ export function FileDiffView({ relPath, diff, onBack }: FileDiffViewProps) {
         <Tooltip content={relPath} wrap>
           <span className={styles.fileName}>{relPath}</span>
         </Tooltip>
+        {onReload && (
+          <IconButton
+            className={styles.reloadBtn}
+            onClick={onReload}
+            disabled={loading}
+            aria-label="再読込"
+            tooltip="再読込"
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+          </IconButton>
+        )}
       </div>
 
       <div className={styles.diffBody}>
+        {loading && <p className={styles.loadingOverlay}>更新中...</p>}
         <div className={styles.splitRow}>
           <div className={styles.paneHead}>
             <DiffSideMark side="left" />

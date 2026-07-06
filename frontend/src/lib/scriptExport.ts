@@ -4,6 +4,10 @@ import { relPathWithinRoot } from '../utils/relPathWithinRoot'
 import { diffTable } from './diffTable'
 import { compareRelPaths } from './relPathSort'
 import {
+  type BatchProgressHandler,
+  reportBatchProgress,
+} from './batchProgress'
+import {
   ensureExportRelDir,
   generateCreateScript,
   generateCreateScriptFromJSON,
@@ -97,6 +101,7 @@ function migratePairHasChanges(pair: MigrateScriptPair): boolean {
 async function exportDiffScripts(
   activeDirectory: string,
   snapshot: DiffExportSnapshot,
+  onProgress?: BatchProgressHandler,
 ): Promise<string> {
   const changedPairs = snapshot.pairs.filter(migratePairHasChanges)
   const addedFiles = snapshot.added
@@ -106,8 +111,15 @@ async function exportDiffScripts(
   }
 
   const exportRoot = await prepareExportDirectory(activeDirectory)
+  const total = changedPairs.length + addedFiles.length
+  let index = 0
 
   for (const pair of changedPairs) {
+    reportBatchProgress(onProgress, {
+      current: index,
+      total,
+      label: pair.relPath,
+    })
     const result = await generateMigrateScriptFromJSON(
       pair.beforeJSON,
       pair.afterJSON,
@@ -118,13 +130,30 @@ async function exportDiffScripts(
       result,
       defaultMigrateSqlPath(pair.relPath),
     )
+    index += 1
+    reportBatchProgress(onProgress, {
+      current: index,
+      total,
+      label: pair.relPath,
+    })
   }
 
   for (const file of addedFiles) {
+    reportBatchProgress(onProgress, {
+      current: index,
+      total,
+      label: file.relPath,
+    })
     const result = await generateCreateScriptFromJSON(file.afterJSON, {
       label: file.relPath,
     })
     await writeScriptResult(exportRoot, result, defaultSqlPath(file.relPath))
+    index += 1
+    reportBatchProgress(onProgress, {
+      current: index,
+      total,
+      label: file.relPath,
+    })
   }
 
   return exportRoot
@@ -223,6 +252,7 @@ async function collectGitDiffExport(
 export async function exportCreateScripts(
   activeDirectory: string,
   node: TreeNode,
+  onProgress?: BatchProgressHandler,
 ): Promise<string> {
   const exportRoot = await prepareExportDirectory(activeDirectory)
   const files = collectScriptFiles(activeDirectory, node)
@@ -231,13 +261,25 @@ export async function exportCreateScripts(
     throw new Error('*.table.json ファイルが見つかりません')
   }
 
-  for (const file of files) {
+  const total = files.length
+  for (let index = 0; index < files.length; index++) {
+    const file = files[index]
+    reportBatchProgress(onProgress, {
+      current: index,
+      total,
+      label: file.relPath,
+    })
     const result = await generateCreateScript(file.fullPath)
     await writeScriptResult(
       exportRoot,
       result,
       defaultSqlPath(file.relPath),
     )
+    reportBatchProgress(onProgress, {
+      current: index + 1,
+      total,
+      label: file.relPath,
+    })
   }
 
   return exportRoot
@@ -250,9 +292,10 @@ export async function exportMigrateScripts(
   activeDirectory: string,
   leftNode: TreeNode,
   rightNode: TreeNode,
+  onProgress?: BatchProgressHandler,
 ): Promise<string> {
   const snapshot = await collectFolderDiffExport(leftNode, rightNode)
-  return exportDiffScripts(activeDirectory, snapshot)
+  return exportDiffScripts(activeDirectory, snapshot, onProgress)
 }
 
 /**
@@ -262,7 +305,8 @@ export async function exportGitMigrateScripts(
   activeDirectory: string,
   leftHash: string,
   rightHash: string,
+  onProgress?: BatchProgressHandler,
 ): Promise<string> {
   const snapshot = await collectGitDiffExport(activeDirectory, leftHash, rightHash)
-  return exportDiffScripts(activeDirectory, snapshot)
+  return exportDiffScripts(activeDirectory, snapshot, onProgress)
 }

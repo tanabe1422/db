@@ -3,6 +3,7 @@ import { ExternalLink } from 'lucide-react'
 
 import type { EditorToolbarBridge } from '../toolbar/editorToolbarBridge'
 import { useTextFileEditor } from '../../hooks/useTextFileEditor'
+import { errorMessage } from '../../lib/errorMessage'
 import { openWithDefaultApp } from '../../lib/wails'
 import { Button } from '../ui/Button'
 
@@ -53,11 +54,7 @@ export function TextFileView({
           className={styles.openBtn}
           onClick={() => {
             void openWithDefaultApp(path).catch((err: unknown) => {
-              const message =
-                err instanceof Error
-                  ? err.message
-                  : '既定のアプリで開けませんでした'
-              window.alert(message)
+              window.alert(errorMessage(err, '既定のアプリで開けませんでした'))
             })
           }}
         >

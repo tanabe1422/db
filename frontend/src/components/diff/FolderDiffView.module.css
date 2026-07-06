@@ -20,6 +20,13 @@
   min-width: 0;
 }
 
+.toolbarEnd {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .exportBtn {
   display: inline-flex;
   align-items: center;
