@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { TableDefinition } from '../types'
 import { errorMessage } from '../lib/errorMessage'
 import { writeTableFile } from '../lib/wails'
 import type { FlagField } from '../lib/gridColumns'
