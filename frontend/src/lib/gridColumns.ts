@@ -123,3 +123,14 @@ export function cellValue(column: DraftColumn, colId: string): string {
     }
   }
 }
+
+/** 連続する PK 行ブロックの最終行か（背景色の代わりに下線で区切る） */
+export function isLastPkRow<T>(
+  rows: readonly T[],
+  index: number,
+  isPk: (row: T) => boolean | undefined,
+): boolean {
+  if (!isPk(rows[index])) return false
+  const next = rows[index + 1]
+  return next == null || !isPk(next)
+}

@@ -123,15 +123,6 @@
   padding-right: 0.125rem;
 }
 
-.delete {
-  color: var(--color-red-600);
-}
-
-.delete:hover:not(:disabled) {
-  background: var(--overlay-red-50);
-  color: var(--color-red-700);
-}
-
 .aiSetup {
   margin-top: 0.875rem;
   padding-top: 0.875rem;

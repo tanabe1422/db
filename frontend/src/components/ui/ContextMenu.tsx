@@ -5,6 +5,7 @@ import {
   computeContextMenuPosition,
   toContextMenuPosition,
 } from '../../lib/appZoom'
+import { Button } from './Button'
 import styles from './ContextMenu.module.css'
 
 export interface ContextMenuItem {
@@ -81,11 +82,10 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
         }
 
         return (
-          <button
+          <Button
             key={entry.label}
-            type="button"
+            variant="menuItem"
             role="menuitem"
-            className={styles.item}
             disabled={entry.disabled}
             onClick={() => {
               entry.onClick()
@@ -93,7 +93,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
             }}
           >
             {entry.label}
-          </button>
+          </Button>
         )
       })}
     </div>,

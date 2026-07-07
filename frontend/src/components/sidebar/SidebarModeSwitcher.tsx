@@ -11,7 +11,7 @@ import { createPortal } from 'react-dom'
 import { toFixedOverlayRect } from '../../lib/appZoom'
 import { cx } from '../../utils/cx'
 import { SIDEBAR_COMPACT_WIDTH, useSidebar } from '../layout/sidebarContext'
-import { IconButton } from '../ui/Button'
+import { IconButton, Button } from '../ui/Button'
 import styles from './SidebarModeSwitcher.module.css'
 
 export type SidebarMode = 'edit' | 'diff' | 'git-diff'
@@ -115,7 +115,7 @@ export function SidebarModeSwitcher({
             return (
               <IconButton
                 key={option.id}
-                className={cx(mode === option.id && styles.modeActive)}
+                variant={mode === option.id ? 'active' : 'ghost'}
                 onClick={() => onModeChange(option.id)}
                 disabled={option.disabled}
                 aria-label={option.label}
@@ -162,17 +162,17 @@ export function SidebarModeSwitcher({
                 {otherOptions.map((option) => {
                   const Icon = option.icon
                   return (
-                    <button
+                    <Button
                       key={option.id}
-                      type="button"
+                      variant="menuItem"
                       role="menuitem"
-                      className={styles.menuItem}
+                      className={styles.menuItemRow}
                       disabled={option.disabled}
                       onClick={() => onModeChange(option.id)}
                     >
                       <Icon size={16} aria-hidden="true" />
                       <span>{option.label}</span>
-                    </button>
+                    </Button>
                   )
                 })}
               </div>,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { isDecimal } from '../../utils/columnMeta'
 import { cellValue, flagFor, markerFieldFor, markerPosition } from '../../lib/gridColumns'
@@ -39,6 +39,7 @@ export interface GridNavigation {
   ) => void
   takeComboboxOpenRequest: () => boolean
   activateCell: (rowId: number, colId: string) => void
+  toggleCheckFlag: (rowId: number, colId: string) => void
   stopEditing: () => void
 }
 
@@ -86,14 +87,14 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     }
   }, [errors.length])
 
-  function handleSave() {
+  const handleSave = useCallback(() => {
     if (errors.length > 0) {
       setValidationVisible(true)
       return
     }
     setValidationVisible(false)
     void editor.save()
-  }
+  }, [errors.length, editor.save])
 
   const columns = editor.draft.columns
 
@@ -150,6 +151,14 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     setActive({ rowId, colId })
     setEditing(false)
     containerRef.current?.focus()
+  }
+
+  function toggleCheckFlag(rowId: number, colId: string) {
+    editor.clearRowSelection()
+    flushEdit()
+    setActive(null)
+    setEditing(false)
+    editor.toggleFlag(rowId, flagFor(colId))
   }
 
   function startEdit(
@@ -282,9 +291,8 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
       }
       return
     }
-    const wasEditing = editing
     flushEdit()
-    applyActiveMove(computeNextDirection(active, direction), wasEditing)
+    applyActiveMove(computeNextDirection(active, direction), false)
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
@@ -335,8 +343,9 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
       e.key === 'ArrowLeft' ||
       e.key === 'ArrowRight'
     ) {
-      // 編集中は入力欄の通常操作（キャレット移動など）に任せる。
-      if (editing) {
+      const isVertical = e.key === 'ArrowUp' || e.key === 'ArrowDown'
+      // 左右は編集中は入力欄のキャレット移動に任せる。上下は編集中でもセル移動する。
+      if (editing && !isVertical) {
         return
       }
       e.preventDefault()
@@ -397,7 +406,8 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
       }
       if (kind !== 'check' && e.key.length === 1 && !mod) {
         e.preventDefault()
-        startEdit(active.rowId, active.colId, e.key)
+        // 先頭1文字で編集開始したら末尾キャレットにする（全選択だと次の入力で消える）。
+        startEdit(active.rowId, active.colId, e.key, false)
       }
     }
   }
@@ -442,6 +452,7 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     startEdit,
     takeComboboxOpenRequest,
     activateCell,
+    toggleCheckFlag,
     stopEditing,
   }
 }

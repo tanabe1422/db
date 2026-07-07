@@ -191,3 +191,22 @@ export function diffTable(
 
   return { meta, rows, hasChanges }
 }
+
+/** Diff 表示の No 列。片側空行では null（連番を振らない）。 */
+export function diffSideRowNumber(
+  rows: ColumnDiffRow[],
+  index: number,
+  side: 'left' | 'right',
+): number | null {
+  const column = side === 'left' ? rows[index]?.left : rows[index]?.right
+  if (!column) {
+    return null
+  }
+  let number = 0
+  for (let i = 0; i <= index; i++) {
+    if (side === 'left' ? rows[i].left : rows[i].right) {
+      number += 1
+    }
+  }
+  return number
+}

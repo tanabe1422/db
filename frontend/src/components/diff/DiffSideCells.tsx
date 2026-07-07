@@ -8,6 +8,7 @@ import type { ColumnDiffRow } from '../../lib/diffTable'
 import type { DraftColumn } from '../../utils/serializeTable'
 
 import { Checkbox } from '../ui/Checkbox'
+import { DiffEmptyCellContent } from './DiffEmptyCellContent'
 import { displayColClass, highlightClass } from './diffDisplayStyles'
 import grid from '../table/ColumnGridTable.module.css'
 import styles from './FileDiffView.module.css'
@@ -30,7 +31,11 @@ export function DiffSideCells({ column, row, side }: DiffSideCellsProps) {
         )
 
         if (!column) {
-          return <td key={`${side}-${col.id}`} className={cellCls} />
+          return (
+            <td key={`${side}-${col.id}`} className={cellCls}>
+              <DiffEmptyCellContent />
+            </td>
+          )
         }
 
         if (col.kind === 'check') {

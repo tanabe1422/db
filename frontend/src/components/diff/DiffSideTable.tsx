@@ -1,9 +1,11 @@
 import { DISPLAY_COLS } from '../../lib/diffDisplayColumns'
-import type { TableDiff } from '../../lib/diffTable'
+import { isLastPkRow } from '../../lib/gridColumns'
+import { diffSideRowNumber, type TableDiff } from '../../lib/diffTable'
 import { cx } from '../../utils/cx'
 import { ColumnGridHeader } from '../table/ColumnGridHeader'
 import grid from '../table/ColumnGridTable.module.css'
 
+import { DiffEmptyCellContent } from './DiffEmptyCellContent'
 import { DiffSideCells } from './DiffSideCells'
 import styles from './FileDiffView.module.css'
 
@@ -34,13 +36,27 @@ export function DiffSideTable({
         <tbody>
           {diff.rows.map((row, index) => {
             const column = side === 'left' ? row.left : row.right
+            const rowNumber = diffSideRowNumber(diff.rows, index, side)
+            const isPk = (r: (typeof diff.rows)[number]) =>
+              side === 'left' ? r.left?.pk : r.right?.pk
             return (
               <tr
                 key={`${row.name}-${index}`}
-                className={cx(column?.pk && styles.pkRow)}
+                className={cx(
+                  column?.pk && grid.pkRow,
+                  isLastPkRow(diff.rows, index, isPk) && grid.pkRowLast,
+                )}
               >
-                <td className={cx(grid.center, grid.fixedCol, grid.gridLabel)}>
-                  {index + 1}
+                <td
+                  className={cx(
+                    grid.center,
+                    grid.fixedCol,
+                    grid.gridLabel,
+                    column?.pk && grid.pkRowNum,
+                    !column && styles.emptyCell,
+                  )}
+                >
+                  {rowNumber ?? <DiffEmptyCellContent />}
                 </td>
                 <DiffSideCells column={column} row={row} side={side} />
               </tr>

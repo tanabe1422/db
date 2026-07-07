@@ -1,7 +1,7 @@
 .tableWrapper {
   overflow-x: auto;
-  border: 1px solid var(--color-slate-200);
-  border-radius: 0.375rem;
+  border: 1px solid var(--border-grid);
+  border-radius: var(--border-radius-grid);
   background: var(--color-white);
   font-size: var(--font-size-compact);
 }
@@ -19,8 +19,8 @@
   padding: 0.125rem 0.25rem;
   text-align: left;
   vertical-align: middle;
-  border-bottom: 1px solid var(--color-slate-300);
-  border-right: 1px solid var(--color-slate-300);
+  border-bottom: 1px solid var(--border-grid);
+  border-right: 1px solid var(--border-grid);
   font-size: inherit;
 }
 
@@ -30,7 +30,7 @@
 }
 
 .table thead th {
-  background: var(--color-slate-50);
+  background: var(--color-surface-header);
   color: var(--color-slate-600);
   font-weight: 600;
   font-size: var(--font-size-grid-header);
@@ -38,8 +38,38 @@
   user-select: none;
 }
 
+/* ヘッダー下端（tbody との境）のみ 2px。UIDX/Index などのグループ行は 1px のまま */
+.table thead tr:last-child th,
+.table thead tr:first-child th[rowspan] {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--border-grid);
+}
+
 .table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.table tbody td {
+  background: color-mix(
+    in srgb,
+    var(--color-white),
+    var(--grid-pk-fill) var(--pk-accent-mix, 0%)
+  );
+}
+
+.table tbody tr.pkRow {
+  font-weight: 600;
+  --pk-accent-mix: var(--grid-pk-accent-mix);
+}
+
+.table tbody tr.pkRow td.pkRowNum {
+  color: var(--color-white);
+  background: var(--color-blue-600);
+}
+
+.table tbody tr.pkRowLast td {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--border-grid);
 }
 
 .center {

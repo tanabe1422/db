@@ -139,7 +139,7 @@ export function SettingsDialog({
                         <ChevronDown size={14} aria-hidden="true" />
                       </IconButton>
                       <IconButton
-                        className={styles.delete}
+                        variant="danger"
                         size="sm"
                         onClick={() => onRemove(path)}
                         aria-label="削除"

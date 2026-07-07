@@ -67,20 +67,24 @@ export function EditableCell({
           suggestions={DATA_TYPES}
           requestOpenOnMount={nav.takeComboboxOpenRequest}
         />
-      ) : isEditing && colId === 'remarks' ? (
+      ) : colId === 'remarks' ? (
         <textarea
+          readOnly={!isEditing}
+          tabIndex={-1}
           ref={(el) => {
-            nav.inputRef.current = el
+            if (isActive) {
+              nav.inputRef.current = el
+            }
           }}
-          className={styles.cellTextarea}
-          value={nav.editValue}
-          onChange={(ev) => {
-            nav.setEditValue(ev.target.value)
-            ev.target.style.height = 'auto'
-            ev.target.style.height = `${ev.target.scrollHeight}px`
-          }}
+          className={cx(
+            styles.cellTextarea,
+            !isEditing && styles.cellTextareaReadonly,
+          )}
+          value={isEditing ? nav.editValue : value}
+          onChange={
+            isEditing ? (ev) => nav.setEditValue(ev.target.value) : undefined
+          }
           rows={1}
-          cols={1}
         />
       ) : isEditing ? (
         <input
@@ -98,10 +102,6 @@ export function EditableCell({
             nav.startEdit(column.rowId, colId, undefined, false, { openCombobox: true })
           }
         />
-      ) : colId === 'remarks' ? (
-        <span className={`${styles.cellText} ${styles.cellTextRemarks}`}>
-          {value}
-        </span>
       ) : (
         <span className={textClass}>{value}</span>
       )}

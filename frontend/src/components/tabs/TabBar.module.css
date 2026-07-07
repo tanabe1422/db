@@ -36,13 +36,13 @@
 }
 
 .active {
-  background: var(--color-slate-100);
+  background: var(--color-surface-main);
   color: var(--color-cyan-600);
   border-top-color: var(--color-cyan-600);
 }
 
 .active:hover {
-  background: var(--color-slate-100);
+  background: var(--color-surface-main);
   color: var(--color-cyan-600);
 }
 
@@ -56,22 +56,10 @@
 
 .close {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
   padding: 0;
-}
-
-.close:hover {
-  background: var(--overlay-slate-100);
 }
 
 .dot {

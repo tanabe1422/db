@@ -2,6 +2,7 @@ import { ArrowLeft, RefreshCw } from 'lucide-react'
 
 import { useMouseBackButton } from '../../hooks/useMouseBackButton'
 import { useSyncedHorizontalScroll } from '../../hooks/useSyncedHorizontalScroll'
+import { useSyncedTableRowHeights } from '../../hooks/useSyncedTableRowHeights'
 import type { TableDiff } from '../../lib/diffTable'
 import { Button, IconButton } from '../ui/Button'
 import { Tooltip } from '../ui/Tooltip'
@@ -31,10 +32,12 @@ export function FileDiffView({
   const { leftRef, rightRef, onLeftScroll, onRightScroll } =
     useSyncedHorizontalScroll()
 
+  useSyncedTableRowHeights(leftRef, rightRef, [diff.rows, loading])
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Button variant="plain" className={styles.backBtn} onClick={onBack}>
+        <Button variant="secondary" className={styles.backBtn} onClick={onBack}>
           <ArrowLeft size={16} aria-hidden="true" />
           ファイル一覧に戻る
         </Button>

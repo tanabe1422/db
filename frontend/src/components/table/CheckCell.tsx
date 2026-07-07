@@ -16,6 +16,7 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
   const checked = column[flagFor(colId)]
   const isActive =
     nav.active?.rowId === column.rowId && nav.active?.colId === colId
+  const toggleWithoutSelect = colId === 'pk' || colId === 'nn'
 
   return (
     <td
@@ -25,7 +26,11 @@ export function CheckCell({ column, colId, nav }: CheckCellProps) {
         styles.checkCell,
         isActive && styles.activeCell,
       )}
-      onMouseDown={() => nav.startEdit(column.rowId, colId)}
+      onMouseDown={() =>
+        toggleWithoutSelect
+          ? nav.toggleCheckFlag(column.rowId, colId)
+          : nav.startEdit(column.rowId, colId)
+      }
     >
       <Checkbox
         checked={checked}

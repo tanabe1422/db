@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import type { EditorToolbarBridge } from '../toolbar/editorToolbarBridge'
 import { cx } from '../../utils/cx'
@@ -13,6 +13,7 @@ import { EditableCell } from './EditableCell'
 import { EditToolbar } from '../toolbar/EditToolbar'
 import { RowActions } from './RowActions'
 import { TableMetaForm } from './TableMetaForm'
+import { isLastPkRow } from '../../lib/gridColumns'
 import {
   indexNumbers,
   uniqueIndexNumbers,
@@ -95,16 +96,21 @@ function TableEditorGrid({
 }) {
   const nav = useGridNavigation(editor)
   const columns = editor.draft.columns
+  const onSaveRef = useRef(nav.handleSave)
+  onSaveRef.current = nav.handleSave
 
   useEffect(() => {
     if (!isActive || inlineToolbar) {
       return
     }
-    onEditorBridgeChange?.({ editor, onSave: nav.handleSave })
+    onEditorBridgeChange?.({
+      editor,
+      onSave: () => onSaveRef.current(),
+    })
     return () => {
       onEditorBridgeChange?.({ editor: null, onSave: null })
     }
-  }, [editor, inlineToolbar, isActive, nav.handleSave, onEditorBridgeChange])
+  }, [editor, inlineToolbar, isActive, onEditorBridgeChange])
 
   return (
     <div
@@ -160,7 +166,8 @@ function TableEditorGrid({
                   key={column.rowId}
                   className={cx(
                     selected && styles.selectedRow,
-                    column.pk && styles.pkRow,
+                    column.pk && grid.pkRow,
+                    isLastPkRow(columns, index, (c) => c.pk) && grid.pkRowLast,
                   )}
                 >
                   <td
@@ -183,6 +190,7 @@ function TableEditorGrid({
                       grid.fixedCol,
                       grid.gridLabel,
                       styles.rowHeader,
+                      column.pk && grid.pkRowNum,
                     )}
                     onClick={(e) => nav.handleRowSelect(e, column.rowId)}
                   >

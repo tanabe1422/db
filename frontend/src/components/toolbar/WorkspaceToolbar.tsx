@@ -16,7 +16,7 @@ export function WorkspaceToolbar({ children, trailing }: WorkspaceToolbarProps) 
         {children && (
           <>
             <div className={styles.divider} aria-hidden="true" />
-            {children}
+            <div className={styles.toolGroup}>{children}</div>
           </>
         )}
       </div>

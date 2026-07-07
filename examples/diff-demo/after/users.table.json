@@ -5,7 +5,8 @@
   "nameJa": "ユーザー",
   "description": "アプリの利用者マスタ（改訂）",
   "primaryKey": [
-    "id"
+    "id",
+    "email"
   ],
   "columns": [
     {
@@ -13,7 +14,7 @@
       "dataType": "bigint",
       "nameJa": "ID",
       "notNull": true,
-      "remarks": "備考２行にしたい"
+      "remarks": "備考\n２行にしたい"
     },
     {
       "name": "email",
@@ -28,6 +29,21 @@
       "dataType": "datetime2",
       "nameJa": "作成日時",
       "notNull": true
+    },
+    {
+      "name": "hoge1",
+      "dataType": "int",
+      "nameJa": "hoge1"
+    },
+    {
+      "name": "hoge2",
+      "dataType": "int",
+      "nameJa": "hoge2"
+    },
+    {
+      "name": "hoge3",
+      "dataType": "int",
+      "nameJa": "hoge3"
     }
   ]
 }

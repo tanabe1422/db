@@ -1,4 +1,5 @@
 import type { MetaField } from '../../hooks/useTableEditor'
+import meta from './TableMetaPanel.module.css'
 import styles from './TableDefinitionView.module.css'
 
 interface TableMetaFormProps {
@@ -15,9 +16,9 @@ export function TableMetaForm({
   onChange,
 }: TableMetaFormProps) {
   return (
-    <dl className={styles.meta}>
-      <div className={styles.metaNameCol}>
-        <div className={styles.metaRow}>
+    <dl className={meta.metaGrid}>
+      <div className={meta.nameCol}>
+        <div className={meta.row}>
           <dt>テーブル名（英）</dt>
           <dd>
             <input
@@ -28,7 +29,7 @@ export function TableMetaForm({
             />
           </dd>
         </div>
-        <div className={styles.metaRow}>
+        <div className={meta.row}>
           <dt>テーブル名（日）</dt>
           <dd>
             <input
@@ -40,7 +41,7 @@ export function TableMetaForm({
           </dd>
         </div>
       </div>
-      <div className={styles.metaDescBlock}>
+      <div className={meta.descRow}>
         <dt>テーブル概要</dt>
         <dd>
           <textarea

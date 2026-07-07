@@ -1,0 +1,68 @@
+.panel {
+  border: 1px solid var(--border-grid);
+  border-radius: var(--border-radius-grid);
+  overflow: hidden;
+  background: var(--color-white);
+}
+
+.metaGrid {
+  composes: panel;
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+}
+
+.nameCol {
+  display: grid;
+  min-width: 0;
+  border-right: 1px solid var(--border-grid);
+}
+
+.nameCol > :not(:last-child) {
+  border-bottom: 1px solid var(--border-grid);
+}
+
+.row {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-width: 0;
+}
+
+.descRow {
+  composes: row;
+  margin: 0;
+}
+
+.row dt,
+.descRow dt {
+  margin: 0;
+  padding: 0.375rem 0.75rem;
+  font-size: var(--font-size-compact);
+  font-weight: 600;
+  color: var(--color-slate-500);
+  background: var(--color-surface-header);
+  border-right: 1px solid var(--border-grid);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.descRow dt {
+  align-items: start;
+  padding-top: 0.625rem;
+}
+
+.row dd {
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-white);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.descRow dd {
+  padding: 0.375rem 0.5rem;
+  display: block;
+}

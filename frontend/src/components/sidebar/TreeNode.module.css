@@ -8,19 +8,10 @@
   align-items: center;
   gap: 0.25rem;
   width: 100%;
-  border: none;
-  background: transparent;
   text-align: left;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
   padding-top: 0.1875rem;
   padding-bottom: 0.1875rem;
   padding-right: 0.5rem;
-}
-
-.item:hover {
-  background: var(--overlay-slate-50);
 }
 
 .selected {

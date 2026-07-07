@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 import { toFixedOverlayRect, ZOOM_CHANGE_EVENT } from '../../lib/appZoom'
 import { cx } from '../../utils/cx'
+import { Button, IconButton } from '../ui/Button'
 import styles from './TableDefinitionView.module.css'
 
 function ComboboxChevron({ open }: { open?: boolean }) {
@@ -110,8 +111,8 @@ export function DataTypeCombobox({
         value={value}
         onChange={(ev) => onChange(ev.target.value)}
       />
-      <button
-        type="button"
+      <IconButton
+        variant="comboboxToggle"
         className={styles.cellComboboxToggle}
         tabIndex={-1}
         aria-label="型の候補を表示"
@@ -124,7 +125,7 @@ export function DataTypeCombobox({
         }}
       >
         <ComboboxChevron open={open} />
-      </button>
+      </IconButton>
       {open &&
         suggestions.length > 0 &&
         createPortal(
@@ -141,14 +142,13 @@ export function DataTypeCombobox({
           >
             {suggestions.map((item) => (
               <li key={item} role="option">
-                <button
-                  type="button"
-                  className={styles.cellComboboxOption}
+                <Button
+                  variant="listOption"
                   onMouseDown={(ev) => ev.preventDefault()}
                   onClick={() => selectSuggestion(item)}
                 >
                   {item}
-                </button>
+                </Button>
               </li>
             ))}
           </ul>,
@@ -168,8 +168,8 @@ export function DataTypeComboboxDisplay({
   return (
     <span className={styles.cellComboboxDisplay}>
       <span className={styles.cellText}>{value}</span>
-      <button
-        type="button"
+      <IconButton
+        variant="comboboxToggle"
         className={styles.cellComboboxToggle}
         tabIndex={-1}
         aria-label="型の候補を表示"
@@ -180,7 +180,7 @@ export function DataTypeComboboxDisplay({
         }}
       >
         <ComboboxChevron />
-      </button>
+      </IconButton>
     </span>
   )
 }

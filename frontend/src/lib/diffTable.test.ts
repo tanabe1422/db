@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import type { TableDefinition } from '../types'
-import { diffTable } from './diffTable'
+import { diffSideRowNumber, diffTable } from './diffTable'
+import type { ColumnDiffRow } from './diffTable'
 
 function base(): TableDefinition {
   return {
@@ -102,5 +103,29 @@ describe('diffTable', () => {
     expect(addedDiff.rows.every((row) => row.status === 'added')).toBe(true)
     const removedDiff = diffTable(base(), null)
     expect(removedDiff.rows.every((row) => row.status === 'removed')).toBe(true)
+  })
+})
+
+describe('diffSideRowNumber', () => {
+  const rows: ColumnDiffRow[] = [
+    { name: 'id', status: 'same', left: {} as ColumnDiffRow['left'], right: {} as ColumnDiffRow['right'], changed: new Set() },
+    { name: 'new', status: 'added', right: {} as ColumnDiffRow['right'], changed: new Set() },
+    { name: 'email', status: 'same', left: {} as ColumnDiffRow['left'], right: {} as ColumnDiffRow['right'], changed: new Set() },
+    { name: 'old', status: 'removed', left: {} as ColumnDiffRow['left'], changed: new Set() },
+  ]
+
+  it('returns null on the empty side of a padded row', () => {
+    expect(diffSideRowNumber(rows, 1, 'left')).toBeNull()
+    expect(diffSideRowNumber(rows, 3, 'right')).toBeNull()
+  })
+
+  it('skips padded rows when numbering each side', () => {
+    expect(diffSideRowNumber(rows, 0, 'left')).toBe(1)
+    expect(diffSideRowNumber(rows, 2, 'left')).toBe(2)
+    expect(diffSideRowNumber(rows, 3, 'left')).toBe(3)
+
+    expect(diffSideRowNumber(rows, 0, 'right')).toBe(1)
+    expect(diffSideRowNumber(rows, 1, 'right')).toBe(2)
+    expect(diffSideRowNumber(rows, 2, 'right')).toBe(3)
   })
 })

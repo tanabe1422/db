@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
 
@@ -28,6 +28,32 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
+})
+
+describe('TableDefinitionView 外部ツールバー連携', () => {
+  it('onEditorBridgeChange が無限に呼ばれない', async () => {
+    const onEditorBridgeChange = vi.fn()
+    render(
+      <TableDefinitionView
+        definition={makeDefinition()}
+        path="/tmp/users.table.json"
+        isActive
+        inlineToolbar={false}
+        onEditorBridgeChange={onEditorBridgeChange}
+      />,
+    )
+
+    await screen.findByText('id')
+    await waitFor(() => {
+      expect(onEditorBridgeChange.mock.calls.length).toBeLessThanOrEqual(2)
+    })
+    expect(onEditorBridgeChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        editor: expect.objectContaining({ dirty: false }),
+        onSave: expect.any(Function),
+      }),
+    )
+  })
 })
 
 describe('TableDefinitionView クリック挙動', () => {
@@ -70,6 +96,18 @@ describe('TableDefinitionView クリック挙動', () => {
     // 既存値 'id' は破棄され、入力した 'x' だけが残る。
     const input = screen.getByDisplayValue('x') as HTMLInputElement
     expect(input.value).toBe('x')
+  })
+
+  it('選択済みセルで連続キー入力すると文字が追記される', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const cell = await screen.findByText('id')
+    await user.click(cell)
+    await user.keyboard('hoge')
+
+    const input = screen.getByDisplayValue('hoge') as HTMLInputElement
+    expect(input.value).toBe('hoge')
   })
 })
 
@@ -261,6 +299,17 @@ describe('TableDefinitionView キーボード操作', () => {
     expect(await screen.findByLabelText('PK')).toHaveAttribute('aria-checked', 'true')
   })
 
+  it('PKクリックでセル選択状態にならない', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const pk = await screen.findByLabelText('PK')
+    const td = pk.closest('td')!
+
+    await user.click(pk)
+    expect(td.className).not.toMatch(/activeCell/)
+  })
+
   it('選択済みセルで左右矢印キーで隣のセルへ移動できる', async () => {
     const user = userEvent.setup()
     render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
@@ -292,7 +341,7 @@ describe('TableDefinitionView キーボード操作', () => {
     expect(screen.getByDisplayValue('name')).toBeInTheDocument()
   })
 
-  it('編集中は矢印キーでセル移動しない', async () => {
+  it('編集中は左右矢印キーでセル移動しない', async () => {
     const user = userEvent.setup()
     const definition: TableDefinition = {
       schemaVersion: 1,
@@ -308,11 +357,31 @@ describe('TableDefinitionView キーボード操作', () => {
     await user.click(screen.getByText('id'))
     const input = screen.getByDisplayValue('id') as HTMLInputElement
 
+    await user.keyboard('{ArrowRight}')
+
+    expect(screen.getByDisplayValue('id')).toBe(input)
+  })
+
+  it('編集中でも上下矢印キーで同じ列の別行へ移動できる', async () => {
+    const user = userEvent.setup()
+    const definition: TableDefinition = {
+      schemaVersion: 1,
+      name: 'users',
+      columns: [
+        { name: 'id', dataType: 'bigint' },
+        { name: 'name', dataType: 'varchar' },
+      ],
+    }
+    render(<TableDefinitionView definition={definition} path="/tmp/users.table.json" />)
+
+    await user.click(await screen.findByText('id'))
+    await user.click(screen.getByText('id'))
     await user.keyboard('{ArrowDown}')
 
-    // 編集は継続し、下の行へは移動しない。
-    expect(screen.getByDisplayValue('id')).toBe(input)
+    // 移動先は選択のみ（編集モードには入らない）。
     expect(screen.queryByDisplayValue('name')).toBeNull()
+    await user.keyboard('x')
+    expect(screen.getByDisplayValue('x')).toBeInTheDocument()
   })
 })
 

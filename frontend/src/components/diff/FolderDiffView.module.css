@@ -148,10 +148,6 @@
   color: var(--color-slate-900);
 }
 
-.row:hover:not(:disabled) {
-  background: var(--overlay-slate-50);
-}
-
 .row:disabled {
   cursor: default;
 }

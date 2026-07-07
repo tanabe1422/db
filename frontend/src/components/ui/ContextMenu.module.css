@@ -9,28 +9,6 @@
   box-shadow: 0 4px 12px rgb(15 23 42 / 0.12);
 }
 
-.item {
-  display: block;
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  font: inherit;
-  font-size: 0.8125rem;
-  color: var(--color-slate-800);
-  padding: 0.375rem 0.75rem;
-  cursor: pointer;
-}
-
-.item:hover:not(:disabled) {
-  background: var(--overlay-slate-50);
-}
-
-.item:disabled {
-  color: var(--color-slate-400);
-  cursor: default;
-}
-
 .separator {
   height: 1px;
   margin: 0.25rem 0;

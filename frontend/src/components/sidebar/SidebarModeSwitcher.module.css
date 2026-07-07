@@ -35,11 +35,6 @@
   color: var(--color-blue-700);
 }
 
-.modeActive:hover:not(:disabled) {
-  background: var(--overlay-blue-100), var(--color-blue-100);
-  color: var(--color-blue-700);
-}
-
 .activeMode {
   display: inline-flex;
   align-items: center;
@@ -70,27 +65,10 @@
   box-shadow: 0 4px 12px rgb(15 23 42 / 0.12);
 }
 
-.menuItem {
+.menuItemRow {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  width: 100%;
-  border: none;
-  border-radius: 0.25rem;
-  background: transparent;
-  text-align: left;
-  font: inherit;
-  font-size: 0.8125rem;
-  color: var(--color-slate-800);
   padding: 0.375rem 0.5rem;
-  cursor: pointer;
-}
-
-.menuItem:hover:not(:disabled) {
-  background: var(--overlay-slate-50);
-}
-
-.menuItem:disabled {
-  color: var(--color-slate-400);
-  cursor: default;
+  border-radius: 0.25rem;
 }
