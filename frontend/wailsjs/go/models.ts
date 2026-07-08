@@ -40,6 +40,26 @@ export namespace app {
 	        this.size = source["size"];
 	    }
 	}
+	export class LaunchAction {
+	    type: string;
+	    paths?: string[];
+	    label?: string;
+	    left?: string;
+	    right?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new LaunchAction(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.type = source["type"];
+	        this.paths = source["paths"];
+	        this.label = source["label"];
+	        this.left = source["left"];
+	        this.right = source["right"];
+	    }
+	}
 	export class ScriptResult {
 	    sql: string;
 	    relPath: string;
@@ -154,6 +174,25 @@ export namespace git {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.isRepo = source["isRepo"];
 	        this.repoRoot = source["repoRoot"];
+	    }
+	}
+
+}
+
+export namespace options {
+	
+	export class SecondInstanceData {
+	    Args: string[];
+	    WorkingDirectory: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SecondInstanceData(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Args = source["Args"];
+	        this.WorkingDirectory = source["WorkingDirectory"];
 	    }
 	}
 

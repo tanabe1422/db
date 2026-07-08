@@ -18,32 +18,57 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const paths = [
-  'C:\\project\\src\\db\\users.table.json',
-  'C:\\project\\src\\db\\orders.table.json',
-  'C:\\project\\src\\db\\order_items.table.json',
+const fileTabs = [
+  {
+    kind: 'file' as const,
+    id: 'C:\\project\\src\\db\\users.table.json',
+    path: 'C:\\project\\src\\db\\users.table.json',
+  },
+  {
+    kind: 'file' as const,
+    id: 'C:\\project\\src\\db\\orders.table.json',
+    path: 'C:\\project\\src\\db\\orders.table.json',
+  },
+  {
+    kind: 'file' as const,
+    id: 'C:\\project\\src\\db\\order_items.table.json',
+    path: 'C:\\project\\src\\db\\order_items.table.json',
+  },
 ]
 
 export const Single: Story = {
   args: {
-    paths: [paths[0]],
-    activePath: paths[0],
+    tabs: [fileTabs[0]],
+    activeTabId: fileTabs[0].id,
     dirtyPaths: new Set(),
   },
 }
 
 export const Multiple: Story = {
   args: {
-    paths,
-    activePath: paths[1],
+    tabs: fileTabs,
+    activeTabId: fileTabs[1].id,
     dirtyPaths: new Set(),
   },
 }
 
 export const WithDirty: Story = {
   args: {
-    paths,
-    activePath: paths[0],
-    dirtyPaths: new Set([paths[0], paths[2]]),
+    tabs: [
+      ...fileTabs,
+      {
+        kind: 'diff',
+        id: 'diff-preview:1',
+        label: 'users.table.json (diff)',
+        relPath: 'users.table.json',
+        source: {
+          type: 'inline',
+          leftJson: '{"tableName":"users"}',
+          rightJson: '{"tableName":"users","columns":[]}',
+        },
+      },
+    ],
+    activeTabId: fileTabs[0].id,
+    dirtyPaths: new Set([fileTabs[0].path, fileTabs[2].path]),
   },
 }

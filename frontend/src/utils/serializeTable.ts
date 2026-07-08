@@ -92,9 +92,10 @@ function lengthToText(value: Column['length']): string {
   return String(value)
 }
 
-function defaultValueToText(value: Column['defaultValue']): string {
+// 旧形式（number / boolean / null）を含む JSON 値を SQL リテラル文字列へ正規化する。
+export function normalizeDefaultValue(value: unknown): string | undefined {
   if (value === undefined) {
-    return ''
+    return undefined
   }
   if (value === null) {
     return 'NULL'
@@ -102,7 +103,50 @@ function defaultValueToText(value: Column['defaultValue']): string {
   if (typeof value === 'boolean') {
     return value ? 'true' : 'false'
   }
+  if (typeof value === 'number') {
+    return String(value)
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed === '' ? undefined : trimmed
+  }
   return String(value)
+}
+
+// 読み込み時に defaultValue を string 形式へ正規化する（旧 JSON 互換）。
+export function normalizeTableDefinition(data: unknown): unknown {
+  if (typeof data !== 'object' || data === null || !('columns' in data)) {
+    return data
+  }
+
+  const record = data as Record<string, unknown>
+  const columns = record.columns
+  if (!Array.isArray(columns)) {
+    return data
+  }
+
+  return {
+    ...record,
+    columns: columns.map((column) => {
+      if (typeof column !== 'object' || column === null) {
+        return column
+      }
+      const entry = { ...(column as Record<string, unknown>) }
+      if ('defaultValue' in entry) {
+        const normalized = normalizeDefaultValue(entry.defaultValue)
+        if (normalized === undefined) {
+          delete entry.defaultValue
+        } else {
+          entry.defaultValue = normalized
+        }
+      }
+      return entry
+    }),
+  }
+}
+
+function defaultValueToText(value: Column['defaultValue'] | unknown): string {
+  return normalizeDefaultValue(value) ?? ''
 }
 
 function loadIndexMarkers(
@@ -205,25 +249,9 @@ function parseIntOrUndefined(text: string): number | undefined {
   return Number.isFinite(value) ? Math.trunc(value) : undefined
 }
 
-function parseDefaultValue(text: string): Column['defaultValue'] | undefined {
+function parseDefaultValue(text: string): string | undefined {
   const trimmed = text.trim()
-  if (trimmed === '') {
-    return undefined
-  }
-  if (trimmed.toUpperCase() === 'NULL') {
-    return null
-  }
-  if (trimmed === 'true') {
-    return true
-  }
-  if (trimmed === 'false') {
-    return false
-  }
-  const num = Number(trimmed)
-  if (trimmed !== '' && Number.isFinite(num) && String(num) === trimmed) {
-    return num
-  }
-  return text
+  return trimmed === '' ? undefined : trimmed
 }
 
 // マーカーグリッド -> indexes 配列。マーカーが1つも無い列は省略（詰める）。

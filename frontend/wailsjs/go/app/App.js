@@ -38,8 +38,16 @@ export function GetFileStat(arg1) {
   return window['go']['app']['App']['GetFileStat'](arg1);
 }
 
+export function GetLaunchActions() {
+  return window['go']['app']['App']['GetLaunchActions']();
+}
+
 export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
+}
+
+export function GrantExternalFile(arg1) {
+  return window['go']['app']['App']['GrantExternalFile'](arg1);
 }
 
 export function ImportXlsxDirectory(arg1, arg2) {
@@ -64,6 +72,10 @@ export function MoveDirectory(arg1, arg2) {
 
 export function MoveFile(arg1, arg2) {
   return window['go']['app']['App']['MoveFile'](arg1, arg2);
+}
+
+export function OnSecondInstanceLaunch(arg1) {
+  return window['go']['app']['App']['OnSecondInstanceLaunch'](arg1);
 }
 
 export function OpenTerminal(arg1) {

@@ -29,7 +29,7 @@
       "notNull": true,
       "precision": 18,
       "scale": 2,
-      "defaultValue": 0
+      "defaultValue": "0"
     },
     {
       "name": "createdAt",

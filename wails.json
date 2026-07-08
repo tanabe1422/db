@@ -9,5 +9,16 @@
   "author": {
     "name": "",
     "email": ""
+  },
+  "info": {
+    "fileAssociations": [
+      {
+        "ext": "table.json",
+        "name": "Table Definition",
+        "description": "db-gui Table Definition File",
+        "iconName": "tableJsonFileIcon",
+        "role": "Editor"
+      }
+    ]
   }
 }

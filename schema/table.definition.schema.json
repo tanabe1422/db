@@ -135,8 +135,8 @@
           "description": "NOT NULL 制約（デフォルト false = NULL 許可）"
         },
         "defaultValue": {
-          "description": "デフォルト値",
-          "type": ["string", "number", "boolean", "null"]
+          "description": "DEFAULT 句にそのまま埋め込む SQL リテラル断片（例: NULL, 0, N'Hoge'）",
+          "type": "string"
         },
         "length": {
           "oneOf": [

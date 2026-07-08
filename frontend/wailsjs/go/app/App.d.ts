@@ -3,6 +3,7 @@
 import {config} from '../models';
 import {app} from '../models';
 import {git} from '../models';
+import {options} from '../models';
 import {scanner} from '../models';
 
 export function AddDirectory(arg1:string):Promise<config.Settings>;
@@ -23,7 +24,11 @@ export function GenerateMigrateScript(arg1:string,arg2:string):Promise<app.Scrip
 
 export function GetFileStat(arg1:string):Promise<app.FileStat>;
 
+export function GetLaunchActions():Promise<Array<app.LaunchAction>>;
+
 export function GetSettings():Promise<config.Settings>;
+
+export function GrantExternalFile(arg1:string):Promise<void>;
 
 export function ImportXlsxDirectory(arg1:string,arg2:string):Promise<app.XlsxImportResult>;
 
@@ -36,6 +41,8 @@ export function ListGitTableFiles(arg1:string,arg2:string):Promise<Array<string>
 export function MoveDirectory(arg1:string,arg2:number):Promise<config.Settings>;
 
 export function MoveFile(arg1:string,arg2:string):Promise<string>;
+
+export function OnSecondInstanceLaunch(arg1:options.SecondInstanceData):Promise<void>;
 
 export function OpenTerminal(arg1:string):Promise<void>;
 

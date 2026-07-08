@@ -67,15 +67,6 @@ export function columnScale(column: Column): string {
   return column.scale != null ? String(column.scale) : ''
 }
 
-export function formatDefault(value: Column['defaultValue']): string {
-  if (value === undefined) {
-    return ''
-  }
-  if (value === null) {
-    return 'NULL'
-  }
-  if (typeof value === 'boolean') {
-    return value ? 'true' : 'false'
-  }
-  return String(value)
+export function formatDefault(value: Column['defaultValue'] | undefined): string {
+  return value ?? ''
 }

@@ -17,7 +17,7 @@ type Column struct {
 	NameJa       string        `json:"nameJa,omitempty"`
 	DataType     string        `json:"dataType"`
 	NotNull      bool          `json:"notNull,omitempty"`
-	DefaultValue any           `json:"defaultValue,omitempty"`
+	DefaultValue string        `json:"defaultValue,omitempty"`
 	Length       *ColumnLength `json:"length,omitempty"`
 	Precision    *int          `json:"precision,omitempty"`
 	Scale        *int          `json:"scale,omitempty"`

@@ -1,4 +1,5 @@
 import type { TableDefinition } from '../types'
+import { normalizeTableDefinition } from '../utils/serializeTable'
 import { type TableDiff, diffTable } from './diffTable'
 
 export type FileDiffStatus = 'changed' | 'same' | 'added' | 'removed' | 'error'
@@ -29,7 +30,8 @@ interface ParsedFile {
 
 function parseDefinition(raw: string): ParsedFile {
   try {
-    return { def: JSON.parse(raw) as TableDefinition }
+    const parsed = normalizeTableDefinition(JSON.parse(raw))
+    return { def: parsed as TableDefinition }
   } catch {
     return { def: null, error: 'JSON の解析に失敗しました' }
   }

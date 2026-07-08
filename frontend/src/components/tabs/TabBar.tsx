@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 
+import type { WorkspaceTab } from '../../types/workspaceTab'
+import { tabBaseName, tabTooltip } from '../../types/workspaceTab'
 import { relPathWithinRoot } from '../../utils/relPathWithinRoot'
 import { cx } from '../../utils/cx'
 import { ContextMenu } from '../ui/ContextMenu'
@@ -9,23 +11,18 @@ import { Tooltip } from '../ui/Tooltip'
 import styles from './TabBar.module.css'
 
 interface TabBarProps {
-  paths: string[]
-  activePath: string
+  tabs: WorkspaceTab[]
+  activeTabId: string
   dirtyPaths: Set<string>
   activeDirectory: string
-  onActivate: (path: string) => void
-  onClose: (path: string) => void
+  onActivate: (tabId: string) => void
+  onClose: (tabId: string) => void
   onCloseAllSaved: () => void
 }
 
-function baseName(path: string): string {
-  const parts = path.split(/[\\/]/)
-  return parts[parts.length - 1] || path
-}
-
 export function TabBar({
-  paths,
-  activePath,
+  tabs,
+  activeTabId,
   dirtyPaths,
   activeDirectory,
   onActivate,
@@ -36,22 +33,24 @@ export function TabBar({
   const tabRefs = useRef(new Map<string, HTMLDivElement>())
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
 
-  const savedCount = paths.filter((path) => !dirtyPaths.has(path)).length
+  const savedCount = tabs.filter(
+    (tab) => tab.kind === 'diff' || !dirtyPaths.has(tab.path),
+  ).length
 
   useEffect(() => {
-    if (!activePath) {
+    if (!activeTabId) {
       return
     }
 
     const bar = barRef.current
-    const tab = tabRefs.current.get(activePath)
+    const tab = tabRefs.current.get(activeTabId)
     if (!bar || !tab) {
       return
     }
 
     requestAnimationFrame(() => {
       const currentBar = barRef.current
-      const currentTab = tabRefs.current.get(activePath)
+      const currentTab = tabRefs.current.get(activeTabId)
       if (!currentBar || !currentTab) {
         return
       }
@@ -65,7 +64,7 @@ export function TabBar({
         currentBar.scrollLeft = currentTab.offsetLeft
       }
     })
-  }, [activePath, paths])
+  }, [activeTabId, tabs])
 
   useEffect(() => {
     const el = barRef.current
@@ -84,7 +83,7 @@ export function TabBar({
 
     el.addEventListener('wheel', handleWheel, { passive: false })
     return () => el.removeEventListener('wheel', handleWheel)
-  }, [paths.length])
+  }, [tabs.length])
 
   function openContextMenu(event: React.MouseEvent) {
     event.preventDefault()
@@ -94,47 +93,51 @@ export function TabBar({
   return (
     <>
       <div ref={barRef} className={styles.bar} role="tablist">
-        {paths.map((path) => {
-          const isActive = path === activePath
-          const isDirty = dirtyPaths.has(path)
-          const tooltip = relPathWithinRoot(activeDirectory, path) || baseName(path)
+        {tabs.map((tab) => {
+          const isActive = tab.id === activeTabId
+          const isDirty = tab.kind === 'file' && dirtyPaths.has(tab.path)
+          const tooltip =
+            tab.kind === 'file'
+              ? relPathWithinRoot(activeDirectory, tab.path) || tabBaseName(tab)
+              : tabTooltip(tab)
+          const label = tab.kind === 'file' ? tabBaseName(tab) : tab.label
           return (
-            <Tooltip key={path} content={tooltip} wrap>
+            <Tooltip key={tab.id} content={tooltip} wrap>
               <div
                 ref={(element) => {
                   if (element) {
-                    tabRefs.current.set(path, element)
+                    tabRefs.current.set(tab.id, element)
                   } else {
-                    tabRefs.current.delete(path)
+                    tabRefs.current.delete(tab.id)
                   }
                 }}
                 role="tab"
                 aria-selected={isActive}
                 className={`${styles.tab}${isActive ? ` ${styles.active}` : ''}`}
-                onClick={() => onActivate(path)}
+                onClick={() => onActivate(tab.id)}
                 onContextMenu={openContextMenu}
                 onMouseDown={(event) => {
                   if (event.button === 1) {
                     event.preventDefault()
-                    onClose(path)
+                    onClose(tab.id)
                   }
                 }}
               >
-              <span className={styles.label}>{baseName(path)}</span>
-              <IconButton
-                variant="plain"
-                size="sm"
-                className={cx(styles.close, isDirty && styles.dirty)}
-                aria-label="閉じる"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onClose(path)
-                }}
-              >
-                <span className={styles.dot} aria-hidden="true" />
-                <X size={14} aria-hidden="true" className={styles.closeIcon} />
-              </IconButton>
-            </div>
+                <span className={styles.label}>{label}</span>
+                <IconButton
+                  variant="plain"
+                  size="sm"
+                  className={cx(styles.close, isDirty && styles.dirty)}
+                  aria-label="閉じる"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onClose(tab.id)
+                  }}
+                >
+                  <span className={styles.dot} aria-hidden="true" />
+                  <X size={14} aria-hidden="true" className={styles.closeIcon} />
+                </IconButton>
+              </div>
             </Tooltip>
           )
         })}

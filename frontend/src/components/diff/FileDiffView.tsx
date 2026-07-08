@@ -16,6 +16,7 @@ interface FileDiffViewProps {
   relPath: string
   diff: TableDiff
   loading?: boolean
+  variant?: 'workspace' | 'embedded'
   onBack: () => void
   onReload?: () => void
 }
@@ -24,10 +25,11 @@ export function FileDiffView({
   relPath,
   diff,
   loading = false,
+  variant = 'workspace',
   onBack,
   onReload,
 }: FileDiffViewProps) {
-  useMouseBackButton(onBack)
+  useMouseBackButton(variant === 'workspace' ? onBack : () => undefined)
 
   const { leftRef, rightRef, onLeftScroll, onRightScroll } =
     useSyncedHorizontalScroll()
@@ -37,10 +39,12 @@ export function FileDiffView({
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Button variant="secondary" className={styles.backBtn} onClick={onBack}>
-          <ArrowLeft size={16} aria-hidden="true" />
-          ファイル一覧に戻る
-        </Button>
+        {variant === 'workspace' && (
+          <Button variant="secondary" className={styles.backBtn} onClick={onBack}>
+            <ArrowLeft size={16} aria-hidden="true" />
+            ファイル一覧に戻る
+          </Button>
+        )}
         <Tooltip content={relPath} wrap>
           <span className={styles.fileName}>{relPath}</span>
         </Tooltip>

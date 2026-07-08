@@ -1,0 +1,23 @@
+{
+  "label": "users.table.json",
+  "left": {
+    "tableName": "users",
+    "nameJa": "ユーザー",
+    "description": "アプリ利用者マスタ",
+    "columns": [
+      { "name": "id", "nameJa": "ID", "dataType": "int", "notNull": true },
+      { "name": "email", "nameJa": "メール", "dataType": "nvarchar", "length": 255, "notNull": true }
+    ],
+    "primaryKey": ["id"]
+  },
+  "right": {
+    "tableName": "users",
+    "nameJa": "ユーザー（改訂）",
+    "description": "アプリ利用者マスタ v2",
+    "columns": [
+      { "name": "id", "nameJa": "ID", "dataType": "int", "notNull": true },
+      { "name": "email", "nameJa": "メール", "dataType": "nvarchar", "length": 320, "notNull": true, "unique": true }
+    ],
+    "primaryKey": ["id"]
+  }
+}

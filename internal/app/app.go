@@ -25,14 +25,50 @@ type App struct {
 
 	watchMu     sync.Mutex
 	watchCancel context.CancelFunc
+
+	grantedMu    sync.RWMutex
+	grantedPaths map[string]struct{}
+
+	launchMu             sync.Mutex
+	pendingLaunchActions []LaunchAction
 }
 
 func New() *App {
-	return &App{}
+	return &App{
+		grantedPaths: make(map[string]struct{}),
+	}
 }
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	a.captureLaunchArgs(os.Args[1:])
+}
+
+// GrantExternalFile allows read/write access to a *.table.json file opened from outside
+// the configured directories for the current session.
+func (a *App) GrantExternalFile(path string) error {
+	abs, err := filepath.Abs(filepath.Clean(path))
+	if err != nil {
+		return err
+	}
+
+	if !strings.HasSuffix(abs, tableJSONSuffix) {
+		return errors.New("not a *.table.json file")
+	}
+
+	info, err := os.Stat(abs)
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return errors.New("not a file")
+	}
+
+	a.grantedMu.Lock()
+	a.grantedPaths[abs] = struct{}{}
+	a.grantedMu.Unlock()
+
+	return nil
 }
 
 func (a *App) Shutdown(ctx context.Context) {
@@ -156,7 +192,7 @@ func (a *App) ReadTableFile(path string) (string, error) {
 		return "", err
 	}
 
-	if !isUnderConfiguredDirectory(abs, settings.Directories) {
+	if !a.canAccessPath(abs, settings.Directories) {
 		return "", errors.New("path is outside the configured directories")
 	}
 
@@ -239,11 +275,22 @@ func (a *App) WriteTableFile(path string, content string) error {
 		return err
 	}
 
-	if !isUnderConfiguredDirectory(abs, settings.Directories) {
+	if !a.canAccessPath(abs, settings.Directories) {
 		return errors.New("path is outside the configured directories")
 	}
 
 	return os.WriteFile(abs, []byte(content), 0o644)
+}
+
+func (a *App) canAccessPath(abs string, directories []string) bool {
+	if isUnderConfiguredDirectory(abs, directories) {
+		return true
+	}
+
+	a.grantedMu.RLock()
+	defer a.grantedMu.RUnlock()
+	_, ok := a.grantedPaths[abs]
+	return ok
 }
 
 func isUnderConfiguredDirectory(target string, directories []string) bool {

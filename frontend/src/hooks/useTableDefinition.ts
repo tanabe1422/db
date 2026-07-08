@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { TableDefinition } from '../types'
+import {
+  normalizeTableDefinition,
+} from '../utils/serializeTable'
 import { errorMessage } from '../lib/errorMessage'
 import { readTableFile } from '../lib/wails'
 import {
@@ -50,9 +53,10 @@ export function useTableDefinition(path: string) {
         return
       }
 
-      const errors = validateTableDefinition(parsed)
+      const normalized = normalizeTableDefinition(parsed)
+      const errors = validateTableDefinition(normalized)
       setState({
-        definition: parsed as TableDefinition,
+        definition: normalized as TableDefinition,
         errors,
         loading: false,
         error: null,

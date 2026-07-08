@@ -40,6 +40,10 @@ func main() {
 		},
 		OnStartup:  application.Startup,
 		OnShutdown: application.Shutdown,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "7c4e9f2a-1b8d-4e6a-9f3c-2d5a8b1e0c47",
+			OnSecondInstanceLaunch: application.OnSecondInstanceLaunch,
+		},
 		Bind: []interface{}{
 			application,
 		},

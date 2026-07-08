@@ -46,7 +46,7 @@ export interface Column {
   nameJa?: string
   dataType: string
   notNull?: boolean
-  defaultValue?: string | number | boolean | null
+  defaultValue?: string
   length?: number | 'max'
   precision?: number
   scale?: number

@@ -26,6 +26,8 @@ import { useOpenTerminal } from './hooks/useOpenTerminal'
 import { useSettings } from './hooks/useSettings'
 import { useGenBatchProgress } from './hooks/useGenBatchProgress'
 import { useTabWorkspace } from './hooks/useTabWorkspace'
+import { useLaunchActions } from './hooks/useLaunchActions'
+import { DiffTabPanel } from './components/workspace/DiffTabPanel'
 import { exportGitMigrateScripts, exportMigrateScripts } from './lib/scriptExport'
 import { errorMessage } from './lib/errorMessage'
 import type { GitCommit, TreeNode } from './types'
@@ -49,12 +51,14 @@ function App() {
   const [rightCommit, setRightCommit] = useState<GitCommit | null>(null)
 
   const {
-    openPaths,
-    activePath,
+    tabs,
+    activeTabId,
+    activeFilePath,
     dirtyPaths,
     closingPath,
-    setActivePath,
+    setActiveTabId,
     handleSelectFile,
+    handleOpenDiffTab,
     updateDirty,
     handleRequestClose,
     handleConfirmClose,
@@ -103,6 +107,12 @@ function App() {
     setMode(nextMode)
   }, [])
 
+  useLaunchActions({
+    onOpenFile: handleSelectFile,
+    onOpenDiffTab: handleOpenDiffTab,
+    setMode,
+  })
+
   const handleExportMigrateScripts = useCallback(() => {
     if (!settings.activeDirectory) {
       return
@@ -148,7 +158,7 @@ function App() {
   ])
 
   const activeIsTextFile =
-    activePath !== '' && getTreeFileKindFromPath(activePath) === 'sql'
+    activeFilePath !== '' && getTreeFileKindFromPath(activeFilePath) === 'sql'
 
   return (
     <>
@@ -202,9 +212,9 @@ function App() {
                 tree={tree}
                 loading={loading}
                 error={error}
-                selectedPath={activePath}
+                selectedPath={activeFilePath}
                 onSelectFile={handleSelectFile}
-                onRescan={() => void rescan()}
+                onRescan={() => void rescan({ silent: true })}
               />
             )}
           </SidebarPanelLayout>
@@ -240,37 +250,45 @@ function App() {
             </div>
           ) : (
             <div className={styles.workspace}>
-              {openPaths.length > 0 && (
+              {tabs.length > 0 && (
                 <TabBar
-                  paths={openPaths}
-                  activePath={activePath}
+                  tabs={tabs}
+                  activeTabId={activeTabId}
                   dirtyPaths={dirtyPaths}
                   activeDirectory={settings.activeDirectory}
-                  onActivate={setActivePath}
+                  onActivate={setActiveTabId}
                   onClose={handleRequestClose}
                   onCloseAllSaved={closeAllSavedTabs}
                 />
               )}
               <div className={cx(styles.content, activeIsTextFile && styles.contentText)}>
-                {openPaths.length === 0 ? (
+                {tabs.length === 0 ? (
                   <div className={styles.placeholder}>
                     <h2>テーブル定義を選択</h2>
                     <p>左のパネルから *.table.json ファイルを選択してください。</p>
                   </div>
                 ) : (
-                  openPaths.map((path) => (
+                  tabs.map((tab) => (
                     <div
-                      key={path}
+                      key={tab.id}
                       className={styles.panel}
-                      style={{ display: path === activePath ? 'block' : 'none' }}
+                      style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
                     >
-                      <WorkspaceFilePanel
-                        path={path}
-                        isActive={path === activePath}
-                        inlineToolbar={false}
-                        onDirtyChange={(dirty) => updateDirty(path, dirty)}
-                        onEditorBridgeChange={setEditorBridge}
-                      />
+                      {tab.kind === 'file' ? (
+                        <WorkspaceFilePanel
+                          path={tab.path}
+                          isActive={tab.id === activeTabId}
+                          inlineToolbar={false}
+                          onDirtyChange={(dirty) => updateDirty(tab.path, dirty)}
+                          onEditorBridgeChange={setEditorBridge}
+                        />
+                      ) : (
+                        <DiffTabPanel
+                          label={tab.relPath}
+                          source={tab.source}
+                          isActive={tab.id === activeTabId}
+                        />
+                      )}
                     </div>
                   ))
                 )}
@@ -287,7 +305,7 @@ function App() {
         onRemove={(path) => void handleRemove(path)}
         onSetActive={(path) => void handleSetActive(path)}
         onMove={(path, offset) => void moveDirectory(path, offset)}
-        onAISetupComplete={() => void rescan()}
+        onAISetupComplete={() => void rescan({ silent: true })}
       />
 
       <ConfirmDialog

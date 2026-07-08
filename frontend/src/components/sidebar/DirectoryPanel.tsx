@@ -54,11 +54,11 @@ export function DirectoryPanel({
             上部のフォルダボタンから参照ディレクトリを追加してください。
           </p>
         )}
-        {activeDirectory && loading && (
+        {activeDirectory && loading && !tree && (
           <p className={styles.empty}>スキャン中...</p>
         )}
         {error && <p className={styles.error}>{error}</p>}
-        {activeDirectory && !loading && !error && tree && (
+        {activeDirectory && !error && tree && (
           <>
             {tree.children.length === 0 && (
               <p className={styles.empty}>

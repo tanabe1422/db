@@ -1,14 +1,44 @@
 import { useCallback, useState } from 'react'
 
+import type { DiffTabSource, WorkspaceTab } from '../types/workspaceTab'
+import {
+  diffTabIdFromFiles,
+  diffTabIdFromInline,
+  diffTabLabel,
+} from '../types/workspaceTab'
+
 export function useTabWorkspace() {
-  const [openPaths, setOpenPaths] = useState<string[]>([])
-  const [activePath, setActivePath] = useState('')
+  const [tabs, setTabs] = useState<WorkspaceTab[]>([])
+  const [activeTabId, setActiveTabId] = useState('')
   const [dirtyPaths, setDirtyPaths] = useState<Set<string>>(new Set())
-  const [closingPath, setClosingPath] = useState<string | null>(null)
+  const [closingTabId, setClosingTabId] = useState<string | null>(null)
 
   const handleSelectFile = useCallback((path: string) => {
-    setOpenPaths((prev) => (prev.includes(path) ? prev : [...prev, path]))
-    setActivePath(path)
+    setTabs((prev) => {
+      const existing = prev.find((tab) => tab.kind === 'file' && tab.path === path)
+      if (existing) {
+        return prev
+      }
+      return [...prev, { kind: 'file', id: path, path }]
+    })
+    setActiveTabId(path)
+  }, [])
+
+  const handleOpenDiffTab = useCallback((source: DiffTabSource, label: string) => {
+    const id =
+      source.type === 'files'
+        ? diffTabIdFromFiles(source.leftPath, source.rightPath)
+        : diffTabIdFromInline(source.leftJson, source.rightJson)
+    const tabLabel = diffTabLabel(label)
+
+    setTabs((prev) => {
+      const existing = prev.find((tab) => tab.id === id)
+      if (existing) {
+        return prev
+      }
+      return [...prev, { kind: 'diff', id, label: tabLabel, relPath: label, source }]
+    })
+    setActiveTabId(id)
   }, [])
 
   const updateDirty = useCallback((path: string, dirty: boolean) => {
@@ -26,72 +56,93 @@ export function useTabWorkspace() {
     })
   }, [])
 
-  const closeTab = useCallback((path: string) => {
-    setOpenPaths((prev) => {
-      const idx = prev.indexOf(path)
-      const next = prev.filter((p) => p !== path)
-      setActivePath((current) => {
-        if (current !== path) {
+  const closeTab = useCallback((tabId: string) => {
+    setTabs((prev) => {
+      const idx = prev.findIndex((tab) => tab.id === tabId)
+      const next = prev.filter((tab) => tab.id !== tabId)
+      setActiveTabId((current) => {
+        if (current !== tabId) {
           return current
         }
-        return next.length === 0 ? '' : next[Math.min(idx, next.length - 1)]
+        return next.length === 0 ? '' : next[Math.min(idx, next.length - 1)].id
       })
       return next
     })
     setDirtyPaths((prev) => {
-      if (!prev.has(path)) {
+      if (!prev.has(tabId)) {
         return prev
       }
       const cloned = new Set(prev)
-      cloned.delete(path)
+      cloned.delete(tabId)
       return cloned
     })
   }, [])
 
   const handleRequestClose = useCallback(
-    (path: string) => {
-      if (dirtyPaths.has(path)) {
-        setClosingPath(path)
-      } else {
-        closeTab(path)
+    (tabId: string) => {
+      const tab = tabs.find((item) => item.id === tabId)
+      if (tab?.kind === 'file' && dirtyPaths.has(tab.path)) {
+        setClosingTabId(tabId)
+        return
       }
+      closeTab(tabId)
     },
-    [closeTab, dirtyPaths],
+    [closeTab, dirtyPaths, tabs],
   )
 
   const handleConfirmClose = useCallback(() => {
-    if (closingPath) {
-      closeTab(closingPath)
+    if (closingTabId) {
+      closeTab(closingTabId)
     }
-    setClosingPath(null)
-  }, [closeTab, closingPath])
+    setClosingTabId(null)
+  }, [closeTab, closingTabId])
 
   const handleCancelClose = useCallback(() => {
-    setClosingPath(null)
+    setClosingTabId(null)
   }, [])
 
   const resetTabs = useCallback(() => {
-    setOpenPaths([])
-    setActivePath('')
+    setTabs([])
+    setActiveTabId('')
     setDirtyPaths(new Set())
-    setClosingPath(null)
+    setClosingTabId(null)
   }, [])
 
   const closeAllSavedTabs = useCallback(() => {
-    setOpenPaths((prev) => {
-      const next = prev.filter((p) => dirtyPaths.has(p))
-      setActivePath((current) => (next.includes(current) ? current : next.at(-1) ?? ''))
+    setTabs((prev) => {
+      const next = prev.filter(
+        (tab) => tab.kind === 'diff' || dirtyPaths.has(tab.path),
+      )
+      setActiveTabId((current) =>
+        next.some((tab) => tab.id === current) ? current : next.at(-1)?.id ?? '',
+      )
       return next
     })
   }, [dirtyPaths])
 
+  const activeTab = tabs.find((tab) => tab.id === activeTabId) ?? null
+  const activeFilePath = activeTab?.kind === 'file' ? activeTab.path : ''
+  const openPaths = tabs
+    .filter((tab): tab is Extract<WorkspaceTab, { kind: 'file' }> => tab.kind === 'file')
+    .map((tab) => tab.path)
+
   return {
+    tabs,
+    activeTabId,
+    activeTab,
+    activeFilePath,
     openPaths,
-    activePath,
+    activePath: activeFilePath,
     dirtyPaths,
-    closingPath,
-    setActivePath,
+    closingTabId,
+    closingPath:
+      closingTabId && tabs.find((tab) => tab.id === closingTabId)?.kind === 'file'
+        ? closingTabId
+        : null,
+    setActiveTabId,
+    setActivePath: setActiveTabId,
     handleSelectFile,
+    handleOpenDiffTab,
     updateDirty,
     handleRequestClose,
     handleConfirmClose,

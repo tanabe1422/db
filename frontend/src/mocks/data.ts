@@ -70,7 +70,7 @@ export const mockTableDefinition: TableDefinition = {
       precision: 18,
       scale: 2,
       notNull: true,
-      defaultValue: 0,
+      defaultValue: '0',
     },
     {
       name: 'createdAt',

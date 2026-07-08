@@ -23,7 +23,7 @@ func (a *App) absPathUnderDirs(path string) (string, error) {
 		return "", err
 	}
 
-	if !isUnderConfiguredDirectory(abs, settings.Directories) {
+	if !a.canAccessPath(abs, settings.Directories) {
 		return "", errors.New("path is outside the configured directories")
 	}
 

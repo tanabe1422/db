@@ -32,6 +32,14 @@ export interface AISetupResult {
   warnings: string[]
 }
 
+export interface LaunchAction {
+  type: 'open' | 'diff-files' | 'diff-preview' | string
+  paths?: string[]
+  label?: string
+  left?: string
+  right?: string
+}
+
 export interface WailsApp {
   GetSettings(): Promise<Settings>
   AddDirectory(path: string): Promise<Settings>
@@ -86,6 +94,8 @@ export interface WailsApp {
   CopyFile(srcPath: string, destDir: string): Promise<string>
   MoveFile(srcPath: string, destDir: string): Promise<string>
   InitAISetup(activeDirectory: string): Promise<AISetupResult>
+  GrantExternalFile(path: string): Promise<void>
+  GetLaunchActions(): Promise<LaunchAction[]>
 }
 
 declare global {
@@ -138,6 +148,8 @@ function getApp(): WailsApp | null {
 function isWailsRuntime(): boolean {
   return getApp() !== null
 }
+
+export { isWailsRuntime }
 
 function hasGitBindings(): boolean {
   return typeof getApp()?.ResolveGitRepo === 'function'
@@ -648,6 +660,23 @@ export async function initAISetup(
     tableJsonFailed: 0,
     warnings: [],
   }
+}
+
+export async function grantExternalFile(path: string): Promise<void> {
+  const app = getApp()
+  if (app?.GrantExternalFile) {
+    await app.GrantExternalFile(path)
+    return
+  }
+  console.info('[mock] grantExternalFile', path)
+}
+
+export async function getLaunchActions(): Promise<LaunchAction[]> {
+  const app = getApp()
+  if (app?.GetLaunchActions) {
+    return app.GetLaunchActions()
+  }
+  return []
 }
 
 function formatExportTimestamp(date: Date): string {
