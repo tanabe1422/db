@@ -73,6 +73,10 @@ export function TabBar({
     }
 
     function handleWheel(event: WheelEvent) {
+      if (event.ctrlKey || event.metaKey) {
+        return
+      }
+
       const bar = barRef.current
       if (!bar || bar.scrollWidth <= bar.clientWidth) {
         return

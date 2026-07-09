@@ -1,7 +1,18 @@
 import type { Preview } from '@storybook/react-vite'
+import type { ReactNode } from 'react'
 import '../src/index.css'
+import { GenBatchProgressProvider } from '../src/hooks/useGenBatchProgress'
+
+function withProviders(Story: () => ReactNode) {
+  return (
+    <GenBatchProgressProvider>
+      <Story />
+    </GenBatchProgressProvider>
+  )
+}
 
 const preview: Preview = {
+  decorators: [withProviders],
   parameters: {
     controls: {
       matchers: {

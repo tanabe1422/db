@@ -148,30 +148,17 @@
   background: var(--border-grid);
 }
 
-/* 変更セル = 黄 */
-.changedCell {
-  background: var(--color-yellow-200);
-}
-
-/* Diff ハイライトは PK 行背景より優先 */
-.diffTable tbody tr.pkRow td.changedCell {
+/* 変更セル = 黄（グリッド背景より優先） */
+.diffTable tbody td.changedCell {
   background: var(--color-yellow-200);
 }
 
 /* 追加（右側）= 緑 */
-.addedCell {
-  background: var(--color-green-200);
-}
-
-.diffTable tbody tr.pkRow td.addedCell {
+.diffTable tbody td.addedCell {
   background: var(--color-green-200);
 }
 
 /* 削除（左側）= 赤 */
-.removedCell {
-  background: var(--color-red-200);
-}
-
-.diffTable tbody tr.pkRow td.removedCell {
+.diffTable tbody td.removedCell {
   background: var(--color-red-200);
 }

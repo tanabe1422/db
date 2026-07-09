@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { EventsOn } from '../../wailsjs/runtime/runtime'
 import type { Settings, TreeNode } from '../types'
 import { errorMessage } from '../lib/errorMessage'
-import { scanActiveDirectory, startDirectoryWatch } from '../lib/wails'
+import { isWailsRuntime, scanActiveDirectory, startDirectoryWatch } from '../lib/wails'
 
 const RESCAN_DEBOUNCE_MS = 300
 
@@ -44,6 +44,10 @@ export function useDirectoryScan(activeDirectory: string) {
   }, [activeDirectory])
 
   useEffect(() => {
+    if (!isWailsRuntime()) {
+      return
+    }
+
     let timeout: number | undefined
     const unsubscribe = EventsOn('directory:changed', () => {
       window.clearTimeout(timeout)
