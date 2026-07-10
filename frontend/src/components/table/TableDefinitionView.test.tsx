@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
 
+import { copyCellText, readCellText } from '../../lib/gridClipboard'
 import type { TableDefinition } from '../../types'
 import { writeTableFile } from '../../lib/wails'
 import { TableDefinitionView } from './TableDefinitionView'
@@ -12,7 +13,14 @@ vi.mock('../../lib/wails', () => ({
   writeTableFile: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('../../lib/gridClipboard', () => ({
+  copyCellText: vi.fn().mockResolvedValue(undefined),
+  readCellText: vi.fn().mockResolvedValue(''),
+}))
+
 const mockWrite = vi.mocked(writeTableFile)
+const mockCopyCellText = vi.mocked(copyCellText)
+const mockReadCellText = vi.mocked(readCellText)
 
 function makeDefinition(): TableDefinition {
   return {
@@ -274,6 +282,97 @@ describe('TableDefinitionView データ型セル(combobox)', () => {
   })
 })
 
+describe('TableDefinitionView セルクリップボード', () => {
+  beforeEach(() => {
+    mockCopyCellText.mockClear()
+    mockReadCellText.mockClear()
+  })
+
+  function gridContainer() {
+    return document.querySelector('[tabindex="0"]') as HTMLDivElement
+  }
+
+  async function selectCell(text: string) {
+    const user = userEvent.setup()
+    await user.click(await screen.findByText(text))
+    await waitFor(() => {
+      expect(screen.getByText(text).closest('td')!.className).toMatch(/activeCell/)
+    })
+  }
+
+  function keyDownOnGrid(key: string, options?: { mod?: boolean }) {
+    const mod = options?.mod ?? false
+    fireEvent.keyDown(gridContainer(), {
+      key,
+      ctrlKey: mod,
+      metaKey: false,
+      getModifierState: (name: string) =>
+        mod && (name === 'Control' || name === 'Meta'),
+    })
+  }
+
+  it('選択済みセルで文字キーは編集を開始する', async () => {
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+    await selectCell('id')
+    keyDownOnGrid('x')
+
+    expect(screen.getByDisplayValue('x')).toBeInTheDocument()
+  })
+
+  it('dirty 後 Ctrl+Z で undo できる', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+    const checkboxes = await screen.findAllByRole('checkbox')
+    await user.click(checkboxes[0])
+    expect(screen.getByRole('button', { name: /元に戻す/ })).toBeEnabled()
+    keyDownOnGrid('z', { mod: true })
+    expect(screen.getByRole('button', { name: /元に戻す/ })).toBeDisabled()
+  })
+
+  it('選択済みセルで Ctrl+C するとセル内容をクリップボードにコピーする', async () => {
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+    await selectCell('id')
+    keyDownOnGrid('c', { mod: true })
+
+    await waitFor(() => {
+      expect(mockCopyCellText).toHaveBeenCalledWith('id')
+    })
+  })
+
+  it('選択済みセルで Ctrl+V するとクリップボード内容を貼り付ける', async () => {
+    mockReadCellText.mockResolvedValue('user_id')
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+    await selectCell('id')
+    keyDownOnGrid('v', { mod: true })
+
+    await waitFor(() => {
+      expect(mockReadCellText).toHaveBeenCalled()
+    })
+    expect(screen.getByText('user_id')).toBeInTheDocument()
+  })
+
+  it('選択済みセルで Delete すると内容を削除する', async () => {
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+    await selectCell('id')
+    keyDownOnGrid('Delete')
+
+    expect(screen.getByRole('button', { name: /保存/ })).toBeEnabled()
+    expect(screen.queryByText('id')).toBeNull()
+  })
+
+  it('編集中は Ctrl+C でクリップボード API を使わない', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" />)
+
+    const cell = await screen.findByText('id')
+    await user.click(cell)
+    await user.click(cell)
+    keyDownOnGrid('c', { mod: true })
+
+    expect(mockCopyCellText).not.toHaveBeenCalled()
+  })
+})
+
 describe('TableDefinitionView キーボード操作', () => {
   it('選択済みセルで Enter を押すと編集に入り全選択される', async () => {
     const user = userEvent.setup()
@@ -406,6 +505,18 @@ describe('TableDefinitionView 保存前検証', () => {
 
     expect(screen.getByText(/検証エラー/)).toBeInTheDocument()
     expect(mockWrite).not.toHaveBeenCalled()
+  })
+
+  it('フォーカスが外れていても Ctrl+S で保存できる', async () => {
+    const user = userEvent.setup()
+    render(<TableDefinitionView definition={makeDefinition()} path="/tmp/users.table.json" isActive />)
+
+    const checkboxes = await screen.findAllByRole('checkbox')
+    await user.click(checkboxes[0])
+    await user.click(document.body)
+    await user.keyboard('{Control>}s{/Control}')
+
+    expect(mockWrite).toHaveBeenCalledTimes(1)
   })
 
   it('フォーマットOKなら保存で writeTableFile が呼ばれる', async () => {

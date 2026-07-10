@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { copyCellText, readCellText } from '../../lib/gridClipboard'
 import { isDecimal } from '../../utils/columnMeta'
 import { cellValue, flagFor, markerFieldFor, markerPosition } from '../../lib/gridColumns'
 import { cleanDefinition, type DraftColumn } from '../../utils/serializeTable'
@@ -195,6 +196,59 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
     return requested
   }
 
+  function clearActiveCell() {
+    if (!active) {
+      return
+    }
+    const column = columnById(active.rowId)
+    if (!column) {
+      return
+    }
+    const kind = colKind(active.colId)
+    if (kind === 'check') {
+      const field = flagFor(active.colId)
+      if (column[field]) {
+        editor.toggleFlag(active.rowId, field)
+      }
+      return
+    }
+    setCellValue(active.rowId, column, active.colId, '')
+  }
+
+  async function copyActiveCellToClipboard() {
+    if (!active) {
+      return
+    }
+    const column = columnById(active.rowId)
+    if (!column) {
+      return
+    }
+    await copyCellText(cellValue(column, active.colId))
+  }
+
+  async function pasteToActiveCell() {
+    if (!active) {
+      return
+    }
+    const column = columnById(active.rowId)
+    if (!column) {
+      return
+    }
+    const text = await readCellText()
+    const kind = colKind(active.colId)
+    if (kind === 'check') {
+      const field = flagFor(active.colId)
+      const normalized = text.trim().toLowerCase()
+      const shouldCheck = normalized === '1' || normalized === 'true'
+      const isChecked = column[field]
+      if (shouldCheck !== isChecked) {
+        editor.toggleFlag(active.rowId, field)
+      }
+      return
+    }
+    setCellValue(active.rowId, column, active.colId, text)
+  }
+
   type MoveDirection = 'up' | 'down' | 'left' | 'right'
 
   function computeNext(current: ActiveCell, forward: boolean): ActiveCell | null {
@@ -296,7 +350,11 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    const mod = e.ctrlKey || e.metaKey
+    const mod =
+      e.ctrlKey ||
+      e.metaKey ||
+      e.getModifierState('Control') ||
+      e.getModifierState('Meta')
     const target = e.target as HTMLElement
 
     if (mod && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
@@ -314,12 +372,6 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
       editor.redo()
       return
     }
-    if (mod && (e.key === 's' || e.key === 'S')) {
-      e.preventDefault()
-      handleSave()
-      return
-    }
-
     // メタ入力欄では以降のグリッド操作を行わない（通常の入力挙動に任せる）。
     if (target.dataset?.meta) {
       return
@@ -327,7 +379,23 @@ export function useGridNavigation(editor: TableEditor): GridNavigation {
 
     if (mod && (e.key === 'c' || e.key === 'C') && !editing) {
       e.preventDefault()
+      if (active) {
+        void copyActiveCellToClipboard()
+        return
+      }
       editor.copySelected()
+      return
+    }
+
+    if (mod && (e.key === 'v' || e.key === 'V') && !editing && active) {
+      e.preventDefault()
+      void pasteToActiveCell()
+      return
+    }
+
+    if (e.key === 'Delete' && !editing && active) {
+      e.preventDefault()
+      clearActiveCell()
       return
     }
 

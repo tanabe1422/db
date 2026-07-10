@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import type { EditorToolbarBridge } from '../toolbar/editorToolbarBridge'
 import { cx } from '../../utils/cx'
@@ -19,6 +19,7 @@ import {
   uniqueIndexNumbers,
   uniqueNumbers,
 } from './navColumns'
+import { useSaveShortcut } from '../../hooks/useSaveShortcut'
 import { useGridNavigation } from './useGridNavigation'
 import styles from './TableDefinitionView.module.css'
 
@@ -98,6 +99,10 @@ function TableEditorGrid({
   const columns = editor.draft.columns
   const onSaveRef = useRef(nav.handleSave)
   onSaveRef.current = nav.handleSave
+  const saveFromShortcut = useCallback(() => {
+    onSaveRef.current()
+  }, [])
+  useSaveShortcut(isActive, saveFromShortcut)
 
   useEffect(() => {
     if (!isActive || inlineToolbar) {

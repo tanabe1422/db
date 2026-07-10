@@ -4,19 +4,21 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react'
 
 import { useDirectoryScan } from './useDirectoryScan'
 
-const eventsOn = vi.fn(() => () => undefined)
-const scanActiveDirectory = vi.fn().mockResolvedValue(null)
-const startDirectoryWatch = vi.fn().mockResolvedValue(undefined)
-const isWailsRuntime = vi.fn(() => false)
+const { eventsOn, scanActiveDirectory, startDirectoryWatch, isWailsRuntime } = vi.hoisted(() => ({
+  eventsOn: vi.fn(() => () => undefined),
+  scanActiveDirectory: vi.fn().mockResolvedValue(null),
+  startDirectoryWatch: vi.fn().mockResolvedValue(undefined),
+  isWailsRuntime: vi.fn(() => false),
+}))
 
 vi.mock('../../wailsjs/runtime/runtime', () => ({
-  EventsOn: (...args: unknown[]) => eventsOn(...args),
+  EventsOn: eventsOn,
 }))
 
 vi.mock('../lib/wails', () => ({
   isWailsRuntime: () => isWailsRuntime(),
-  scanActiveDirectory: (...args: unknown[]) => scanActiveDirectory(...args),
-  startDirectoryWatch: (...args: unknown[]) => startDirectoryWatch(...args),
+  scanActiveDirectory,
+  startDirectoryWatch,
 }))
 
 afterEach(() => {

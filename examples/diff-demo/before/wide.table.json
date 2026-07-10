@@ -1,0 +1,513 @@
+{
+  "$schema": "../../../schema/table.definition.schema.json",
+  "schemaVersion": 1,
+  "name": "wide",
+  "nameJa": "ワイドテーブル",
+  "description": "差分表示のスクロール確認用（列数100）",
+  "primaryKey": [
+    "id"
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "dataType": "bigint",
+      "nameJa": "ID",
+      "notNull": true
+    },
+    {
+      "name": "col001",
+      "dataType": "int",
+      "nameJa": "カラム001"
+    },
+    {
+      "name": "col002",
+      "dataType": "int",
+      "nameJa": "カラム002"
+    },
+    {
+      "name": "col003",
+      "dataType": "int",
+      "nameJa": "カラム003"
+    },
+    {
+      "name": "col004",
+      "dataType": "int",
+      "nameJa": "カラム004"
+    },
+    {
+      "name": "col005",
+      "dataType": "int",
+      "nameJa": "カラム005"
+    },
+    {
+      "name": "col006",
+      "dataType": "int",
+      "nameJa": "カラム006"
+    },
+    {
+      "name": "col007",
+      "dataType": "int",
+      "nameJa": "カラム007"
+    },
+    {
+      "name": "col008",
+      "dataType": "int",
+      "nameJa": "カラム008"
+    },
+    {
+      "name": "col009",
+      "dataType": "int",
+      "nameJa": "カラム009"
+    },
+    {
+      "name": "col010",
+      "dataType": "int",
+      "nameJa": "カラム010"
+    },
+    {
+      "name": "col011",
+      "dataType": "int",
+      "nameJa": "カラム011"
+    },
+    {
+      "name": "col012",
+      "dataType": "int",
+      "nameJa": "カラム012"
+    },
+    {
+      "name": "col013",
+      "dataType": "int",
+      "nameJa": "カラム013"
+    },
+    {
+      "name": "col014",
+      "dataType": "int",
+      "nameJa": "カラム014"
+    },
+    {
+      "name": "col015",
+      "dataType": "int",
+      "nameJa": "カラム015"
+    },
+    {
+      "name": "col016",
+      "dataType": "int",
+      "nameJa": "カラム016"
+    },
+    {
+      "name": "col017",
+      "dataType": "int",
+      "nameJa": "カラム017"
+    },
+    {
+      "name": "col018",
+      "dataType": "int",
+      "nameJa": "カラム018"
+    },
+    {
+      "name": "col019",
+      "dataType": "int",
+      "nameJa": "カラム019"
+    },
+    {
+      "name": "col020",
+      "dataType": "int",
+      "nameJa": "カラム020"
+    },
+    {
+      "name": "col021",
+      "dataType": "int",
+      "nameJa": "カラム021"
+    },
+    {
+      "name": "col022",
+      "dataType": "int",
+      "nameJa": "カラム022"
+    },
+    {
+      "name": "col023",
+      "dataType": "int",
+      "nameJa": "カラム023"
+    },
+    {
+      "name": "col024",
+      "dataType": "int",
+      "nameJa": "カラム024"
+    },
+    {
+      "name": "col025",
+      "dataType": "int",
+      "nameJa": "カラム025"
+    },
+    {
+      "name": "col026",
+      "dataType": "int",
+      "nameJa": "カラム026"
+    },
+    {
+      "name": "col027",
+      "dataType": "int",
+      "nameJa": "カラム027"
+    },
+    {
+      "name": "col028",
+      "dataType": "int",
+      "nameJa": "カラム028"
+    },
+    {
+      "name": "col029",
+      "dataType": "int",
+      "nameJa": "カラム029"
+    },
+    {
+      "name": "col030",
+      "dataType": "int",
+      "nameJa": "カラム030"
+    },
+    {
+      "name": "col031",
+      "dataType": "int",
+      "nameJa": "カラム031"
+    },
+    {
+      "name": "col032",
+      "dataType": "int",
+      "nameJa": "カラム032"
+    },
+    {
+      "name": "col033",
+      "dataType": "int",
+      "nameJa": "カラム033"
+    },
+    {
+      "name": "col034",
+      "dataType": "int",
+      "nameJa": "カラム034"
+    },
+    {
+      "name": "col035",
+      "dataType": "int",
+      "nameJa": "カラム035"
+    },
+    {
+      "name": "col036",
+      "dataType": "int",
+      "nameJa": "カラム036"
+    },
+    {
+      "name": "col037",
+      "dataType": "int",
+      "nameJa": "カラム037"
+    },
+    {
+      "name": "col038",
+      "dataType": "int",
+      "nameJa": "カラム038"
+    },
+    {
+      "name": "col039",
+      "dataType": "int",
+      "nameJa": "カラム039"
+    },
+    {
+      "name": "col040",
+      "dataType": "int",
+      "nameJa": "カラム040"
+    },
+    {
+      "name": "col041",
+      "dataType": "int",
+      "nameJa": "カラム041"
+    },
+    {
+      "name": "col042",
+      "dataType": "int",
+      "nameJa": "カラム042"
+    },
+    {
+      "name": "col043",
+      "dataType": "int",
+      "nameJa": "カラム043"
+    },
+    {
+      "name": "col044",
+      "dataType": "int",
+      "nameJa": "カラム044"
+    },
+    {
+      "name": "col045",
+      "dataType": "int",
+      "nameJa": "カラム045"
+    },
+    {
+      "name": "col046",
+      "dataType": "int",
+      "nameJa": "カラム046"
+    },
+    {
+      "name": "col047",
+      "dataType": "int",
+      "nameJa": "カラム047"
+    },
+    {
+      "name": "col048",
+      "dataType": "int",
+      "nameJa": "カラム048"
+    },
+    {
+      "name": "col049",
+      "dataType": "int",
+      "nameJa": "カラム049"
+    },
+    {
+      "name": "col050",
+      "dataType": "int",
+      "nameJa": "カラム050"
+    },
+    {
+      "name": "col051",
+      "dataType": "int",
+      "nameJa": "カラム051"
+    },
+    {
+      "name": "col052",
+      "dataType": "int",
+      "nameJa": "カラム052"
+    },
+    {
+      "name": "col053",
+      "dataType": "int",
+      "nameJa": "カラム053"
+    },
+    {
+      "name": "col054",
+      "dataType": "int",
+      "nameJa": "カラム054"
+    },
+    {
+      "name": "col055",
+      "dataType": "int",
+      "nameJa": "カラム055"
+    },
+    {
+      "name": "col056",
+      "dataType": "int",
+      "nameJa": "カラム056"
+    },
+    {
+      "name": "col057",
+      "dataType": "int",
+      "nameJa": "カラム057"
+    },
+    {
+      "name": "col058",
+      "dataType": "int",
+      "nameJa": "カラム058"
+    },
+    {
+      "name": "col059",
+      "dataType": "int",
+      "nameJa": "カラム059"
+    },
+    {
+      "name": "col060",
+      "dataType": "int",
+      "nameJa": "カラム060"
+    },
+    {
+      "name": "col061",
+      "dataType": "int",
+      "nameJa": "カラム061"
+    },
+    {
+      "name": "col062",
+      "dataType": "int",
+      "nameJa": "カラム062"
+    },
+    {
+      "name": "col063",
+      "dataType": "int",
+      "nameJa": "カラム063"
+    },
+    {
+      "name": "col064",
+      "dataType": "int",
+      "nameJa": "カラム064"
+    },
+    {
+      "name": "col065",
+      "dataType": "int",
+      "nameJa": "カラム065"
+    },
+    {
+      "name": "col066",
+      "dataType": "int",
+      "nameJa": "カラム066"
+    },
+    {
+      "name": "col067",
+      "dataType": "int",
+      "nameJa": "カラム067"
+    },
+    {
+      "name": "col068",
+      "dataType": "int",
+      "nameJa": "カラム068"
+    },
+    {
+      "name": "col069",
+      "dataType": "int",
+      "nameJa": "カラム069"
+    },
+    {
+      "name": "col070",
+      "dataType": "int",
+      "nameJa": "カラム070"
+    },
+    {
+      "name": "col071",
+      "dataType": "int",
+      "nameJa": "カラム071"
+    },
+    {
+      "name": "col072",
+      "dataType": "int",
+      "nameJa": "カラム072"
+    },
+    {
+      "name": "col073",
+      "dataType": "int",
+      "nameJa": "カラム073"
+    },
+    {
+      "name": "col074",
+      "dataType": "int",
+      "nameJa": "カラム074"
+    },
+    {
+      "name": "col075",
+      "dataType": "int",
+      "nameJa": "カラム075"
+    },
+    {
+      "name": "col076",
+      "dataType": "int",
+      "nameJa": "カラム076"
+    },
+    {
+      "name": "col077",
+      "dataType": "int",
+      "nameJa": "カラム077"
+    },
+    {
+      "name": "col078",
+      "dataType": "int",
+      "nameJa": "カラム078"
+    },
+    {
+      "name": "col079",
+      "dataType": "int",
+      "nameJa": "カラム079"
+    },
+    {
+      "name": "col080",
+      "dataType": "int",
+      "nameJa": "カラム080"
+    },
+    {
+      "name": "col081",
+      "dataType": "int",
+      "nameJa": "カラム081"
+    },
+    {
+      "name": "col082",
+      "dataType": "int",
+      "nameJa": "カラム082"
+    },
+    {
+      "name": "col083",
+      "dataType": "int",
+      "nameJa": "カラム083"
+    },
+    {
+      "name": "col084",
+      "dataType": "int",
+      "nameJa": "カラム084"
+    },
+    {
+      "name": "col085",
+      "dataType": "int",
+      "nameJa": "カラム085"
+    },
+    {
+      "name": "col086",
+      "dataType": "int",
+      "nameJa": "カラム086"
+    },
+    {
+      "name": "col087",
+      "dataType": "int",
+      "nameJa": "カラム087"
+    },
+    {
+      "name": "col088",
+      "dataType": "int",
+      "nameJa": "カラム088"
+    },
+    {
+      "name": "col089",
+      "dataType": "int",
+      "nameJa": "カラム089"
+    },
+    {
+      "name": "col090",
+      "dataType": "int",
+      "nameJa": "カラム090"
+    },
+    {
+      "name": "col091",
+      "dataType": "int",
+      "nameJa": "カラム091"
+    },
+    {
+      "name": "col092",
+      "dataType": "int",
+      "nameJa": "カラム092"
+    },
+    {
+      "name": "col093",
+      "dataType": "int",
+      "nameJa": "カラム093"
+    },
+    {
+      "name": "col094",
+      "dataType": "int",
+      "nameJa": "カラム094"
+    },
+    {
+      "name": "col095",
+      "dataType": "int",
+      "nameJa": "カラム095"
+    },
+    {
+      "name": "col096",
+      "dataType": "int",
+      "nameJa": "カラム096"
+    },
+    {
+      "name": "col097",
+      "dataType": "int",
+      "nameJa": "カラム097"
+    },
+    {
+      "name": "col098",
+      "dataType": "int",
+      "nameJa": "カラム098"
+    },
+    {
+      "name": "col099",
+      "dataType": "int",
+      "nameJa": "カラム099"
+    }
+  ]
+}

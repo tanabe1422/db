@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { ExternalLink } from 'lucide-react'
 
 import type { EditorToolbarBridge } from '../toolbar/editorToolbarBridge'
+import { useSaveShortcut } from '../../hooks/useSaveShortcut'
 import { useTextFileEditor } from '../../hooks/useTextFileEditor'
 import { errorMessage } from '../../lib/errorMessage'
 import { openWithDefaultApp } from '../../lib/wails'
@@ -26,6 +27,12 @@ export function TextFileView({
   onEditorBridgeChange,
 }: TextFileViewProps) {
   const { viewRef, editor, save, syncDirty } = useTextFileEditor(path, content)
+  const saveRef = useRef(save)
+  saveRef.current = save
+  const saveFromShortcut = useCallback(() => {
+    void saveRef.current()
+  }, [])
+  useSaveShortcut(isActive, saveFromShortcut)
 
   useEffect(() => {
     onDirtyChange?.(editor.dirty)
@@ -69,9 +76,6 @@ export function TextFileView({
           isActive={isActive}
           viewRef={viewRef}
           onDocChange={syncDirty}
-          onSave={() => {
-            void save()
-          }}
         />
       </div>
     </div>

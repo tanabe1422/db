@@ -28,7 +28,6 @@ interface SqlCodeEditorProps {
   isActive?: boolean
   viewRef: React.MutableRefObject<EditorView | null>
   onDocChange: () => void
-  onSave: () => void
 }
 
 export function SqlCodeEditor({
@@ -37,30 +36,16 @@ export function SqlCodeEditor({
   isActive = true,
   viewRef,
   onDocChange,
-  onSave,
 }: SqlCodeEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const onDocChangeRef = useRef(onDocChange)
-  const onSaveRef = useRef(onSave)
   onDocChangeRef.current = onDocChange
-  onSaveRef.current = onSave
 
   useEffect(() => {
     const parent = containerRef.current
     if (!parent) {
       return
     }
-
-    const saveKeymap = keymap.of([
-      {
-        key: 'Mod-s',
-        preventDefault: true,
-        run: () => {
-          onSaveRef.current()
-          return true
-        },
-      },
-    ])
 
     const tabKeymap = Prec.highest(
       keymap.of([
@@ -80,7 +65,6 @@ export function SqlCodeEditor({
         history(),
         sql(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-        saveKeymap,
         keymap.of([...defaultKeymap, ...historyKeymap]),
         tabKeymap,
         sqlEditorTheme,
