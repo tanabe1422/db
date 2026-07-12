@@ -6,7 +6,10 @@
 *.dylib
 *.test
 *.out
-/build/
+# Wails ビルド成果物は無視。アプリアイコン PNG だけは共有のため追跡する。
+/build/*
+!/build/appicon.png
+!/build/tableJsonFileIcon.png
 /bin/
 /dist/
 
