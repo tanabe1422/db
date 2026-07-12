@@ -1,0 +1,22 @@
+---
+description: コード変更後は関連するテストとビルドで検証する（frontend / Go）
+alwaysApply: true
+---
+
+# 変更後の検証
+
+変更した領域に応じて、作業完了前に必ず検証する。失敗したら修正してから完了とする。テストだけ通してビルドを省略しない。
+
+## frontend（`frontend/`）
+
+1. **関連テスト**: `pnpm test -- <changed files or area>`（`frontend/` で）
+2. **型チェック＋ビルド**: `pnpm build`（内部で `tsc -b && vite build`）
+
+`wails dev` は frontend の `build` を呼ぶため、`tsc` エラー（テストファイル含む）が残っていると起動に失敗する。`src/**/*.test.ts(x)` も `tsconfig.app.json` の `include` 対象である点に注意。
+
+## Go（`*.go` / `internal/` / ルートの Wails アプリ）
+
+1. **関連テスト**: `go test ./...`（変更パッケージに絞れるなら `go test ./internal/...` など）
+2. **ビルド確認**: `go build ./...`（または変更に応じて `wails build` / `wails dev` が通ること）
+
+Go と frontend の両方を触った場合は、両方の検証を行う。

@@ -2,15 +2,14 @@ import type { MouseEvent } from 'react'
 
 import type { TreeNode } from '../../types'
 import { useTreeContextMenu } from '../../hooks/useTreeContextMenu'
-import { cx } from '../../utils/cx'
 import { relPathWithinRoot } from '../../utils/relPathWithinRoot'
 import { truncateMiddle } from '../../utils/truncateMiddle'
-import { IconButton } from '../ui/Button'
 import { ContextMenu } from '../ui/ContextMenu'
 import { Tooltip } from '../ui/Tooltip'
 
 import { DirectoryTreeBranch } from '../tree/DirectoryTreeBranch'
-import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
+import { DiffSideAssignButtons } from './DiffSideAssignButtons'
+import { DiffSideMark } from './DiffSideMark'
 import styles from './DiffSetupPanel.module.css'
 
 interface DiffSetupPanelProps {
@@ -87,26 +86,12 @@ function DiffFolderRow({
       expansionThreshold={Infinity}
       childFilter={(child) => child.isDir}
       renderTrailing={() => (
-        <span className={styles.assign}>
-          <IconButton
-            variant="plain"
-            size="sm"
-            className={cx(styles.side, isLeft && styles.sideLeftActive)}
-            onClick={() => onSelectLeft(node)}
-            aria-label={`${diffSideAriaLabel('left')}に指定`}
-          >
-            <DiffSideMark side="left" size="sm" />
-          </IconButton>
-          <IconButton
-            variant="plain"
-            size="sm"
-            className={cx(styles.side, isRight && styles.sideRightActive)}
-            onClick={() => onSelectRight(node)}
-            aria-label={`${diffSideAriaLabel('right')}に指定`}
-          >
-            <DiffSideMark side="right" size="sm" />
-          </IconButton>
-        </span>
+        <DiffSideAssignButtons
+          isLeft={isLeft}
+          isRight={isRight}
+          onSelectLeft={() => onSelectLeft(node)}
+          onSelectRight={() => onSelectRight(node)}
+        />
       )}
       renderChild={renderChild}
       onNodeContextMenu={onNodeContextMenu}

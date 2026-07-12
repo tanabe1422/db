@@ -5,8 +5,7 @@ import { buildFileDiffEntry } from '../../lib/fileDiffEntry'
 import { readTableFile } from '../../lib/wails'
 import type { DiffTabSource } from '../../types/workspaceTab'
 import { FileDiffView } from '../diff/FileDiffView'
-
-import styles from '../../App.module.css'
+import { WorkspacePlaceholder } from './WorkspacePlaceholder'
 
 interface DiffTabPanelProps {
   label: string
@@ -64,19 +63,15 @@ export function DiffTabPanel({ label, source, isActive = true }: DiffTabPanelPro
   }, [load])
 
   if (loading && !entry) {
-    return (
-      <div className={styles.placeholder}>
-        <p>diff を読み込み中...</p>
-      </div>
-    )
+    return <WorkspacePlaceholder message="diff を読み込み中..." />
   }
 
   if (error || !entry?.diff) {
     return (
-      <div className={styles.placeholder}>
-        <h2>diff の読み込みエラー</h2>
-        <p>{error ?? entry?.error ?? 'diff を表示できません'}</p>
-      </div>
+      <WorkspacePlaceholder
+        title="diff の読み込みエラー"
+        message={error ?? entry?.error ?? 'diff を表示できません'}
+      />
     )
   }
 

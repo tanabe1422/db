@@ -62,6 +62,12 @@ pnpm storybook
 wails dev
 ```
 
+## ドキュメント
+
+- [docs/BACKLOG.md](docs/BACKLOG.md) — 残課題・優先順位
+- [docs/refactoring/](docs/refactoring/) — 構造リファクタの経緯
+- Storybook — UI コンポーネントのカタログ（上記 `pnpm storybook`）
+
 ## ビルド
 
 ```powershell

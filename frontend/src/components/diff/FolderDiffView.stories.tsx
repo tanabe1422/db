@@ -58,6 +58,14 @@ export const WithDifferences: Story = {
   },
 }
 
+export const ShowUnchanged: Story = {
+  args: {
+    entries,
+    defaultShowSame: true,
+    onReload: () => undefined,
+  },
+}
+
 export const Loading: Story = {
   args: { entries: [], loading: true },
 }

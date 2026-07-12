@@ -1,11 +1,11 @@
 import type { GitCommit } from '../../types'
 import { useGitCommits } from '../../hooks/useGitDiff'
-import { cx } from '../../utils/cx'
 import { truncateMiddle } from '../../utils/truncateMiddle'
-import { Button, IconButton } from '../ui/Button'
+import { Button } from '../ui/Button'
 import { Tooltip } from '../ui/Tooltip'
 
-import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
+import { DiffSideAssignButtons } from './DiffSideAssignButtons'
+import { DiffSideMark } from './DiffSideMark'
 import setupStyles from './DiffSetupPanel.module.css'
 import styles from './GitDiffSetupPanel.module.css'
 
@@ -58,26 +58,12 @@ function CommitRow({
         </Tooltip>
         <span className={styles.date}>{formatCommitDate(commit.date)}</span>
       </div>
-      <span className={setupStyles.assign}>
-        <IconButton
-          variant="plain"
-          size="sm"
-          className={cx(setupStyles.side, isLeft && setupStyles.sideLeftActive)}
-          onClick={() => onSelectLeft(commit)}
-          aria-label={`${diffSideAriaLabel('left')}に指定`}
-        >
-          <DiffSideMark side="left" size="sm" />
-        </IconButton>
-        <IconButton
-          variant="plain"
-          size="sm"
-          className={cx(setupStyles.side, isRight && setupStyles.sideRightActive)}
-          onClick={() => onSelectRight(commit)}
-          aria-label={`${diffSideAriaLabel('right')}に指定`}
-        >
-          <DiffSideMark side="right" size="sm" />
-        </IconButton>
-      </span>
+      <DiffSideAssignButtons
+        isLeft={isLeft}
+        isRight={isRight}
+        onSelectLeft={() => onSelectLeft(commit)}
+        onSelectRight={() => onSelectRight(commit)}
+      />
     </div>
   )
 }

@@ -28,6 +28,7 @@ interface FolderDiffViewProps {
   error: string | null
   onOpenFile: (entry: FileDiffEntry) => void
   onReload?: () => void
+  defaultShowSame?: boolean
   migrateScriptExport?: {
     onClick: () => void
     disabled?: boolean
@@ -72,9 +73,10 @@ export function FolderDiffView({
   error,
   onOpenFile,
   onReload,
+  defaultShowSame = false,
   migrateScriptExport,
 }: FolderDiffViewProps) {
-  const [showSame, setShowSame] = useState(false)
+  const [showSame, setShowSame] = useState(defaultShowSame)
 
   const counts = useMemo(() => countEntries(entries), [entries])
 

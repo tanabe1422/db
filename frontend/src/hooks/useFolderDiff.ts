@@ -102,9 +102,6 @@ export function useFolderDiff(left: TreeNode | null, right: TreeNode | null) {
 
   const runTokenRef = useRef(0)
 
-  const leftKey = left?.path ?? ''
-  const rightKey = right?.path ?? ''
-
   const run = useCallback(async () => {
     const token = (runTokenRef.current += 1)
     const isStale = () => token !== runTokenRef.current
@@ -153,9 +150,7 @@ export function useFolderDiff(left: TreeNode | null, right: TreeNode | null) {
         setLoading(false)
       }
     }
-    // leftKey/rightKey を依存に使うことでフォルダ変更時に再実行する。
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leftKey, rightKey])
+  }, [left, right])
 
   useEffect(() => {
     void run()

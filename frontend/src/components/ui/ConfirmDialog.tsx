@@ -1,5 +1,5 @@
 import { Button } from './Button'
-import styles from './ConfirmDialog.module.css'
+import { DialogBody, DialogFooter, DialogShell, dialogStyles } from './DialogShell'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -20,34 +20,22 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  if (!open) {
-    return null
-  }
-
   return (
-    <div className={styles.backdrop} onClick={onCancel}>
-      <div
-        className={styles.dialog}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-title"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className={styles.body}>
-          <h2 id="confirm-title" className={styles.title}>
-            {title}
-          </h2>
-          <p className={styles.message}>{message}</p>
-        </div>
-        <div className={styles.footer}>
-          <Button variant="ghost" onClick={onCancel}>
-            {cancelLabel}
-          </Button>
-          <Button variant="danger" onClick={onConfirm}>
-            {confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </div>
+    <DialogShell open={open} labelledBy="confirm-title" onBackdropClick={onCancel}>
+      <DialogBody>
+        <h2 id="confirm-title" className={dialogStyles.title}>
+          {title}
+        </h2>
+        <p className={dialogStyles.message}>{message}</p>
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="ghost" onClick={onCancel}>
+          {cancelLabel}
+        </Button>
+        <Button variant="danger" onClick={onConfirm}>
+          {confirmLabel}
+        </Button>
+      </DialogFooter>
+    </DialogShell>
   )
 }

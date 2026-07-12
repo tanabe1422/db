@@ -1,6 +1,9 @@
 import { useLayoutEffect, useRef } from 'react'
 
-function syncRowHeights(
+/** Wait until resize bursts (sidebar width transition / drag) settle. */
+export const RESIZE_SYNC_DEBOUNCE_MS = 100
+
+export function syncRowHeights(
   leftRoot: HTMLDivElement | null,
   rightRoot: HTMLDivElement | null,
 ) {
@@ -25,24 +28,42 @@ function syncRowHeights(
   }
 }
 
+function clearRowHeights(root: HTMLDivElement | null) {
+  root
+    ?.querySelectorAll<HTMLTableRowElement>('tbody tr')
+    .forEach((row) => {
+      row.style.height = ''
+    })
+}
+
 export function useSyncedTableRowHeights(
   leftRef: React.RefObject<HTMLDivElement | null>,
   rightRef: React.RefObject<HTMLDivElement | null>,
   deps: React.DependencyList,
 ) {
   const rafRef = useRef(0)
+  const debounceRef = useRef(0)
 
   useLayoutEffect(() => {
-    const schedule = () => {
-      cancelAnimationFrame(rafRef.current)
-      rafRef.current = requestAnimationFrame(() => {
-        syncRowHeights(leftRef.current, rightRef.current)
-      })
+    const runSync = () => {
+      syncRowHeights(leftRef.current, rightRef.current)
     }
 
-    schedule()
+    const scheduleImmediate = () => {
+      window.clearTimeout(debounceRef.current)
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = requestAnimationFrame(runSync)
+    }
 
-    const observer = new ResizeObserver(schedule)
+    // Coalesce ResizeObserver bursts from width animations / drag-resize.
+    const scheduleDebounced = () => {
+      window.clearTimeout(debounceRef.current)
+      debounceRef.current = window.setTimeout(scheduleImmediate, RESIZE_SYNC_DEBOUNCE_MS)
+    }
+
+    scheduleImmediate()
+
+    const observer = new ResizeObserver(scheduleDebounced)
     if (leftRef.current) {
       observer.observe(leftRef.current)
     }
@@ -53,16 +74,9 @@ export function useSyncedTableRowHeights(
     return () => {
       observer.disconnect()
       cancelAnimationFrame(rafRef.current)
-      const leftRows =
-        leftRef.current?.querySelectorAll<HTMLTableRowElement>('tbody tr')
-      const rightRows =
-        rightRef.current?.querySelectorAll<HTMLTableRowElement>('tbody tr')
-      leftRows?.forEach((row) => {
-        row.style.height = ''
-      })
-      rightRows?.forEach((row) => {
-        row.style.height = ''
-      })
+      window.clearTimeout(debounceRef.current)
+      clearRowHeights(leftRef.current)
+      clearRowHeights(rightRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- caller supplies meaningful deps
   }, deps)

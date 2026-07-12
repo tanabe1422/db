@@ -17,8 +17,19 @@
   overflow: hidden;
 }
 
+.dialogWide {
+  width: min(520px, 100%);
+  max-height: min(80vh, 640px);
+  display: flex;
+  flex-direction: column;
+}
+
 .body {
   padding: 1.25rem 1.25rem 0.5rem;
+}
+
+.bodyScrollable {
+  overflow: auto;
 }
 
 .title {

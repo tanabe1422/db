@@ -8,7 +8,8 @@ import { Button, IconButton } from '../ui/Button'
 import { Tooltip } from '../ui/Tooltip'
 
 import { DiffMetaCompare } from './DiffMetaCompare'
-import { DiffSideMark, diffSideAriaLabel } from './DiffSideMark'
+import { DiffSideMark } from './DiffSideMark'
+import { diffSideAriaLabel } from './diffSide'
 import { DiffSideTable } from './DiffSideTable'
 import styles from './FileDiffView.module.css'
 

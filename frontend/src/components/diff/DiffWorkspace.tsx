@@ -1,12 +1,8 @@
-import { useState } from 'react'
-
-import { useFolderDiff, type FileDiffEntry } from '../../hooks/useFolderDiff'
+import { useFolderDiff } from '../../hooks/useFolderDiff'
 import type { TreeNode } from '../../types'
 import { relPathWithinRoot } from '../../utils/relPathWithinRoot'
 
-import { FileDiffView } from './FileDiffView'
-import { FolderDiffView } from './FolderDiffView'
-import styles from '../../App.module.css'
+import { DiffWorkspaceShell } from './DiffWorkspaceShell'
 
 function diffLabel(node: TreeNode | null, activeDirectory: string): string {
   if (!node) {
@@ -32,44 +28,20 @@ export function DiffWorkspace({
   migrateScriptExport,
 }: DiffWorkspaceProps) {
   const { entries, loading, error, reload } = useFolderDiff(leftNode, rightNode)
-  const [openRelPath, setOpenRelPath] = useState<string | null>(null)
-
-  if (!leftNode || !rightNode) {
-    return (
-      <div className={styles.placeholder}>
-        <h2>フォルダを2つ選択</h2>
-        <p>サイドバーで、シェブロン（‹ ›）のボタンから比較する2つのフォルダを選んでください。</p>
-      </div>
-    )
-  }
-
-  const openEntry: FileDiffEntry | null =
-    openRelPath != null
-      ? entries.find((entry) => entry.relPath === openRelPath) ?? null
-      : null
-
-  if (openEntry && openEntry.diff) {
-    return (
-      <FileDiffView
-        relPath={openEntry.relPath}
-        diff={openEntry.diff}
-        loading={loading}
-        onBack={() => setOpenRelPath(null)}
-        onReload={() => {
-          void reload()
-        }}
-      />
-    )
-  }
 
   return (
-    <FolderDiffView
+    <DiffWorkspaceShell
+      ready={Boolean(leftNode && rightNode)}
+      placeholder={{
+        title: 'フォルダを2つ選択',
+        message:
+          'サイドバーで、シェブロン（‹ ›）のボタンから比較する2つのフォルダを選んでください。',
+      }}
       leftLabel={diffLabel(leftNode, activeDirectory)}
       rightLabel={diffLabel(rightNode, activeDirectory)}
       entries={entries}
       loading={loading}
       error={error}
-      onOpenFile={(entry) => setOpenRelPath(entry.relPath)}
       onReload={() => {
         void reload()
       }}

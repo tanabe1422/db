@@ -21,6 +21,7 @@ import { DiffWorkspace } from './components/diff/DiffWorkspace'
 import { GitDiffSetupPanel } from './components/diff/GitDiffSetupPanel'
 import { GitDiffWorkspace } from './components/diff/GitDiffWorkspace'
 import { WorkspaceFilePanel } from './components/workspace/WorkspaceFilePanel'
+import { WorkspacePlaceholder } from './components/workspace/WorkspacePlaceholder'
 import { useDirectoryScan } from './hooks/useDirectoryScan'
 import { useOpenTerminal } from './hooks/useOpenTerminal'
 import { useSettings } from './hooks/useSettings'
@@ -263,10 +264,10 @@ function App() {
               )}
               <div className={cx(styles.content, activeIsTextFile && styles.contentText)}>
                 {tabs.length === 0 ? (
-                  <div className={styles.placeholder}>
-                    <h2>テーブル定義を選択</h2>
-                    <p>左のパネルから *.table.json ファイルを選択してください。</p>
-                  </div>
+                  <WorkspacePlaceholder
+                    title="テーブル定義を選択"
+                    message="左のパネルから *.table.json ファイルを選択してください。"
+                  />
                 ) : (
                   tabs.map((tab) => (
                     <div

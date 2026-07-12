@@ -49,33 +49,33 @@ export function DirectoryPanel({
     <>
       <div className={styles.root}>
         <div className={styles.scroll}>
-        {!activeDirectory && (
-          <p className={styles.empty}>
-            上部のフォルダボタンから参照ディレクトリを追加してください。
-          </p>
-        )}
-        {activeDirectory && loading && !tree && (
-          <p className={styles.empty}>スキャン中...</p>
-        )}
-        {error && <p className={styles.error}>{error}</p>}
-        {activeDirectory && !error && tree && (
-          <>
-            {tree.children.length === 0 && (
-              <p className={styles.empty}>
-                対象ファイル（*.table.json / *.sql / *.xlsx）が見つかりませんでした。ルートを右クリックして作成できます。
-              </p>
-            )}
-            <div className={styles.tree}>
-              <TreeNode
-                node={tree}
-                rootDirectory={activeDirectory}
-                selectedPath={selectedPath}
-                onSelect={onSelectFile}
-                onNodeContextMenu={openNodeMenu}
-              />
-            </div>
-          </>
-        )}
+          {!activeDirectory && (
+            <p className={styles.empty}>
+              上部のフォルダボタンから参照ディレクトリを追加してください。
+            </p>
+          )}
+          {activeDirectory && loading && !tree && (
+            <p className={styles.empty}>スキャン中...</p>
+          )}
+          {error && <p className={styles.error}>{error}</p>}
+          {activeDirectory && !error && tree && (
+            <>
+              {tree.children.length === 0 && (
+                <p className={styles.empty}>
+                  対象ファイル（*.table.json / *.sql / *.xlsx）が見つかりませんでした。ルートを右クリックして作成できます。
+                </p>
+              )}
+              <div className={styles.tree}>
+                <TreeNode
+                  node={tree}
+                  rootDirectory={activeDirectory}
+                  selectedPath={selectedPath}
+                  onSelect={onSelectFile}
+                  onNodeContextMenu={openNodeMenu}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 

@@ -1,17 +1,14 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
+import type { DiffSide } from './diffSide'
 import styles from './DiffSideMark.module.css'
 
-export type DiffSide = 'left' | 'right'
+export type { DiffSide } from './diffSide'
 
 interface DiffSideMarkProps {
   side: DiffSide
   size?: 'sm' | 'md'
   className?: string
-}
-
-export function diffSideAriaLabel(side: DiffSide): string {
-  return side === 'left' ? '左' : '右'
 }
 
 const ICON_SIZE = { sm: 12, md: 14 } as const

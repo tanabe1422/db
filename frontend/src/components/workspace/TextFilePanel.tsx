@@ -5,8 +5,8 @@ import { useTextFile } from '../../hooks/useTextFile'
 import { useExternalFileChange } from '../../hooks/useExternalFileChange'
 import { ExternalFileChangeDialog } from '../ui/ExternalFileChangeDialog'
 
-import styles from '../../App.module.css'
 import { TextFileView } from './TextFileView'
+import { WorkspacePlaceholder } from './WorkspacePlaceholder'
 
 interface TextFilePanelProps {
   path: string
@@ -33,20 +33,12 @@ export function TextFilePanel({
   const fileName = path.split(/[\\/]/).pop() ?? path
 
   if (loading) {
-    return (
-      <div className={styles.placeholder}>
-        <p>読込中...</p>
-      </div>
-    )
+    return <WorkspacePlaceholder message="読込中..." />
   }
 
   if (error) {
     return (
-      <div className={styles.placeholder}>
-        <h2>読込エラー</h2>
-        <p className={styles.path}>{path}</p>
-        <p>{error}</p>
-      </div>
+      <WorkspacePlaceholder title="読込エラー" path={path} message={error} />
     )
   }
 

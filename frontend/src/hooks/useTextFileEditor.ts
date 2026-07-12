@@ -4,25 +4,34 @@ import { redo, redoDepth, undo, undoDepth } from '@codemirror/commands'
 
 import type { ToolbarEditor } from '../components/toolbar/editorToolbarBridge'
 import { errorMessage } from '../lib/errorMessage'
+import {
+  detectLineEnding,
+  fromEditorText,
+  toEditorText,
+  type LineEnding,
+} from '../lib/textLineEndings'
 import { writeTextFile } from '../lib/wails'
 
 export function useTextFileEditor(path: string, initialContent: string) {
   const viewRef = useRef<EditorView | null>(null)
-  const savedContentRef = useRef(initialContent)
+  const savedContentRef = useRef(toEditorText(initialContent))
+  const lineEndingRef = useRef<LineEnding>(detectLineEnding(initialContent))
   const [revision, setRevision] = useState(0)
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
-    savedContentRef.current = initialContent
+    const editorText = toEditorText(initialContent)
+    savedContentRef.current = editorText
+    lineEndingRef.current = detectLineEnding(initialContent)
     setDirty(false)
     setSaveError(null)
 
     const view = viewRef.current
-    if (view && view.state.doc.toString() !== initialContent) {
+    if (view && view.state.doc.toString() !== editorText) {
       view.dispatch({
-        changes: { from: 0, to: view.state.doc.length, insert: initialContent },
+        changes: { from: 0, to: view.state.doc.length, insert: editorText },
       })
     }
   }, [initialContent, path])
@@ -45,9 +54,10 @@ export function useTextFileEditor(path: string, initialContent: string) {
     setSaving(true)
     setSaveError(null)
     try {
-      const content = view.state.doc.toString()
+      const editorText = view.state.doc.toString()
+      const content = fromEditorText(editorText, lineEndingRef.current)
       await writeTextFile(path, content)
-      savedContentRef.current = content
+      savedContentRef.current = editorText
       setDirty(false)
     } catch (err) {
       setSaveError(

@@ -19,6 +19,7 @@ import {
   syntaxHighlighting,
 } from '@codemirror/language'
 
+import { toEditorText } from '../../lib/textLineEndings'
 import { sqlEditorTheme } from './sqlEditorTheme'
 import styles from './TextFileView.module.css'
 
@@ -59,7 +60,7 @@ export function SqlCodeEditor({
     )
 
     const state = EditorState.create({
-      doc: initialContent,
+      doc: toEditorText(initialContent),
       extensions: [
         lineNumbers(),
         history(),
