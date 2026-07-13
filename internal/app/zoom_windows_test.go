@@ -20,7 +20,22 @@ func (c *fakeChromium) PutZoomFactor(factor float64) {
 
 // Mirrors wails windows.Frontend: unexported chromium field.
 type fakeFrontend struct {
-	chromium *fakeChromium
+	chromium   *fakeChromium
+	mainWindow *fakeMainWindow
+}
+
+type fakeMainWindow struct {
+	invokes int
+}
+
+func (w *fakeMainWindow) Invoke(f func()) {
+	w.invokes++
+	f()
+}
+
+// Mirrors wails DevWebServer in `wails dev`: embedded Frontend interface, no chromium.
+type fakeDevFrontend struct {
+	Frontend any
 }
 
 func TestUnwrapReflectValue_InterfaceThenPointer(t *testing.T) {
@@ -72,9 +87,35 @@ func TestApplyWebViewZoom_ViaBoxedInterface(t *testing.T) {
 	}
 }
 
+func TestApplyWebViewZoom_ViaDevServerFrontend(t *testing.T) {
+	chromium := &fakeChromium{}
+	window := &fakeMainWindow{}
+	desktop := &fakeFrontend{chromium: chromium, mainWindow: window}
+	// wails dev stores *DevWebServer whose Frontend field holds the desktop frontend.
+	ctx := context.WithValue(context.Background(), "frontend", &fakeDevFrontend{Frontend: desktop})
+
+	if err := applyWebViewZoom(ctx, 1.44); err != nil {
+		t.Fatalf("applyWebViewZoom: %v", err)
+	}
+	if chromium.calls != 1 || chromium.factor != 1.44 {
+		t.Fatalf("PutZoomFactor not applied: calls=%d factor=%v", chromium.calls, chromium.factor)
+	}
+	if window.invokes != 1 {
+		t.Fatalf("expected mainWindow.Invoke, got %d", window.invokes)
+	}
+}
+
 func TestApplyWebViewZoom_MissingFrontend(t *testing.T) {
 	err := applyWebViewZoom(context.Background(), 1.2)
 	if err == nil {
 		t.Fatal("expected error when frontend missing")
+	}
+}
+
+func TestApplyWebViewZoom_DevServerWithoutChromium(t *testing.T) {
+	ctx := context.WithValue(context.Background(), "frontend", &fakeDevFrontend{})
+	err := applyWebViewZoom(ctx, 1.2)
+	if err == nil {
+		t.Fatal("expected error when nested Frontend missing")
 	}
 }
